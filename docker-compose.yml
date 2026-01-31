@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: cleanarchitecture
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: devpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  webapi:
+    build: .
+    depends_on:
+      - postgres
+    environment:
+      UseInMemoryDB: "false"
+      ConnectionStrings__DbContext: "Host=postgres;Port=5432;Database=cleanarchitecture;Username=appuser;Password=devpassword;"
+      ASPNETCORE_ENVIRONMENT: Development
+      ClientApp__Origin: "http://localhost:3000"
+      GOOGLE_APPLICATION_CREDENTIALS: /app/firebase-adminsdk.json
+    volumes:
+      - ~/secrets/firebase-adminsdk.json:/app/firebase-adminsdk.json
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
