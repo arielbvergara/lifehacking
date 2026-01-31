@@ -2,7 +2,7 @@
 
 - **Status**: Accepted
 - **Date**: 2026-01-25
-- **Related issue**: [GitHub issue #34](https://github.com/arielbvergara/clean-architecture/issues/34) & [Github issue #29](https://github.com/arielbvergara/clean-architecture/issues/29)
+- **Related issue**: [GitHub issue #34](https://github.com/arielbvergara/lifehacking/issues/34) & [Github issue #29](https://github.com/arielbvergara/lifehacking/issues/29)
 
 ## Context
 
@@ -146,20 +146,20 @@ These changes do not represent a separate architectural decision; they simply ma
 ## Implementation references
 
 - Admin bootstrap and options:
-  - `clean-architecture/WebAPI/Authentication/IAdminUserBootstrapper.cs`
-  - `clean-architecture/WebAPI/Authentication/AdminUserBootstrapper.cs`
-  - `clean-architecture/WebAPI/Configuration/AdminUserOptions.cs`
+  - `lifehacking/WebAPI/Authentication/IAdminUserBootstrapper.cs`
+  - `lifehacking/WebAPI/Authentication/AdminUserBootstrapper.cs`
+  - `lifehacking/WebAPI/Configuration/AdminUserOptions.cs`
 - Identity provider abstraction and Firebase implementation:
-  - `clean-architecture/WebAPI/Authentication/IFirebaseAdminClient.cs`
-  - `clean-architecture/WebAPI/Authentication/FirebaseAdminClient.cs`
+  - `lifehacking/WebAPI/Authentication/IFirebaseAdminClient.cs`
+  - `lifehacking/WebAPI/Authentication/FirebaseAdminClient.cs`
   - See also ADR 004 – Firebase authentication and identity provider abstraction.
 - Authorization helpers and constants:
-  - `clean-architecture/Domain/Constants/UserRoleConstants.cs`
-  - `clean-architecture/WebAPI/Authorization/AuthorizationConstants.cs`
-  - `clean-architecture/WebAPI/Authorization/ClaimsPrincipalExtensions.cs`
-  - `clean-architecture/WebAPI/Authentication/JwtAuthenticationExtensions.cs`
+  - `lifehacking/Domain/Constants/UserRoleConstants.cs`
+  - `lifehacking/WebAPI/Authorization/AuthorizationConstants.cs`
+  - `lifehacking/WebAPI/Authorization/ClaimsPrincipalExtensions.cs`
+  - `lifehacking/WebAPI/Authentication/JwtAuthenticationExtensions.cs`
 - Startup wiring and configuration:
-  - `clean-architecture/WebAPI/Program.cs`
-  - `clean-architecture/WebAPI/appsettings.json`
-  - `clean-architecture/WebAPI/appsettings.Development.json`
+  - `lifehacking/WebAPI/Program.cs`
+  - `lifehacking/WebAPI/appsettings.json`
+  - `lifehacking/WebAPI/appsettings.Development.json`
   - `docker-compose.yml`

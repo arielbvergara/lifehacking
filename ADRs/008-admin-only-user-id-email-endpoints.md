@@ -4,7 +4,7 @@
 
 - **Status**: Accepted
 - **Date**: 2026-01-25
-- **Related issue**: [GitHub issue #35](https://github.com/arielbvergara/clean-architecture/issues/35)
+- **Related issue**: [GitHub issue #35](https://github.com/arielbvergara/lifehacking/issues/35)
 
 ## Context
 
@@ -68,5 +68,5 @@ We will:
   - 007 – Admin bootstrap and Firebase Admin integration
 
 - Related work:
--  - GitHub issue: https://github.com/arielbvergara/clean-architecture/issues/35
+-  - GitHub issue: https://github.com/arielbvergara/lifehacking/issues/35
 -  - Branch: `feature/admin-only-user-id-email-endpoints`

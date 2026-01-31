@@ -165,12 +165,12 @@ The behavior as seen by application code remains the same:
 ## Implementation references
 
 - Domain aggregate:
-  - `clean-architecture/Domain/Entities/User.cs`
+  - `lifehacking/Domain/Entities/User.cs`
 - EF Core configuration and context:
-  - `clean-architecture/Infrastructure/Configurations/UserConfiguration.cs`
-  - `clean-architecture/Infrastructure/Data/AppDbContext.cs`
+  - `lifehacking/Infrastructure/Configurations/UserConfiguration.cs`
+  - `lifehacking/Infrastructure/Data/AppDbContext.cs`
 - Repository behavior:
-  - `clean-architecture/Infrastructure/Repositories/UserRepository.cs`
+  - `lifehacking/Infrastructure/Repositories/UserRepository.cs`
 - Tests:
-  - Domain: `clean-architecture/Tests/Application.Tests/Domain/Entities/UserTests.cs`
-  - Infrastructure: `clean-architecture/Tests/Infrastructure.Tests/SoftDeleteUserRepositoryTests.cs`
+  - Domain: `lifehacking/Tests/Application.Tests/Domain/Entities/UserTests.cs`
+  - Infrastructure: `lifehacking/Tests/Infrastructure.Tests/SoftDeleteUserRepositoryTests.cs`

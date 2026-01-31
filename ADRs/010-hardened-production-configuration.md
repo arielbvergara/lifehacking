@@ -3,7 +3,7 @@
 ## Status
 - **Status**: Accepted
 - **Date**: 2026-01-25
-- **Related issue**: [GitHub issue #8](https://github.com/arielbvergara/clean-architecture/issues/8)
+- **Related issue**: [GitHub issue #8](https://github.com/arielbvergara/lifehacking/issues/8)
 
 ## Context
 
