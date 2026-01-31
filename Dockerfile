@@ -38,23 +38,23 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy project files first (for better layer caching)
-COPY ["clean-architecture/WebAPI/WebAPI.csproj", "WebAPI/"]
-COPY ["clean-architecture/Application/Application.csproj", "Application/"]
-COPY ["clean-architecture/Domain/Domain.csproj", "Domain/"]
-COPY ["clean-architecture/Infrastructure/Infrastructure.csproj", "Infrastructure/"]
-COPY ["clean-architecture/Tests/Application.Tests/Application.Tests.csproj", "Tests/Application.Tests/"]
-COPY ["clean-architecture/Tests/Infrastructure.Tests/Infrastructure.Tests.csproj", "Tests/Infrastructure.Tests/"]
-COPY ["clean-architecture/Tests/WebAPI.Tests/WebAPI.Tests.csproj", "Tests/WebAPI.Tests/"]
-COPY ["clean-architecture.slnx", "."]
+COPY ["lifehacking/WebAPI/WebAPI.csproj", "WebAPI/"]
+COPY ["lifehacking/Application/Application.csproj", "Application/"]
+COPY ["lifehacking/Domain/Domain.csproj", "Domain/"]
+COPY ["lifehacking/Infrastructure/Infrastructure.csproj", "Infrastructure/"]
+COPY ["lifehacking/Tests/Application.Tests/Application.Tests.csproj", "Tests/Application.Tests/"]
+COPY ["lifehacking/Tests/Infrastructure.Tests/Infrastructure.Tests.csproj", "Tests/Infrastructure.Tests/"]
+COPY ["lifehacking/Tests/WebAPI.Tests/WebAPI.Tests.csproj", "Tests/WebAPI.Tests/"]
+COPY ["lifehacking.slnx", "."]
 
 RUN dotnet restore "WebAPI/WebAPI.csproj"
 
 # Copy the rest of the source
-COPY clean-architecture/. .
+COPY lifehacking/. .
 
 # Optional: run tests as part of the Docker build. Uncomment if desired.
 # This will cause `docker build` to fail if tests fail.
-# RUN dotnet test clean-architecture.slnx --configuration Release --no-build
+# RUN dotnet test lifehacking.slnx --configuration Release --no-build
 
 # Publish the WebAPI project
 WORKDIR "/src/WebAPI"

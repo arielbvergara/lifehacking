@@ -6,7 +6,7 @@
 
 ## Context
 
-Initially, the `clean-architecture/WebAPI` project exposed the `UserController` endpoints without any authentication or authorization. This meant any caller could:
+Initially, the `lifehacking/WebAPI` project exposed the `UserController` endpoints without any authentication or authorization. This meant any caller could:
 
 - Create users (`POST /api/User`).
 - Read users by ID or email (`GET /api/User/{id}`, `GET /api/User/email/{email}`).
@@ -33,7 +33,7 @@ Issue #7 was raised to introduce a secure-by-default authentication and authoriz
 We decided to:
 
 1. **Adopt JWT Bearer authentication for the WebAPI**
-   - Configure `JwtBearerDefaults.AuthenticationScheme` in `clean-architecture/WebAPI/Program.cs`:
+   - Configure `JwtBearerDefaults.AuthenticationScheme` in `lifehacking/WebAPI/Program.cs`:
      - `builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(...)`.
    - Read identity provider settings from configuration:
      - `Authentication:Authority` – issuer/authority for JWTs.
@@ -69,7 +69,7 @@ We decided to:
    - This enables future admin-only behavior (e.g., operations across any user) while still enforcing strict ownership for normal users.
 
 6. **Introduce test-only authentication infrastructure for WebAPI integration tests**
-   - In `clean-architecture/Tests/WebAPI.Tests`:
+   - In `lifehacking/Tests/WebAPI.Tests`:
      - `TestAuthHandler` implements a **test-only** authentication handler, configured via `CustomWebApplicationFactory`.
      - The test host uses a custom scheme (`TestAuthHandler.SchemeName`) instead of JWT Bearer.
      - Identity and roles are injected via HTTP headers that are **only honored in tests**:
@@ -79,7 +79,7 @@ We decided to:
    - This arrangement allows tests to simulate identities and roles without depending on a real identity provider, while staying clearly separated from production flows.
 
 7. **Add WebAPI tests to cover authN/authZ behavior**
-   - New tests live under `clean-architecture/Tests/WebAPI.Tests`:
+   - New tests live under `lifehacking/Tests/WebAPI.Tests`:
      - `UserControllerIntegrationTests` validates a full lifecycle (create → read by email → read by id → update → read after update → delete → read after delete) for an authenticated user whose `ExternalAuthId` is used across the flow.
      - `UserControllerAuthorizationTests` validates:
        - Anonymous access to `GET /api/User/{id}` returns `401 Unauthorized`.
@@ -136,13 +136,13 @@ We decided to:
 
 ## Implementation references
 
-- **Program configuration**: `clean-architecture/WebAPI/Program.cs`
-- **User controller and ownership checks**: `clean-architecture/WebAPI/Controllers/UserController.cs`
-- **Domain user entity and external auth ID**: `clean-architecture/Domain/Entities/User.cs`
-- **Use case for external auth ID lookup**: `clean-architecture/Application/UseCases/User/GetUserByExternalAuthIdUseCase.cs`
+- **Program configuration**: `lifehacking/WebAPI/Program.cs`
+- **User controller and ownership checks**: `lifehacking/WebAPI/Controllers/UserController.cs`
+- **Domain user entity and external auth ID**: `lifehacking/Domain/Entities/User.cs`
+- **Use case for external auth ID lookup**: `lifehacking/Application/UseCases/User/GetUserByExternalAuthIdUseCase.cs`
 - **WebAPI test host and auth handler**:
-  - `clean-architecture/Tests/WebAPI.Tests/CustomWebApplicationFactory.cs`
-  - `clean-architecture/Tests/WebAPI.Tests/TestAuthHandler.cs`
+  - `lifehacking/Tests/WebAPI.Tests/CustomWebApplicationFactory.cs`
+  - `lifehacking/Tests/WebAPI.Tests/TestAuthHandler.cs`
 - **WebAPI tests**:
-  - `clean-architecture/Tests/WebAPI.Tests/UserControllerIntegrationTests.cs`
-  - `clean-architecture/Tests/WebAPI.Tests/UserControllerAuthorizationTests.cs`
+  - `lifehacking/Tests/WebAPI.Tests/UserControllerIntegrationTests.cs`
+  - `lifehacking/Tests/WebAPI.Tests/UserControllerAuthorizationTests.cs`

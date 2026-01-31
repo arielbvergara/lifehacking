@@ -106,8 +106,8 @@ This decision refines the Web API surface area without changing the underlying d
 ## Implementation Notes
 
 - **Controller changes**
-  - A new `AdminUserController` was introduced in `clean-architecture/WebAPI/Controllers/AdminUserController.cs` to host all admin-only user management operations.
-  - `UserController` in `clean-architecture/WebAPI/Controllers/UserController.cs` was simplified to self-service operations and updated to reference `AdminUserController` when generating `Location` headers for newly created users.
+  - A new `AdminUserController` was introduced in `lifehacking/WebAPI/Controllers/AdminUserController.cs` to host all admin-only user management operations.
+  - `UserController` in `lifehacking/WebAPI/Controllers/UserController.cs` was simplified to self-service operations and updated to reference `AdminUserController` when generating `Location` headers for newly created users.
 
 - **Routing and attributes**
   - `AdminUserController` uses a named constant for the base route (`"api/admin/User"`) to avoid magic strings.

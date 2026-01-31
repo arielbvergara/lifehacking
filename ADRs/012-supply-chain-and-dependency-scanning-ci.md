@@ -3,7 +3,7 @@
 ## Status
 - **Status**: Accepted
 - **Date**: 2026-01-27
-- **Related issue**: [GitHub issue #10](https://github.com/arielbvergara/clean-architecture/issues/10)
+- **Related issue**: [GitHub issue #10](https://github.com/arielbvergara/lifehacking/issues/10)
 
 ## Context
 
@@ -115,7 +115,7 @@ We will add a first-class supply chain and dependency scanning capability to PR 
 
 ## References
 
-- [GitHub issue #10](https://github.com/arielbvergara/clean-architecture/issues/10)
+- [GitHub issue #10](https://github.com/arielbvergara/lifehacking/issues/10)
 - OWASP Top 10:2025 A03 – Software Supply Chain Failures
 - `.github/workflows/pr-ci.yml` for CI configuration
 - `scripts/verify-ci-security.sh` for CI guardrails

@@ -19,7 +19,7 @@ However, the project is intended as a **clean architecture boilerplate**, and we
 
 We decided to start with **Firebase Authentication (email/password)** as the default provider for this sample, using a dedicated Firebase project:
 
-- Firebase project ID: `clean-architecture-ariel`.
+- Firebase project ID: `lifehacking-ariel`.
 - Email/password sign-in enabled.
 
 The WebAPI must accept Firebase **ID tokens** as Bearer tokens while keeping the design open for future providers.
@@ -54,12 +54,12 @@ The WebAPI must accept Firebase **ID tokens** as Bearer tokens while keeping the
 
      ```json
      "Authentication": {
-       "Authority": "https://securetoken.google.com/clean-architecture-ariel",
-       "Audience": "clean-architecture-ariel"
+       "Authority": "https://securetoken.google.com/lifehacking-ariel",
+       "Audience": "lifehacking-ariel"
      }
      ```
 
-   - These values match the Firebase project `clean-architecture-ariel` and the standard Firebase ID token format:
+   - These values match the Firebase project `lifehacking-ariel` and the standard Firebase ID token format:
      - Issuer / authority: `https://securetoken.google.com/<project-id>`
      - Audience: `<project-id>`
    - The same keys can be overridden in production (`appsettings.Production.json`, environment variables, etc.) if a different Firebase project or a different IdP is used.
@@ -79,7 +79,7 @@ The WebAPI must accept Firebase **ID tokens** as Bearer tokens while keeping the
 5. **Document Firebase usage and keep tests IdP-agnostic**
 
    - Updated `README.md` to document how to use Firebase Authentication:
-     - How to set `Authentication:Authority` / `Authentication:Audience` for the Firebase project `clean-architecture-ariel`.
+     - How to set `Authentication:Authority` / `Authentication:Audience` for the Firebase project `lifehacking-ariel`.
      - How to call `POST /api/User` with:
        - `Authorization: Bearer <firebase-id-token>`.
        - `externalAuthId` set to the Firebase UID (`sub` claim).
@@ -121,7 +121,7 @@ The WebAPI must accept Firebase **ID tokens** as Bearer tokens while keeping the
 
 2. **Push auth configuration into a shared infrastructure library**
    - Could centralize auth across multiple hosts, but would couple multiple services to the same IdP at a lower layer.
-   - For this boilerplate, keeping IdP choice in the WebAPI host is clearer and maintains the typical clean-architecture dependency direction (UI → Infrastructure, not the other way around).
+   - For this boilerplate, keeping IdP choice in the WebAPI host is clearer and maintains the typical lifehacking dependency direction (UI → Infrastructure, not the other way around).
 
 3. **Make Firebase-specific concepts first-class (e.g., `FirebaseUserId` value object)**
    - Would leak provider concepts into Domain/Application and harm replaceability.
@@ -129,13 +129,13 @@ The WebAPI must accept Firebase **ID tokens** as Bearer tokens while keeping the
 
 ## Implementation references
 
-- **JWT auth abstraction**: `clean-architecture/WebAPI/Authentication/JwtAuthenticationExtensions.cs`
-- **WebAPI startup**: `clean-architecture/WebAPI/Program.cs`
-- **Configuration**: `clean-architecture/WebAPI/appsettings.Development.json` (and other environment-specific appsettings as needed)
-- **Domain user entity**: `clean-architecture/Domain/Entities/User.cs`
-- **External auth ID lookup use case**: `clean-architecture/Application/UseCases/User/GetUserByExternalAuthIdUseCase.cs`
+- **JWT auth abstraction**: `lifehacking/WebAPI/Authentication/JwtAuthenticationExtensions.cs`
+- **WebAPI startup**: `lifehacking/WebAPI/Program.cs`
+- **Configuration**: `lifehacking/WebAPI/appsettings.Development.json` (and other environment-specific appsettings as needed)
+- **Domain user entity**: `lifehacking/Domain/Entities/User.cs`
+- **External auth ID lookup use case**: `lifehacking/Application/UseCases/User/GetUserByExternalAuthIdUseCase.cs`
 - **WebAPI tests (test-only auth)**:
-  - `clean-architecture/Tests/WebAPI.Tests/TestAuthHandler.cs`
-  - `clean-architecture/Tests/WebAPI.Tests/CustomWebApplicationFactory.cs`
-  - `clean-architecture/Tests/WebAPI.Tests/UserControllerIntegrationTests.cs`
-  - `clean-architecture/Tests/WebAPI.Tests/UserControllerAuthorizationTests.cs`
+  - `lifehacking/Tests/WebAPI.Tests/TestAuthHandler.cs`
+  - `lifehacking/Tests/WebAPI.Tests/CustomWebApplicationFactory.cs`
+  - `lifehacking/Tests/WebAPI.Tests/UserControllerIntegrationTests.cs`
+  - `lifehacking/Tests/WebAPI.Tests/UserControllerAuthorizationTests.cs`

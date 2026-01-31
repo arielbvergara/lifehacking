@@ -3,7 +3,7 @@
 ## Status
 - **Status**: Proposed
 - **Date**: 2026-01-29
-- **Related issue**: [GitHub issue #55](https://github.com/arielbvergara/clean-architecture/issues/55)
+- **Related issue**: [GitHub issue #55](https://github.com/arielbvergara/lifehacking/issues/55)
 
 ## Context
 
