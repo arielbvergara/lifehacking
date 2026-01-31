@@ -1,0 +1,41 @@
+<Solution>
+  <Folder Name="/ADRs/">
+    <File Path="ADRs\001-use-microsoft-testing-platform-runner.md" />
+    <File Path="ADRs\002-postgres-and-docker-compose.md" />
+    <File Path="ADRs\003-webapi-authentication-and-authorization-for-user-endpoints.md" />
+    <File Path="ADRs\004-firebase-authentication-and-identity-provider-abstraction.md" />
+    <File Path="ADRs\005-webapi-auth-refinements-jwt-policies-me-endpoints.md" />
+    <File Path="ADRs\006-user-role-and-soft-delete-lifecycle.md" />
+    <File Path="ADRs\007-admin-bootstrap-and-firebase-admin-integration.md" />
+    <File Path="ADRs\008-admin-only-user-id-email-endpoints.md" />
+    <File Path="ADRs\009-automated-dependency-management-with-dependabot.md" />
+    <File Path="ADRs\010-hardened-production-configuration.md" />
+    <File Path="ADRs\011-security-headers-and-rate-limiting.md" />
+    <File Path="ADRs\012-supply-chain-and-dependency-scanning-ci.md" />
+    <File Path="ADRs\013-standardized-error-handling-and-security-logging.md" />
+    <File Path="ADRs\014-security-design-and-threat-model-for-user-endpoints.md" />
+    <File Path="ADRs\015-sentry-monitoring-and-observability-integration.md" />
+    <File Path="ADRs\016-admin-user-endpoints-routing-and-controller-separation.md" />
+    <File Path="ADRs\017-admin-user-creation-endpoint-and-shared-usecase.md" />
+  </Folder>
+  <Folder Name="/SolutionItems/">
+    <File Path=".editorconfig" />
+    <File Path=".github\workflows\pr-ci.yml" />
+    <File Path=".gitignore" />
+    <File Path="AGENTS.md" />
+    <File Path="CODEOWNERS" />
+    <File Path="docker-compose.yml" />
+    <File Path="Dockerfile" />
+    <File Path="mcp.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="clean-architecture/Tests/Application.Tests/Application.Tests.csproj" />
+    <Project Path="clean-architecture/Tests/Infrastructure.Tests/Infrastructure.Tests.csproj" />
+    <Project Path="clean-architecture/Tests/WebAPI.Tests/WebAPI.Tests.csproj" />
+  </Folder>
+  <Project Path="clean-architecture/Domain/Domain.csproj" />
+  <Project Path="clean-architecture/Application/Application.csproj" />
+  <Project Path="clean-architecture/Infrastructure/Infrastructure.csproj" />
+  <Project Path="clean-architecture/WebAPI/WebAPI.csproj" />
+</Solution>
