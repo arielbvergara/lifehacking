@@ -5,9 +5,9 @@ This file provides guidance to AI agents (e.g., Warp, Cursor, Claude, GitHub Cop
 ## Repository layout and architecture
 
 - Root
-  - `clean-architecture.slnx` is the .NET solution file targeting `net10.0`.
+  - `lifehacking.slnx` is the .NET solution file targeting `net10.0`.
   - `README.md` documents high-level TODOs (e.g., adopting `Microsoft.Testing.Platform` as the test runner).
-- Main code lives under `clean-architecture/`:
+- Main code lives under `lifehacking/`:
   - `Domain/`
     - Core domain model: entities (`Entities/`), value objects (`ValueObject/`), and primitives like `Result<T, TE>`.
     - No dependencies on other projects; everything here should be persistence-agnostic.
@@ -58,19 +58,19 @@ HTTP requests flow: `WebAPI` controller → `Application` use case → `Domain` 
 
 ## Build and run
 
-Run these commands from the repository root (where `clean-architecture.slnx` lives).
+Run these commands from the repository root (where `lifehacking.slnx` lives).
 
 ### Build the solution
 
 - Build all projects:
-  - `dotnet build clean-architecture.slnx`
+  - `dotnet build lifehacking.slnx`
 
 This will compile the Web API, application, domain, infrastructure, and test projects targeting `net10.0`.
 
 ### Run the Web API
 
 - Run the API using the WebAPI project:
-  - `dotnet run --project clean-architecture/WebAPI/WebAPI.csproj`
+  - `dotnet run --project lifehacking/WebAPI/WebAPI.csproj`
 
 Behavior:
 
@@ -91,28 +91,28 @@ All test projects use xUnit with `Microsoft.Testing.Platform` as the runner.
 ### Run all tests
 
 - From the repository root:
-  - `dotnet test clean-architecture.slnx`
+  - `dotnet test lifehacking.slnx`
 
 This will run tests across `Application.Tests`, `Infrastructure.Tests`, and `WebAPI.Tests` using the configured Microsoft Testing Platform runner.
 
 ### Run tests for a single project
 
 - Application layer tests only:
-  - `dotnet test clean-architecture/Tests/Application.Tests/Application.Tests.csproj`
+  - `dotnet test lifehacking/Tests/Application.Tests/Application.Tests.csproj`
 - Infrastructure layer tests only:
-  - `dotnet test clean-architecture/Tests/Infrastructure.Tests/Infrastructure.Tests.csproj`
+  - `dotnet test lifehacking/Tests/Infrastructure.Tests/Infrastructure.Tests.csproj`
 - Web API tests only:
-  - `dotnet test clean-architecture/Tests/WebAPI.Tests/WebAPI.Tests.csproj`
+  - `dotnet test lifehacking/Tests/WebAPI.Tests/WebAPI.Tests.csproj`
 
 ### Run a single test or test class
 
 Use the standard `--filter` syntax supported by `dotnet test` (and honored by Microsoft.Testing.Platform):
 
 - Run a single test method (example uses the existing smoke test):
-  - `dotnet test clean-architecture/Tests/Application.Tests/Application.Tests.csproj --filter "Name=Smoke_ShouldRun_WhenUsingMicrosoftTestingPlatform"`
+  - `dotnet test lifehacking/Tests/Application.Tests/Application.Tests.csproj --filter "Name=Smoke_ShouldRun_WhenUsingMicrosoftTestingPlatform"`
 
 - Run all tests in a given class (replace `UserTests` with the actual class name):
-  - `dotnet test clean-architecture/Tests/Application.Tests/Application.Tests.csproj --filter "FullyQualifiedName~UserTests"`
+  - `dotnet test lifehacking/Tests/Application.Tests/Application.Tests.csproj --filter "FullyQualifiedName~UserTests"`
 
 ## Notes on tooling and linting
 
@@ -132,8 +132,8 @@ Use the standard `--filter` syntax supported by `dotnet test` (and honored by Mi
   Use for **high-level explanations, overviews, summaries, and conceptual questions**.
 
 ### Priority
-1. Microsoft Docs  
-2. GitHub  
+1. Microsoft Docs
+2. GitHub
 3. DeepWiki
 
 ### Mandatory Rules
@@ -160,9 +160,9 @@ Use the standard `--filter` syntax supported by `dotnet test` (and honored by Mi
   - `{MethodName}_Should{DoSomething}_When{Condition}`
   - Example: `CreateUserAsync_ShouldReturnValidationError_WhenEmailIsInvalid`.
 - Group tests by feature/use case and target the appropriate test project:
-  - Application layer behaviors → `clean-architecture/Tests/Application.Tests/`.
-  - Infrastructure behaviors (repositories, EF mappings, etc.) → `clean-architecture/Tests/Infrastructure.Tests/`.
-  - Web API behaviors (filters, controllers, pipeline) → `clean-architecture/Tests/WebAPI.Tests/`.
+  - Application layer behaviors → `lifehacking/Tests/Application.Tests/`.
+  - Infrastructure behaviors (repositories, EF mappings, etc.) → `lifehacking/Tests/Infrastructure.Tests/`.
+  - Web API behaviors (filters, controllers, pipeline) → `lifehacking/Tests/WebAPI.Tests/`.
 
 ## Git, branching, and commits
 

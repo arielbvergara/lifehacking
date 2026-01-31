@@ -3,7 +3,7 @@
 ## Status
 - **Status**: Accepted
 - **Date**: 2026-01-27
-- **Related issue**: [GitHub issue #9](https://github.com/arielbvergara/clean-architecture/issues/9)
+- **Related issue**: [GitHub issue #9](https://github.com/arielbvergara/lifehacking/issues/9)
 
 ## Context
 
@@ -150,6 +150,6 @@ We will harden the WebAPI boundary by introducing explicit middleware and config
 
 ## References
 
-- [GitHub issue #9](https://github.com/arielbvergara/clean-architecture/issues/9)
+- [GitHub issue #9](https://github.com/arielbvergara/lifehacking/issues/9)
 - OWASP Top 10 guidance on security misconfiguration and resilience
 - ASP.NET Core rate limiting middleware and security headers best practices

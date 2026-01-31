@@ -73,19 +73,19 @@ docker compose down
 If you prefer to run the API directly from the SDK (for example when iterating quickly on code):
 
 ```bash
-dotnet build clean-architecture.slnx
+dotnet build lifehacking.slnx
 DotNetCliToolReference
 
-dotnet run --project clean-architecture/WebAPI/WebAPI.csproj
+dotnet run --project lifehacking/WebAPI/WebAPI.csproj
 ```
 
-By default, the WebAPI reads its database and auth settings from `clean-architecture/WebAPI/appsettings.Development.json` and environment variables. You can point it to a local Postgres instance or use the in‑memory database depending on your configuration.
+By default, the WebAPI reads its database and auth settings from `lifehacking/WebAPI/appsettings.Development.json` and environment variables. You can point it to a local Postgres instance or use the in‑memory database depending on your configuration.
 
 ### 4. Configure Firebase Authentication (optional but recommended)
 
 To call secured endpoints, configure Firebase as the identity provider (example values):
 
-- In `clean-architecture/WebAPI/appsettings.Development.json`:
+- In `lifehacking/WebAPI/appsettings.Development.json`:
   - `Authentication:Authority = "https://securetoken.google.com/<your-firebase-project-id>"`
   - `Authentication:Audience = "<your-firebase-project-id>"`
 - Obtain a Firebase **ID token** for a signed‑in user and send it as:
@@ -110,7 +110,7 @@ Replace `{{SENTRY_DSN}}` with your own DSN from Sentry. When enabled, unhandled 
 
 ## Configuration and environment variables
 
-Most configuration lives in `clean-architecture/WebAPI/appsettings.json` plus the environment-specific files (`appsettings.Development.json`, `appsettings.Production.json`). Any `Section:Key` can be overridden with an environment variable named `Section__Key` (double underscore).
+Most configuration lives in `lifehacking/WebAPI/appsettings.json` plus the environment-specific files (`appsettings.Development.json`, `appsettings.Production.json`). Any `Section:Key` can be overridden with an environment variable named `Section__Key` (double underscore).
 
 Common examples:
 
@@ -139,4 +139,4 @@ In production, you are expected to:
 
 ---
 
-In short: **clone this repo, configure database, Firebase, and (optionally) Sentry/env-specific values, then run either `docker compose up --build` or `dotnet run --project clean-architecture/WebAPI/WebAPI.csproj` to start the boilerplate API backed by PostgreSQL.**
+In short: **clone this repo, configure database, Firebase, and (optionally) Sentry/env-specific values, then run either `docker compose up --build` or `dotnet run --project lifehacking/WebAPI/WebAPI.csproj` to start the boilerplate API backed by PostgreSQL.**

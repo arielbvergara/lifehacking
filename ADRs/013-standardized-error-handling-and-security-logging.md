@@ -3,7 +3,7 @@
 ## Status
 - **Status**: Accepted
 - **Date**: 2026-01-28
-- **Related issue**: [GitHub issue #11](https://github.com/arielbvergara/clean-architecture/issues/11)
+- **Related issue**: [GitHub issue #11](https://github.com/arielbvergara/lifehacking/issues/11)
 
 ## Context
 
@@ -128,9 +128,9 @@ We will standardize error handling and security logging in the WebAPI around thr
 
 ## References
 
-- [GitHub issue #11](https://github.com/arielbvergara/clean-architecture/issues/11)
+- [GitHub issue #11](https://github.com/arielbvergara/lifehacking/issues/11)
 - OWASP Top 10:2025 A09 – Security Logging and Alerting Failures
 - OWASP Top 10:2025 A10 – Mishandling of Exceptional Conditions
 - MITRE ATT&CK techniques related to impairing defenses and indicator removal/obfuscation
-- `clean-architecture/WebAPI/Filters/GlobalExceptionFilter.cs`
-- `clean-architecture/WebAPI/Controllers/UserController.cs`
+- `lifehacking/WebAPI/Filters/GlobalExceptionFilter.cs`
+- `lifehacking/WebAPI/Controllers/UserController.cs`

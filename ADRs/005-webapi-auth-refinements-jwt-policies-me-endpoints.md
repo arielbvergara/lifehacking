@@ -234,10 +234,10 @@ sequenceDiagram
 
 ## Implementation references
 
-- JWT configuration and policies: `clean-architecture/WebAPI/Authentication/JwtAuthenticationExtensions.cs`
-- Authorization handler and requirement: `clean-architecture/WebAPI/Authorization/OwnsUserRequirement.cs`, `OwnsUserHandler.cs`
-- User controller and `/me` endpoints: `clean-architecture/WebAPI/Controllers/UserController.cs`
+- JWT configuration and policies: `lifehacking/WebAPI/Authentication/JwtAuthenticationExtensions.cs`
+- Authorization handler and requirement: `lifehacking/WebAPI/Authorization/OwnsUserRequirement.cs`, `OwnsUserHandler.cs`
+- User controller and `/me` endpoints: `lifehacking/WebAPI/Controllers/UserController.cs`
 - WebAPI tests for authn/z behavior:
-  - `clean-architecture/Tests/WebAPI.Tests/UserControllerAuthorizationTests.cs`
-  - `clean-architecture/Tests/WebAPI.Tests/UserControllerIntegrationTests.cs`
-  - `clean-architecture/Tests/WebAPI.Tests/TestAuthHandler.cs` (test-only auth)
+  - `lifehacking/Tests/WebAPI.Tests/UserControllerAuthorizationTests.cs`
+  - `lifehacking/Tests/WebAPI.Tests/UserControllerIntegrationTests.cs`
+  - `lifehacking/Tests/WebAPI.Tests/TestAuthHandler.cs` (test-only auth)
