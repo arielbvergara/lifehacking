@@ -5,7 +5,7 @@ using Application.Interfaces;
 using Domain.Constants;
 using Domain.ValueObject;
 using FluentAssertions;
-using Infrastructure.Data;
+using Infrastructure.Data.Tests;
 using Microsoft.Extensions.DependencyInjection;
 using WebAPI.DTOs;
 using Xunit;

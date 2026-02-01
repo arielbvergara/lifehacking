@@ -4,7 +4,7 @@ using Application.Dtos.User;
 using Domain.Entities;
 using Domain.ValueObject;
 using FluentAssertions;
-using Infrastructure.Data;
+using Infrastructure.Data.Tests;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Infrastructure.Data;
+namespace Infrastructure.Data.Tests;
 
 public static class AppDbContextFactory
 {
@@ -11,15 +11,6 @@ public static class AppDbContextFactory
         {
             services.AddDbContext<AppDbContext>(options =>
                 options.UseInMemoryDatabase("AppDb"));
-        }
-
-        public void AddPostgresDatabase(string connectionString)
-        {
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(connectionString, npgsqlOptions =>
-                {
-                    npgsqlOptions.EnableRetryOnFailure();
-                }));
         }
     }
 }

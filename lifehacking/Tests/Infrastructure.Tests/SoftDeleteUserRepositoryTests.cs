@@ -1,7 +1,7 @@
 using Domain.Entities;
 using Domain.ValueObject;
 using FluentAssertions;
-using Infrastructure.Data;
+using Infrastructure.Data.Tests;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -28,7 +28,7 @@ public class SoftDeleteUserRepositoryTests
         await context.Users.AddAsync(user);
         await context.SaveChangesAsync(CancellationToken.None);
 
-        var repository = new UserRepository(context);
+        var repository = new TestsUserRepository(context);
 
         // Act
         await repository.DeleteAsync(user.Id, CancellationToken.None);

@@ -2,7 +2,7 @@ using Domain.Entities;
 using Infrastructure.Configurations;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Data;
+namespace Infrastructure.Data.Tests;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {

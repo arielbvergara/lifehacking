@@ -2,7 +2,7 @@ using Application.Dtos.User;
 using Domain.Entities;
 using Domain.ValueObject;
 using FluentAssertions;
-using Infrastructure.Data;
+using Infrastructure.Data.Tests;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -25,7 +25,7 @@ public class UserRepositoryGetPagedAsyncTests
     {
         // Arrange
         await using var context = CreateInMemoryContext();
-        var repository = new UserRepository(context);
+        var repository = new TestsUserRepository(context);
 
         for (var index = 0; index < 25; index++)
         {
@@ -60,7 +60,7 @@ public class UserRepositoryGetPagedAsyncTests
     {
         // Arrange
         await using var context = CreateInMemoryContext();
-        var repository = new UserRepository(context);
+        var repository = new TestsUserRepository(context);
 
         var matchingUser = User.Create(
             Email.Create("match@example.com"),
@@ -98,7 +98,7 @@ public class UserRepositoryGetPagedAsyncTests
     {
         // Arrange
         await using var context = CreateInMemoryContext();
-        var repository = new UserRepository(context);
+        var repository = new TestsUserRepository(context);
 
         for (var index = 0; index < 3; index++)
         {
@@ -145,7 +145,7 @@ public class UserRepositoryGetPagedAsyncTests
     {
         // Arrange
         await using var context = CreateInMemoryContext();
-        var repository = new UserRepository(context);
+        var repository = new TestsUserRepository(context);
 
         for (var index = 0; index < 3; index++)
         {

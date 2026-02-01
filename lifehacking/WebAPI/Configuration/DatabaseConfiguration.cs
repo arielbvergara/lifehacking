@@ -1,30 +1,26 @@
 using Application.Interfaces;
 using Google.Cloud.Firestore;
 using Infrastructure.Configuration;
-using Infrastructure.Data;
 using Infrastructure.Data.Firestore;
+using Infrastructure.Data.Tests;
 using Infrastructure.Repositories;
 
 namespace WebAPI.Configuration;
 
 public static class DatabaseConfiguration
 {
-    private const string FirestoreEmulatorHostEnvironmentVariableName = "FIRESTORE_EMULATOR_HOST";
-
     public static IServiceCollection AddDatabaseConfiguration(
         this IServiceCollection services,
         IConfiguration configuration,
         IHostEnvironment environment)
     {
         // Always use in-memory database for the Testing environment, regardless of configuration
-        var useInMemoryDb = configuration.GetValue<bool>("UseInMemoryDB") ||
-                            environment.IsEnvironment("Testing");
-
+        var useInMemoryDb = environment.IsEnvironment("Testing");
         if (useInMemoryDb)
         {
             // In-memory EF Core database for tests and specific development scenarios.
             services.AddInMemoryDatabase();
-            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserRepository, TestsUserRepository>();
             return services;
         }
 

@@ -38,27 +38,5 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.IsDeleted);
 
         builder.Property(u => u.DeletedAt);
-
-        // // Seed data - values here are the underlying scalar column types
-        // builder.HasData(
-        //     new
-        //     {
-        //         Id = Guid.Parse("df9c7405-1f1e-4968-92b4-7b827c53ceda"),
-        //         Email = "john@example.com",
-        //         Name = "John Doe",
-        //         ExternalAuthId = "auth0|john",
-        //         CreatedAt = DateTime.UtcNow,
-        //         UpdatedAt = (DateTime?)null
-        //     },
-        //     new
-        //     {
-        //         Id = Guid.Parse("df9c7405-1f1e-4968-92b4-7b827c53cedb"),
-        //         Email = "jane@example.com",
-        //         Name = "Jane Smith",
-        //         ExternalAuthId = "auth0|jane",
-        //         CreatedAt = DateTime.UtcNow,
-        //         UpdatedAt = (DateTime?)null
-        //     }
-        // );
     }
 }

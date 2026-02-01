@@ -2,12 +2,12 @@ using Application.Dtos.User;
 using Application.Interfaces;
 using Domain.Entities;
 using Domain.ValueObject;
-using Infrastructure.Data;
+using Infrastructure.Data.Tests;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class UserRepository(AppDbContext context) : IUserRepository
+public class TestsUserRepository(AppDbContext context) : IUserRepository
 {
     public async Task<User?> GetByIdAsync(UserId id, CancellationToken cancellationToken = default)
     {
