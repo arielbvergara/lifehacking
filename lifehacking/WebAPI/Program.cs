@@ -1,5 +1,6 @@
 using Application;
 using Application.Interfaces;
+using Infrastructure.Configuration;
 using Infrastructure.Logging;
 using WebAPI.Authentication;
 using WebAPI.Configuration;
@@ -51,6 +52,12 @@ public class Program
         builder.Services.Configure<AdminUserOptions>(
             builder.Configuration.GetSection(AdminUserOptions.SectionName)
         );
+
+        // Firebase database configuration (used by infrastructure persistence components)
+        builder.Services.Configure<FirebaseDatabaseOptions>(
+            builder.Configuration.GetSection(FirebaseDatabaseOptions.SectionName)
+        );
+
         builder.Services.AddSingleton<IFirebaseAdminClient, FirebaseAdminClient>();
         builder.Services.AddSingleton<IIdentityProviderService>(sp => sp.GetRequiredService<IFirebaseAdminClient>());
         builder.Services.AddScoped<IAdminUserBootstrapper, AdminUserBootstrapper>();
@@ -88,8 +95,7 @@ public class Program
 
         app.MapControllers();
 
-        // Database migrations and admin user seeding
-        app.UseDatabaseMigration();
+        // Admin user seeding (Firebase-based persistence only; no EF Core migrations)
         app.UseAdminUserSeeding();
 
         // Lightweight health endpoint for integration and uptime checks.

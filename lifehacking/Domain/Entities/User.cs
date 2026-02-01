@@ -90,4 +90,34 @@ public sealed class User
         IsDeleted = true;
         DeletedAt = DateTime.UtcNow;
     }
+
+    /// <summary>
+    /// Factory method used by persistence layers to rehydrate a <see cref="User"/> from
+    /// stored values without coupling domain logic to any specific database technology.
+    /// </summary>
+    public static User FromPersistence(
+        UserId id,
+        Email email,
+        UserName name,
+        ExternalAuthIdentifier externalAuthId,
+        string role,
+        DateTime createdAt,
+        DateTime? updatedAt,
+        bool isDeleted,
+        DateTime? deletedAt)
+    {
+        var user = new User(
+            id,
+            email,
+            name,
+            externalAuthId,
+            role,
+            createdAt,
+            isDeleted,
+            deletedAt);
+
+        user.UpdatedAt = updatedAt;
+
+        return user;
+    }
 }
