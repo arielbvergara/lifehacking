@@ -7,9 +7,9 @@ It implements a simple **user CRUD** with extra functionality around **user mana
 ## Technologies
 
 - **.NET 10.0 Web API** following Clean Architecture (Domain, Application, Infrastructure, WebAPI).
-- **PostgreSQL** as the primary relational database, usually run via Docker Compose.
+- **Firebase Cloud Firestore** as the primary datastore, with an **in-memory EF Core database** available for tests and specific dev scenarios.
 - **Firebase Authentication (JWT Bearer)** as the default identity provider, fully abstracted behind the WebAPI so Domain/Application stay provider‑agnostic.
-- **Docker & Docker Compose** for a reproducible local environment (WebAPI + Postgres with a single command).
+- **Docker & Docker Compose** for a reproducible local environment (WebAPI container configured for Firebase/Firestore with a single command).
 - **Sentry** for error and performance monitoring, wired into the WebAPI/Infrastructure layers via an observability abstraction.
 
 Testing and operational choices (Microsoft Testing Platform, security headers, rate limiting, CI dependency scanning, etc.) are captured in the ADRs.
@@ -28,7 +28,7 @@ Testing and operational choices (Microsoft Testing Platform, security headers, r
 
 Key architectural choices are documented under `ADRs/` and include, among others:
 
-- PostgreSQL + Docker Compose for local/dev environments.
+- Firebase Cloud Firestore as the default datastore for the WebAPI (see ADR-018). ADR-002 documents the earlier PostgreSQL + docker-compose design.
 - JWT/Firebase authentication, `/me` self‑service endpoints, and admin‑only management routes.
 - User role and soft‑delete lifecycle.
 - Admin bootstrap flow and Firebase Admin SDK integration.
@@ -46,7 +46,7 @@ When adapting this boilerplate for a new service, review the ADRs to understand 
 - A Firebase project (if you want to exercise authenticated endpoints).
 - Optional: a Sentry project (if you want monitoring enabled locally).
 
-### 2. Quick start with Docker Compose (WebAPI + Postgres)
+### 2. Quick start with Docker Compose (WebAPI + Firestore)
 
 From the repository root:
 
@@ -56,7 +56,7 @@ docker compose up --build
 
 This will:
 - Build and start the WebAPI container.
-- Start a PostgreSQL container configured for local development.
+- Run the WebAPI configured to use Firebase/Firestore (no PostgreSQL container is required).
 
 Once running:
 - API base URL: `http://localhost:8080`
@@ -79,7 +79,7 @@ DotNetCliToolReference
 dotnet run --project lifehacking/WebAPI/WebAPI.csproj
 ```
 
-By default, the WebAPI reads its database and auth settings from `lifehacking/WebAPI/appsettings.Development.json` and environment variables. You can point it to a local Postgres instance or use the in‑memory database depending on your configuration.
+By default, the WebAPI reads its database and auth settings from `lifehacking/WebAPI/appsettings.Development.json` and environment variables. You can choose between the in‑memory database (`UseInMemoryDB = true`) or Firebase/Firestore (`UseInMemoryDB = false` with the `Firebase` section configured).
 
 ### 4. Configure Firebase Authentication (optional but recommended)
 
@@ -115,8 +115,10 @@ Most configuration lives in `lifehacking/WebAPI/appsettings.json` plus the envir
 Common examples:
 
 - **Database**
-  - `UseInMemoryDB` – `true` to use the in-memory database, `false` to use Postgres.
-  - `ConnectionStrings:DbContext` / `ConnectionStrings__DbContext` – Postgres connection string when `UseInMemoryDB` is `false`.
+  - `UseInMemoryDB` – `true` to use the in-memory database, `false` to use Firebase/Firestore.
+  - `Firebase:ProjectId` / `Firebase__ProjectId` – Firebase project identifier used for Firestore.
+  - `Firebase:DatabaseUrl` / `Firebase__DatabaseUrl` – optional Firestore database URL.
+  - `Firebase:EmulatorHost` / `Firebase__EmulatorHost` – optional host:port for the Firestore emulator.
 - **Authentication (Firebase)**
   - `Authentication:Authority` / `Authentication__Authority` – JWT issuer (e.g. `https://securetoken.google.com/<project-id>`).
   - `Authentication:Audience` / `Authentication__Audience` – JWT audience (usually the Firebase project id).
@@ -139,4 +141,4 @@ In production, you are expected to:
 
 ---
 
-In short: **clone this repo, configure database, Firebase, and (optionally) Sentry/env-specific values, then run either `docker compose up --build` or `dotnet run --project lifehacking/WebAPI/WebAPI.csproj` to start the boilerplate API backed by PostgreSQL.**
+In short: **clone this repo, configure database (in-memory vs Firebase/Firestore), Firebase auth, and (optionally) Sentry/env-specific values, then run either `docker compose up --build` or `dotnet run --project lifehacking/WebAPI/WebAPI.csproj` to start the boilerplate API backed by Firebase Cloud Firestore.**

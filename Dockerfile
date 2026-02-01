@@ -1,15 +1,10 @@
-# Build and run the Clean Architecture WebAPI using multi-stage Docker build
+# Build and run the LifeHacking WebAPI using multi-stage Docker build
 
 # =========================================================
 # 1) Runtime image (small, optimized for running the API)
 # =========================================================
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
-
-# Install GSSAPI/Kerberos library required by Npgsql / PostgreSQL
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends libgssapi-krb5-2 \
-    && rm -rf /var/lib/apt/lists/*
 
 # Use a non-privileged HTTP port inside the container
 EXPOSE 8080
@@ -19,17 +14,10 @@ ENV ASPNETCORE_URLS=http://+:8080
 # These can be overridden at `docker run` time with `-e` flags.
 #
 # UseInMemoryDB controls whether the app uses the in-memory EF Core database
-# instead of SQL Server.
+# or the configured Firebase/Firestore persistence.
 #   - true  => use in-memory database (no external DB dependency)
-#   - false => use SQL Server connection string (see below)
+#   - false => use Firebase/Firestore as configured via appsettings / env vars
 ENV UseInMemoryDB=true
-
-# Connection string for the real database when UseInMemoryDB=false.
-# This maps to configuration key "ConnectionStrings:DbContext" in ASP.NET Core,
-# so we use the double-underscore naming convention.
-# Example for PostgreSQL running as a service named 'postgres' in docker-compose:
-#   Host=postgres;Port=5432;Database=cleanarchitecture;Username=appuser;Password=devpassword;
-ENV ConnectionStrings__DbContext="Host=postgres;Port=5432;Database=cleanarchitecture;Username=appuser;Password=devpassword;"
 
 # =========================================================
 # 2) Build image (contains SDK and tooling)
