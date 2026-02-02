@@ -7,11 +7,19 @@ public sealed record UserName
     private UserName(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
+        {
             throw new ArgumentException("User name cannot be empty", nameof(value));
+        }
+
         if (value.Length < 2)
+        {
             throw new ArgumentException("User name must be at least 2 characters", nameof(value));
+        }
+
         if (value.Length > 100)
+        {
             throw new ArgumentException("User name cannot exceed 100 characters", nameof(value));
+        }
 
         Value = value.Trim();
     }
