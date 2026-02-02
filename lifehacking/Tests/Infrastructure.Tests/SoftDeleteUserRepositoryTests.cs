@@ -3,6 +3,7 @@ using Domain.ValueObject;
 using FluentAssertions;
 using Infrastructure.Data.Tests;
 using Infrastructure.Repositories;
+using Infrastructure.Repositories.Tests;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 

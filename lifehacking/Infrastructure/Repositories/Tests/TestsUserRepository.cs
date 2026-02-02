@@ -5,7 +5,7 @@ using Domain.ValueObject;
 using Infrastructure.Data.Tests;
 using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories;
+namespace Infrastructure.Repositories.Tests;
 
 public class TestsUserRepository(AppDbContext context) : IUserRepository
 {
