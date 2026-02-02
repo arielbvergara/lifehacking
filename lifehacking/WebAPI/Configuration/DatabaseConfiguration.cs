@@ -4,6 +4,7 @@ using Infrastructure.Configuration;
 using Infrastructure.Data.Firestore;
 using Infrastructure.Data.Tests;
 using Infrastructure.Repositories;
+using Infrastructure.Repositories.Tests;
 
 namespace WebAPI.Configuration;
 
@@ -41,7 +42,7 @@ public static class DatabaseConfiguration
         services.AddScoped<IFirestoreUserDataStore, FirestoreUserDataStore>();
 
         // Override the default EF-based repository registration when Firestore is selected
-        services.AddScoped<IUserRepository, FirestoreUserRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
     }

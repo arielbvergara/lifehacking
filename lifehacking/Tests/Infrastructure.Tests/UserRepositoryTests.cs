@@ -9,12 +9,12 @@ using Xunit;
 
 namespace Infrastructure.Tests;
 
-public class FirestoreUserRepositoryTests
+public class UserRepositoryTests
 {
     private const string EmulatorHostEnvironmentVariableName = "FIRESTORE_EMULATOR_HOST";
     private const string DefaultTestProjectId = "lifehacking-test";
 
-    private static bool TryCreateRepository(out FirestoreUserRepository repository)
+    private static bool TryCreateRepository(out UserRepository repository)
     {
         var emulatorHost = Environment.GetEnvironmentVariable(EmulatorHostEnvironmentVariableName);
         if (string.IsNullOrWhiteSpace(emulatorHost))
@@ -30,7 +30,7 @@ public class FirestoreUserRepositoryTests
 
         var firestoreDb = FirestoreDb.Create(DefaultTestProjectId);
         var firestoreUserDataStore = new FirestoreUserDataStore(firestoreDb);
-        repository = new FirestoreUserRepository(firestoreUserDataStore);
+        repository = new UserRepository(firestoreUserDataStore);
         return true;
     }
 

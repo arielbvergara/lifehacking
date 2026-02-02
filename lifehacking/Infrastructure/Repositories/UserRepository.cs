@@ -6,7 +6,7 @@ using Infrastructure.Data.Firestore;
 
 namespace Infrastructure.Repositories;
 
-public sealed class FirestoreUserRepository(IFirestoreUserDataStore dataStore) : IUserRepository
+public sealed class UserRepository(IFirestoreUserDataStore dataStore) : IUserRepository
 {
     private readonly IFirestoreUserDataStore _dataStore = dataStore ?? throw new ArgumentNullException(nameof(dataStore));
 
