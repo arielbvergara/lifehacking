@@ -201,10 +201,10 @@ public class TipExtensionsTests
             TipStep.Create(3, "Add pasta and cook according to package instructions.")
         };
         var categoryId = CategoryId.NewId();
-        var tags = includeTags 
+        var tags = includeTags
             ? new List<Tag> { Tag.Create("cooking"), Tag.Create("pasta") }
             : null;
-        var youtubeUrl = includeYouTubeUrl 
+        var youtubeUrl = includeYouTubeUrl
             ? YouTubeUrl.Create("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
             : null;
 
