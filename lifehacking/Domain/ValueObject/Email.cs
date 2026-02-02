@@ -4,7 +4,7 @@ namespace Domain.ValueObject;
 
 public sealed record Email
 {
-    private static readonly Regex EmailRegex = new(
+    private static readonly Regex _emailRegex = new(
         @"^[^@\s]+@[^@\s]+\.[^@\s]+$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase
     );
@@ -25,7 +25,7 @@ public sealed record Email
             throw new ArgumentException("Email cannot exceed 254 characters", nameof(value));
         }
 
-        if (!EmailRegex.IsMatch(normalizedEmail))
+        if (!_emailRegex.IsMatch(normalizedEmail))
         {
             throw new ArgumentException("Email format is invalid", nameof(value));
         }

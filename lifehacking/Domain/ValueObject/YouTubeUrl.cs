@@ -4,12 +4,12 @@ namespace Domain.ValueObject;
 
 public sealed record YouTubeUrl
 {
-    private static readonly Regex YouTubeUrlRegex = new(
+    private static readonly Regex _youTubeUrlRegex = new(
         @"^https?://(www\.)?youtube\.com/watch\?v=[\w-]+",
         RegexOptions.Compiled | RegexOptions.IgnoreCase
     );
 
-    private static readonly Regex VideoIdRegex = new(
+    private static readonly Regex _videoIdRegex = new(
         @"[?&]v=([\w-]+)",
         RegexOptions.Compiled
     );
@@ -42,14 +42,14 @@ public sealed record YouTubeUrl
             throw new ArgumentException("URL must be from youtube.com domain", nameof(value));
         }
 
-        if (!YouTubeUrlRegex.IsMatch(trimmedValue))
+        if (!_youTubeUrlRegex.IsMatch(trimmedValue))
         {
             throw new ArgumentException("YouTube URL must be a valid watch URL", nameof(value));
         }
 
         Value = trimmedValue;
 
-        var match = VideoIdRegex.Match(trimmedValue);
+        var match = _videoIdRegex.Match(trimmedValue);
         VideoId = match.Success ? match.Groups[1].Value : null;
     }
 
