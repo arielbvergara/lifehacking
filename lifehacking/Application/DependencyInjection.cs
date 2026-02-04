@@ -25,6 +25,7 @@ public static class DependencyInjection
 
         // Tip use cases
         services.AddScoped<GetTipByIdUseCase>();
+        services.AddScoped<SearchTipsUseCase>();
 
         return services;
     }
