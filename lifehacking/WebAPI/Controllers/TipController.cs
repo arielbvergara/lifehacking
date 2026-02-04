@@ -46,22 +46,22 @@ public class TipController(GetTipByIdUseCase getTipByIdUseCase, ILogger<TipContr
             logger.LogWarning("Invalid tip ID format provided: '{TipId}'", id);
             return BadRequest(new { message = $"Invalid tip ID format: '{id}'. Expected a valid GUID." });
         }
-        
+
         var request = new GetTipByIdRequest(tipId);
-        
+
         var result = await getTipByIdUseCase.ExecuteAsync(request, cancellationToken);
-        
+
         if (result.IsFailure)
         {
             var error = result.Error!;
             logger.LogError(error.InnerException, "Failed to retrieve tip with ID '{TipId}': {Message}", tipId, error.Message);
-            
+
             return this.ToActionResult(error, HttpContext.TraceIdentifier);
         }
-        
+
         var tipDetail = result.Value!;
         logger.LogInformation("Successfully retrieved tip with ID '{TipId}' - Title: '{Title}'", tipId, tipDetail.Title);
-        
+
         return Ok(tipDetail);
     }
 }

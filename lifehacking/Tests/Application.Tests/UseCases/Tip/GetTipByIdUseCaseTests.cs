@@ -6,8 +6,8 @@ using Domain.ValueObject;
 using FluentAssertions;
 using Moq;
 using Xunit;
-using DomainTip = Domain.Entities.Tip;
 using DomainCategory = Domain.Entities.Category;
+using DomainTip = Domain.Entities.Tip;
 
 namespace Application.Tests.UseCases.Tip;
 

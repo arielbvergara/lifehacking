@@ -15,7 +15,7 @@ public class GetTipByIdUseCase(ITipRepository tipRepository, ICategoryRepository
         ArgumentNullException.ThrowIfNull(request);
 
         var tipId = TipId.Create(request.Id);
-        
+
         var tip = await tipRepository.GetByIdAsync(tipId, cancellationToken);
         if (tip is null)
         {
@@ -31,7 +31,7 @@ public class GetTipByIdUseCase(ITipRepository tipRepository, ICategoryRepository
         }
 
         var response = tip.ToTipDetailResponse(category.Name);
-        
+
         return Result<TipDetailResponse, AppException>.Ok(response);
     }
 }
