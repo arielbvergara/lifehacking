@@ -2,8 +2,8 @@ namespace Domain.ValueObject;
 
 public sealed record TipTitle
 {
-    private const int MinLength = 5;
-    private const int MaxLength = 200;
+    public const int MinLength = 5;
+    public const int MaxLength = 200;
 
     public string Value { get; }
 

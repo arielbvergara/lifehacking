@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Infrastructure.Data.Tests;
+namespace Infrastructure.Data.InMemory;
 
 public static class AppDbContextFactory
 {

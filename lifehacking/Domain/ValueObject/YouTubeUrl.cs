@@ -4,6 +4,8 @@ namespace Domain.ValueObject;
 
 public sealed record YouTubeUrl
 {
+    public const int MaxLength = 500;
+
     private static readonly Regex _youTubeUrlRegex = new(
         @"^https?://(www\.)?youtube\.com/watch\?v=[\w-]+",
         RegexOptions.Compiled | RegexOptions.IgnoreCase

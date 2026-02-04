@@ -9,15 +9,22 @@ public sealed class Tip
     private readonly List<TipStep> _steps;
     private readonly List<Tag> _tags;
 
-    public TipId Id { get; }
+    public TipId Id { get; private set; }
     public TipTitle Title { get; private set; }
     public TipDescription Description { get; private set; }
     public IReadOnlyList<TipStep> Steps => _steps.AsReadOnly();
     public CategoryId CategoryId { get; private set; }
     public IReadOnlyList<Tag> Tags => _tags.AsReadOnly();
     public YouTubeUrl? YouTubeUrl { get; private set; }
-    public DateTime CreatedAt { get; }
+    public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
+
+    // Parameterless constructor for EF Core
+    private Tip()
+    {
+        _steps = new List<TipStep>();
+        _tags = new List<Tag>();
+    }
 
     private Tip(
         TipId id,

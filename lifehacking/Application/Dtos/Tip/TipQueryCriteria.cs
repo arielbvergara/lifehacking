@@ -1,4 +1,4 @@
-using Application.Dtos.User;
+using Application.Dtos;
 
 namespace Application.Dtos.Tip;
 
