@@ -62,7 +62,7 @@ public sealed class TipConfiguration : IEntityTypeConfiguration<Tip>
         builder.Property(t => t.Steps)
             .HasConversion(
                 steps => JsonSerializer.Serialize(
-                    steps.Select(s => new { StepNumber = s.StepNumber, Description = s.Description }),
+                    steps.Select(s => new { s.StepNumber, s.Description }),
                     JsonSerializerOptionsDefaults.DatabaseStorage),
                 json => JsonSerializer.Deserialize<List<StepData>>(json, JsonSerializerOptionsDefaults.DatabaseStorage)!
                     .Select(s => TipStep.Create(s.StepNumber, s.Description))
