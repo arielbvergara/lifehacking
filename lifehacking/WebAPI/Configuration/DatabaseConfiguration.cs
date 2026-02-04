@@ -2,9 +2,9 @@ using Application.Interfaces;
 using Google.Cloud.Firestore;
 using Infrastructure.Configuration;
 using Infrastructure.Data.Firestore;
-using Infrastructure.Data.Tests;
+using Infrastructure.Data.InMemory;
 using Infrastructure.Repositories;
-using Infrastructure.Repositories.Tests;
+using Infrastructure.Repositories.InMemory;
 
 namespace WebAPI.Configuration;
 
@@ -21,7 +21,9 @@ public static class DatabaseConfiguration
         {
             // In-memory EF Core database for tests and specific development scenarios.
             services.AddInMemoryDatabase();
-            services.AddScoped<IUserRepository, TestsUserRepository>();
+            services.AddScoped<IUserRepository, InMemoryUserRepository>();
+            services.AddScoped<ITipRepository, InMemoryTipRepository>();
+            services.AddScoped<ICategoryRepository, InMemoryCategoryRepository>();
             return services;
         }
 
@@ -40,9 +42,13 @@ public static class DatabaseConfiguration
 
         services.AddSingleton(_ => FirestoreDb.Create(projectId));
         services.AddScoped<IFirestoreUserDataStore, FirestoreUserDataStore>();
+        services.AddScoped<IFirestoreTipDataStore, FirestoreTipDataStore>();
+        services.AddScoped<IFirestoreCategoryDataStore, FirestoreCategoryDataStore>();
 
         // Override the default EF-based repository registration when Firestore is selected
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<ITipRepository, TipRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
 
         return services;
     }

@@ -4,13 +4,18 @@ namespace Domain.Entities;
 
 public sealed class Category
 {
-    private const int MinNameLength = 2;
-    private const int MaxNameLength = 100;
+    public const int MinNameLength = 2;
+    public const int MaxNameLength = 100;
 
-    public CategoryId Id { get; }
+    public CategoryId Id { get; private set; }
     public string Name { get; private set; }
-    public DateTime CreatedAt { get; }
+    public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
+
+    // Parameterless constructor for EF Core
+    private Category()
+    {
+    }
 
     private Category(
         CategoryId id,
