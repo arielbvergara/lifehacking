@@ -19,7 +19,7 @@ namespace WebAPI.Controllers;
 [Route("api/[controller]")]
 [AllowAnonymous]
 public class TipController(
-    GetTipByIdUseCase getTipByIdUseCase, 
+    GetTipByIdUseCase getTipByIdUseCase,
     SearchTipsUseCase searchTipsUseCase,
     ILogger<TipController> logger) : ControllerBase
 {
