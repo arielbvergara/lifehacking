@@ -1,5 +1,3 @@
-using Application.Dtos;
-
 namespace Application.Dtos.Tip;
 
 public sealed record TipQueryCriteria(

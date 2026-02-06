@@ -1,5 +1,3 @@
-using Application.Dtos;
-
 namespace Application.Dtos.User;
 
 public sealed record GetUsersRequest(
