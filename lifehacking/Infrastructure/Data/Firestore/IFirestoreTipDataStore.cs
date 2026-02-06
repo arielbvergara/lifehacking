@@ -21,4 +21,6 @@ public interface IFirestoreTipDataStore
     Task UpdateAsync(Tip tip, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(TipId id, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyCollection<Tip>> GetAllIncludingDeletedAsync(CancellationToken cancellationToken = default);
 }

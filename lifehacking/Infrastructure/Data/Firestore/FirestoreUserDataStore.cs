@@ -7,7 +7,9 @@ using Google.Cloud.Firestore;
 
 namespace Infrastructure.Data.Firestore;
 
-public sealed class FirestoreUserDataStore(FirestoreDb database) : IFirestoreUserDataStore
+public sealed class FirestoreUserDataStore(
+    FirestoreDb database,
+    ICollectionNameProvider collectionNameProvider) : IFirestoreUserDataStore
 {
     private static readonly ConstructorInfo _userRehydrationConstructor = typeof(User)
         .GetConstructor(
@@ -32,6 +34,13 @@ public sealed class FirestoreUserDataStore(FirestoreDb database) : IFirestoreUse
         ?? throw new InvalidOperationException("User.UpdatedAt property not found.");
 
     private readonly FirestoreDb _database = database ?? throw new ArgumentNullException(nameof(database));
+    private readonly ICollectionNameProvider _collectionNameProvider = collectionNameProvider ?? throw new ArgumentNullException(nameof(collectionNameProvider));
+
+    private CollectionReference GetCollection()
+    {
+        var collectionName = _collectionNameProvider.GetCollectionName(FirestoreCollectionNames.Users);
+        return _database.Collection(collectionName);
+    }
 
     public async Task<User?> GetByIdAsync(UserId id, CancellationToken cancellationToken = default)
     {
@@ -43,7 +52,7 @@ public sealed class FirestoreUserDataStore(FirestoreDb database) : IFirestoreUse
 
     public async Task<User?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default)
     {
-        var snapshot = await _database.Collection(FirestoreCollectionNames.Users)
+        var snapshot = await GetCollection()
             .WhereEqualTo(nameof(UserDocument.Email), email.Value)
             .Limit(1)
             .GetSnapshotAsync(cancellationToken)
@@ -61,7 +70,7 @@ public sealed class FirestoreUserDataStore(FirestoreDb database) : IFirestoreUse
         ExternalAuthIdentifier externalAuthId,
         CancellationToken cancellationToken = default)
     {
-        var snapshot = await _database.Collection(FirestoreCollectionNames.Users)
+        var snapshot = await GetCollection()
             .WhereEqualTo(nameof(UserDocument.ExternalAuthId), externalAuthId.Value)
             .Limit(1)
             .GetSnapshotAsync(cancellationToken)
@@ -79,7 +88,7 @@ public sealed class FirestoreUserDataStore(FirestoreDb database) : IFirestoreUse
         UserQueryCriteria criteria,
         CancellationToken cancellationToken = default)
     {
-        var snapshot = await _database.Collection(FirestoreCollectionNames.Users)
+        var snapshot = await GetCollection()
             .GetSnapshotAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -133,8 +142,7 @@ public sealed class FirestoreUserDataStore(FirestoreDb database) : IFirestoreUse
     {
         var document = MapToDocument(user);
 
-        var documentReference = _database
-            .Collection(FirestoreCollectionNames.Users)
+        var documentReference = GetCollection()
             .Document(document.Id);
 
         await documentReference.SetAsync(document, cancellationToken: cancellationToken)
@@ -147,8 +155,7 @@ public sealed class FirestoreUserDataStore(FirestoreDb database) : IFirestoreUse
     {
         var document = MapToDocument(user);
 
-        var documentReference = _database
-            .Collection(FirestoreCollectionNames.Users)
+        var documentReference = GetCollection()
             .Document(document.Id);
 
         await documentReference.SetAsync(document, cancellationToken: cancellationToken)
@@ -166,8 +173,7 @@ public sealed class FirestoreUserDataStore(FirestoreDb database) : IFirestoreUse
         document.IsDeleted = true;
         document.DeletedAt = DateTime.UtcNow;
 
-        var documentReference = _database
-            .Collection(FirestoreCollectionNames.Users)
+        var documentReference = GetCollection()
             .Document(document.Id);
 
         await documentReference.SetAsync(document, cancellationToken: cancellationToken)
@@ -176,8 +182,7 @@ public sealed class FirestoreUserDataStore(FirestoreDb database) : IFirestoreUse
 
     private async Task<UserDocument?> GetDocumentByIdAsync(UserId id, CancellationToken cancellationToken)
     {
-        var documentReference = _database
-            .Collection(FirestoreCollectionNames.Users)
+        var documentReference = GetCollection()
             .Document(id.Value.ToString());
 
         var snapshot = await documentReference.GetSnapshotAsync(cancellationToken).ConfigureAwait(false);

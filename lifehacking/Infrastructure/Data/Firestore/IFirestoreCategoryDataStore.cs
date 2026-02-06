@@ -16,4 +16,6 @@ public interface IFirestoreCategoryDataStore
     Task UpdateAsync(Category category, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(CategoryId id, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyCollection<Category>> GetAllIncludingDeletedAsync(CancellationToken cancellationToken = default);
 }

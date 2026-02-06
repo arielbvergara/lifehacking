@@ -16,4 +16,10 @@ public sealed class CategoryDocument
 
     [FirestoreProperty("updatedAt")]
     public DateTime? UpdatedAt { get; set; }
+
+    [FirestoreProperty("isDeleted")]
+    public bool IsDeleted { get; set; }
+
+    [FirestoreProperty("deletedAt")]
+    public DateTime? DeletedAt { get; set; }
 }
