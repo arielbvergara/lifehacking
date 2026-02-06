@@ -31,6 +31,8 @@ public class GetTipByIdUseCaseTests
             categoryId,
             categoryName,
             DateTime.UtcNow,
+            null,
+            false,
             null);
 
         var steps = new[]
@@ -54,6 +56,8 @@ public class GetTipByIdUseCaseTests
             tags,
             null,
             DateTime.UtcNow,
+            null,
+            false,
             null);
 
         tipRepositoryMock
@@ -114,6 +118,8 @@ public class GetTipByIdUseCaseTests
             categoryId,
             categoryName,
             DateTime.UtcNow,
+            null,
+            false,
             null);
 
         var steps = new[] { TipStep.Create(1, "Watch the video and follow along carefully") };
@@ -128,6 +134,8 @@ public class GetTipByIdUseCaseTests
             tags,
             YouTubeUrl.Create(youtubeUrl),
             DateTime.UtcNow,
+            null,
+            false,
             null);
 
         tipRepositoryMock
@@ -207,6 +215,8 @@ public class GetTipByIdUseCaseTests
             tags,
             null,
             DateTime.UtcNow,
+            null,
+            false,
             null);
 
         tipRepositoryMock

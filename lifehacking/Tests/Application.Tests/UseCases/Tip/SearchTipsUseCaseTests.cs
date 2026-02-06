@@ -24,7 +24,7 @@ public class SearchTipsUseCaseTests
 
         var categoryId = CategoryId.NewId();
         const string categoryName = "Test Category";
-        var category = DomainCategory.FromPersistence(categoryId, categoryName, DateTime.UtcNow, null);
+        var category = DomainCategory.FromPersistence(categoryId, categoryName, DateTime.UtcNow, null, false, null);
 
         var tip1 = CreateTestTip("Tip 1", "Description 1", categoryId);
         var tip2 = CreateTestTip("Tip 2", "Description 2", categoryId);
@@ -133,8 +133,8 @@ public class SearchTipsUseCaseTests
         const string categoryName1 = "Category 1";
         const string categoryName2 = "Category 2";
 
-        var category1 = DomainCategory.FromPersistence(categoryId1, categoryName1, DateTime.UtcNow, null);
-        var category2 = DomainCategory.FromPersistence(categoryId2, categoryName2, DateTime.UtcNow, null);
+        var category1 = DomainCategory.FromPersistence(categoryId1, categoryName1, DateTime.UtcNow, null, false, null);
+        var category2 = DomainCategory.FromPersistence(categoryId2, categoryName2, DateTime.UtcNow, null, false, null);
 
         var tip1 = CreateTestTip("Tip 1", "Description 1", categoryId1);
         var tip2 = CreateTestTip("Tip 2", "Description 2", categoryId2);
@@ -235,7 +235,7 @@ public class SearchTipsUseCaseTests
 
         var categoryId = CategoryId.NewId();
         const string categoryName = "Test Category";
-        var category = DomainCategory.FromPersistence(categoryId, categoryName, DateTime.UtcNow, null);
+        var category = DomainCategory.FromPersistence(categoryId, categoryName, DateTime.UtcNow, null, false, null);
 
         var tip = CreateTestTip("Tip 1", "Description 1", categoryId);
         var tips = new List<DomainTip> { tip };
@@ -342,6 +342,8 @@ public class SearchTipsUseCaseTests
             tags,
             null,
             DateTime.UtcNow,
+            null,
+            false,
             null);
     }
 }
