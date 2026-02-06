@@ -5,7 +5,6 @@ using Application.Interfaces;
 using Domain.Constants;
 using Domain.ValueObject;
 using FluentAssertions;
-using Infrastructure.Data.InMemory;
 using Microsoft.Extensions.DependencyInjection;
 using WebAPI.DTOs;
 using Xunit;
@@ -84,9 +83,9 @@ public class AdminUserControllerCreateAdminUserTests : IClassFixture<CustomWebAp
 
         // Verify that the user is persisted and has admin role in the database
         using var scope = _factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
-        var persistedUser = context.Users.SingleOrDefault(u => u.Email.Value == adminUser.Email);
+        var persistedUser = await userRepository.GetByEmailAsync(Email.Create(adminUser.Email));
         persistedUser.Should().NotBeNull();
         persistedUser!.Role.Should().Be(UserRoleConstants.Admin);
 
