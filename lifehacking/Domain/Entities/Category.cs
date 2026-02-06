@@ -11,11 +11,8 @@ public sealed class Category
     public string Name { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
-
-    // Parameterless constructor for EF Core
-    private Category()
-    {
-    }
+    public bool IsDeleted { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
 
     private Category(
         CategoryId id,
@@ -25,6 +22,8 @@ public sealed class Category
         Id = id;
         Name = name;
         CreatedAt = createdAt;
+        IsDeleted = false;
+        DeletedAt = null;
     }
 
     public static Category Create(string name)
@@ -46,6 +45,17 @@ public sealed class Category
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void MarkDeleted()
+    {
+        if (IsDeleted)
+        {
+            return; // Idempotent - already deleted
+        }
+
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
+    }
+
     /// <summary>
     /// Factory method used by persistence layers to rehydrate a <see cref="Category"/>
     /// from stored values without coupling domain logic to any specific database technology.
@@ -54,7 +64,9 @@ public sealed class Category
         CategoryId id,
         string name,
         DateTime createdAt,
-        DateTime? updatedAt)
+        DateTime? updatedAt,
+        bool isDeleted,
+        DateTime? deletedAt)
     {
         var category = new Category(
             id,
@@ -62,6 +74,8 @@ public sealed class Category
             createdAt);
 
         category.UpdatedAt = updatedAt;
+        category.IsDeleted = isDeleted;
+        category.DeletedAt = deletedAt;
 
         return category;
     }

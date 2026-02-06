@@ -18,13 +18,8 @@ public sealed class Tip
     public YouTubeUrl? YouTubeUrl { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
-
-    // Parameterless constructor for EF Core
-    private Tip()
-    {
-        _steps = new List<TipStep>();
-        _tags = new List<Tag>();
-    }
+    public bool IsDeleted { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
 
     private Tip(
         TipId id,
@@ -44,6 +39,8 @@ public sealed class Tip
         _tags = tags.ToList();
         YouTubeUrl = youtubeUrl;
         CreatedAt = createdAt;
+        IsDeleted = false;
+        DeletedAt = null;
     }
 
     public static Tip Create(
@@ -117,6 +114,17 @@ public sealed class Tip
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void MarkDeleted()
+    {
+        if (IsDeleted)
+        {
+            return; // Idempotent - already deleted
+        }
+
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
+    }
+
     /// <summary>
     /// Factory method used by persistence layers to rehydrate a <see cref="Tip"/>
     /// from stored values without coupling domain logic to any specific database technology.
@@ -130,7 +138,9 @@ public sealed class Tip
         IEnumerable<Tag> tags,
         YouTubeUrl? youtubeUrl,
         DateTime createdAt,
-        DateTime? updatedAt)
+        DateTime? updatedAt,
+        bool isDeleted,
+        DateTime? deletedAt)
     {
         var tip = new Tip(
             id,
@@ -142,7 +152,9 @@ public sealed class Tip
             youtubeUrl,
             createdAt)
         {
-            UpdatedAt = updatedAt
+            UpdatedAt = updatedAt,
+            IsDeleted = isDeleted,
+            DeletedAt = deletedAt
         };
 
         return tip;
