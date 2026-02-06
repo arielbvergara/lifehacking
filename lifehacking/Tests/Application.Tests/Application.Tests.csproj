@@ -7,6 +7,7 @@
     <DotNetTestRunner>Microsoft.Testing.Platform</DotNetTestRunner>
   </PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="FsCheck.Xunit" Version="3.3.2" />
 		<PackageReference Include="Google.Apis.Auth" Version="1.73.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
 		<PackageReference Include="Moq" Version="4.20.72" />

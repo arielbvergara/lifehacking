@@ -218,6 +218,121 @@ public sealed class TipRepositoryTests : FirestoreTestBase
     }
 
     [Fact]
+    public async Task SearchAsync_ShouldReturnEmptyList_WhenCategoryHasNoTips()
+    {
+        // Arrange
+        var emptyCategory = Category.Create("Empty Category");
+        await CategoryRepository.AddAsync(emptyCategory);
+
+        var criteria = new TipQueryCriteria(
+            SearchTerm: null,
+            CategoryId: emptyCategory.Id.Value,
+            Tags: null,
+            SortField: TipSortField.CreatedAt,
+            SortDirection: SortDirection.Ascending,
+            PageNumber: 1,
+            PageSize: 10);
+
+        // Act
+        var (items, totalCount) = await TipRepository.SearchAsync(criteria);
+
+        // Assert
+        totalCount.Should().Be(0);
+        items.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SearchAsync_ShouldExcludeDeletedTips_WhenFilteringByCategory()
+    {
+        // Arrange
+        var tip1 = CreateTestTip("Active Tip", "Description 1", _testCategory.Id);
+        var tip2 = CreateTestTip("Deleted Tip", "Description 2", _testCategory.Id);
+        var tip3 = CreateTestTip("Another Active Tip", "Description 3", _testCategory.Id);
+
+        await TipRepository.AddAsync(tip1);
+        await TipRepository.AddAsync(tip2);
+        await TipRepository.AddAsync(tip3);
+
+        // Soft delete tip2
+        await TipRepository.DeleteAsync(tip2.Id);
+
+        var criteria = new TipQueryCriteria(
+            SearchTerm: null,
+            CategoryId: _testCategory.Id.Value,
+            Tags: null,
+            SortField: TipSortField.CreatedAt,
+            SortDirection: SortDirection.Ascending,
+            PageNumber: 1,
+            PageSize: 10);
+
+        // Act
+        var (items, totalCount) = await TipRepository.SearchAsync(criteria);
+
+        // Assert
+        totalCount.Should().Be(2);
+        items.Should().HaveCount(2);
+        items.Should().NotContain(t => t.Id == tip2.Id);
+    }
+
+    [Fact]
+    public async Task SearchAsync_ShouldApplyPaginationCorrectly_WhenFilteringByCategory()
+    {
+        // Arrange
+        for (int i = 1; i <= 5; i++)
+        {
+            var tip = CreateTestTip($"Category Tip {i}", $"Description {i}", _testCategory.Id);
+            await TipRepository.AddAsync(tip);
+        }
+
+        var criteria = new TipQueryCriteria(
+            SearchTerm: null,
+            CategoryId: _testCategory.Id.Value,
+            Tags: null,
+            SortField: TipSortField.Title,
+            SortDirection: SortDirection.Ascending,
+            PageNumber: 2,
+            PageSize: 2);
+
+        // Act
+        var (items, totalCount) = await TipRepository.SearchAsync(criteria);
+
+        // Assert
+        totalCount.Should().Be(5);
+        items.Should().HaveCount(2);
+        items.Should().AllSatisfy(t => t.CategoryId.Should().Be(_testCategory.Id));
+    }
+
+    [Fact]
+    public async Task SearchAsync_ShouldApplySortingCorrectly_WhenFilteringByCategory()
+    {
+        // Arrange
+        var tip1 = CreateTestTip("Zebra Tip", "Description 1", _testCategory.Id);
+        var tip2 = CreateTestTip("Alpha Tip", "Description 2", _testCategory.Id);
+        var tip3 = CreateTestTip("Beta Tip", "Description 3", _testCategory.Id);
+
+        await TipRepository.AddAsync(tip1);
+        await TipRepository.AddAsync(tip2);
+        await TipRepository.AddAsync(tip3);
+
+        var criteriaAsc = new TipQueryCriteria(
+            SearchTerm: null,
+            CategoryId: _testCategory.Id.Value,
+            Tags: null,
+            SortField: TipSortField.Title,
+            SortDirection: SortDirection.Ascending,
+            PageNumber: 1,
+            PageSize: 10);
+
+        // Act
+        var (itemsAsc, _) = await TipRepository.SearchAsync(criteriaAsc);
+
+        // Assert
+        itemsAsc.Should().HaveCount(3);
+        itemsAsc.First().Title.Value.Should().Be("Alpha Tip");
+        itemsAsc.Last().Title.Value.Should().Be("Zebra Tip");
+    }
+
+    [Fact]
     public async Task UpdateAsync_ShouldUpdateTip_WhenValidChangesProvided()
     {
         // Arrange
