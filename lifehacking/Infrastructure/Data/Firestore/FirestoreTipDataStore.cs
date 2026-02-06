@@ -6,21 +6,37 @@ using Google.Cloud.Firestore;
 
 namespace Infrastructure.Data.Firestore;
 
-public sealed class FirestoreTipDataStore(FirestoreDb database) : IFirestoreTipDataStore
+public sealed class FirestoreTipDataStore(
+    FirestoreDb database,
+    ICollectionNameProvider collectionNameProvider) : IFirestoreTipDataStore
 {
     private readonly FirestoreDb _database = database ?? throw new ArgumentNullException(nameof(database));
+    private readonly ICollectionNameProvider _collectionNameProvider = collectionNameProvider ?? throw new ArgumentNullException(nameof(collectionNameProvider));
+
+    private CollectionReference GetCollection()
+    {
+        var collectionName = _collectionNameProvider.GetCollectionName(FirestoreCollectionNames.Tips);
+        return _database.Collection(collectionName);
+    }
 
     public async Task<Tip?> GetByIdAsync(TipId id, CancellationToken cancellationToken = default)
     {
         var document = await GetDocumentByIdAsync(id, cancellationToken).ConfigureAwait(false);
-        return document is null ? null : MapToDomainTip(document);
+
+        // Filter out soft-deleted tips
+        if (document is null || document.IsDeleted)
+        {
+            return null;
+        }
+
+        return MapToDomainTip(document);
     }
 
     public async Task<(IReadOnlyCollection<Tip> Items, int TotalCount)> SearchAsync(
         TipQueryCriteria criteria,
         CancellationToken cancellationToken = default)
     {
-        var snapshot = await _database.Collection(FirestoreCollectionNames.Tips)
+        var snapshot = await GetCollection()
             .GetSnapshotAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -29,7 +45,8 @@ public sealed class FirestoreTipDataStore(FirestoreDb database) : IFirestoreTipD
             .Where(doc => doc is not null)
             .ToList();
 
-        IEnumerable<TipDocument> filtered = documents;
+        // Filter out soft-deleted tips
+        IEnumerable<TipDocument> filtered = documents.Where(doc => !doc.IsDeleted);
 
         // Apply search term filter
         if (!string.IsNullOrWhiteSpace(criteria.SearchTerm))
@@ -78,8 +95,9 @@ public sealed class FirestoreTipDataStore(FirestoreDb database) : IFirestoreTipD
         CategoryId categoryId,
         CancellationToken cancellationToken = default)
     {
-        var snapshot = await _database.Collection(FirestoreCollectionNames.Tips)
-            .WhereEqualTo(nameof(TipDocument.CategoryId), categoryId.Value.ToString())
+        var snapshot = await GetCollection()
+            .WhereEqualTo("isDeleted", false)
+            .WhereEqualTo("categoryId", categoryId.Value.ToString())
             .GetSnapshotAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -96,8 +114,7 @@ public sealed class FirestoreTipDataStore(FirestoreDb database) : IFirestoreTipD
     {
         var document = MapToDocument(tip);
 
-        var documentReference = _database
-            .Collection(FirestoreCollectionNames.Tips)
+        var documentReference = GetCollection()
             .Document(document.Id);
 
         await documentReference.SetAsync(document, cancellationToken: cancellationToken)
@@ -110,8 +127,7 @@ public sealed class FirestoreTipDataStore(FirestoreDb database) : IFirestoreTipD
     {
         var document = MapToDocument(tip);
 
-        var documentReference = _database
-            .Collection(FirestoreCollectionNames.Tips)
+        var documentReference = GetCollection()
             .Document(document.Id);
 
         await documentReference.SetAsync(document, cancellationToken: cancellationToken)
@@ -120,18 +136,31 @@ public sealed class FirestoreTipDataStore(FirestoreDb database) : IFirestoreTipD
 
     public async Task DeleteAsync(TipId id, CancellationToken cancellationToken = default)
     {
-        var documentReference = _database
-            .Collection(FirestoreCollectionNames.Tips)
+        var documentReference = GetCollection()
             .Document(id.Value.ToString());
 
         await documentReference.DeleteAsync(cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 
+    public async Task<IReadOnlyCollection<Tip>> GetAllIncludingDeletedAsync(CancellationToken cancellationToken = default)
+    {
+        var snapshot = await GetCollection()
+            .GetSnapshotAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var tips = snapshot.Documents
+            .Select(d => d.ConvertTo<TipDocument>())
+            .Where(doc => doc is not null)
+            .Select(MapToDomainTip)
+            .ToList();
+
+        return tips;
+    }
+
     private async Task<TipDocument?> GetDocumentByIdAsync(TipId id, CancellationToken cancellationToken)
     {
-        var documentReference = _database
-            .Collection(FirestoreCollectionNames.Tips)
+        var documentReference = GetCollection()
             .Document(id.Value.ToString());
 
         var snapshot = await documentReference.GetSnapshotAsync(cancellationToken).ConfigureAwait(false);
@@ -193,7 +222,9 @@ public sealed class FirestoreTipDataStore(FirestoreDb database) : IFirestoreTipD
             tags,
             youtubeUrl,
             document.CreatedAt,
-            document.UpdatedAt);
+            document.UpdatedAt,
+            document.IsDeleted,
+            document.DeletedAt);
     }
 
     private static TipDocument MapToDocument(Tip tip)
@@ -212,7 +243,9 @@ public sealed class FirestoreTipDataStore(FirestoreDb database) : IFirestoreTipD
             Tags = tip.Tags.Select(t => t.Value).ToList(),
             YouTubeUrl = tip.YouTubeUrl?.Value,
             CreatedAt = tip.CreatedAt,
-            UpdatedAt = tip.UpdatedAt
+            UpdatedAt = tip.UpdatedAt,
+            IsDeleted = tip.IsDeleted,
+            DeletedAt = tip.DeletedAt
         };
     }
 }

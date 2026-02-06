@@ -1,4 +1,6 @@
 using Application.Interfaces;
+using Google.Cloud.Firestore;
+using Infrastructure.Data.Firestore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -15,6 +17,19 @@ namespace WebAPI.Tests;
 /// </summary>
 public class CustomWebApplicationFactory : WebApplicationFactory<WebAPI.Program>
 {
+    /// <summary>
+    /// Collection name provider for test isolation.
+    /// Each factory instance gets a unique collection namespace.
+    /// </summary>
+    public ICollectionNameProvider CollectionNameProvider { get; } = new TestCollectionNameProvider();
+
+    public CustomWebApplicationFactory()
+    {
+        // Set emulator environment variable before the host is created
+        Environment.SetEnvironmentVariable("FIRESTORE_EMULATOR_HOST", "127.0.0.1:8080");
+        Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", null);
+    }
+
     protected override IHost CreateHost(IHostBuilder builder)
     {
         // Ensure the application runs in the Testing environment so that the in-memory DB is used.
@@ -31,6 +46,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<WebAPI.Program>
             var testSettings = new Dictionary<string, string?>
             {
                 ["ClientApp:Origin"] = "http://localhost",
+                ["Database:FirestoreProjectId"] = "demo-lifehacking-test",
             };
 
             configurationBuilder.AddInMemoryCollection(testSettings!);
@@ -38,6 +54,27 @@ public class CustomWebApplicationFactory : WebApplicationFactory<WebAPI.Program>
 
         builder.ConfigureServices(services =>
         {
+            // Register the test collection name provider for test isolation
+            services.AddSingleton(CollectionNameProvider);
+
+            // Replace FirestoreDb registration with emulator-compatible version
+            var firestoreDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(FirestoreDb));
+            if (firestoreDescriptor is not null)
+            {
+                services.Remove(firestoreDescriptor);
+            }
+
+            services.AddSingleton(_ =>
+            {
+                var builder = new Google.Cloud.Firestore.FirestoreDbBuilder
+                {
+                    ProjectId = "demo-lifehacking-test",
+                    Endpoint = "127.0.0.1:8080",
+                    ChannelCredentials = Grpc.Core.ChannelCredentials.Insecure
+                };
+                return builder.Build();
+            });
+
             // Override authentication with a lightweight test scheme.
             services.AddAuthentication(options =>
                 {

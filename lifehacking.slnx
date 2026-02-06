@@ -18,6 +18,7 @@
     <File Path="ADRs\016-admin-user-endpoints-routing-and-controller-separation.md" />
     <File Path="ADRs\017-admin-user-creation-endpoint-and-shared-usecase.md" />
     <File Path="ADRs\018-replace-postgresql-persistence-with-firebase-database.md" />
+    <File Path="ADRs\019-firestore-emulator-test-infrastructure-and-property-based-testing.md" />
   </Folder>
   <Folder Name="/SolutionItems/">
     <File Path=".editorconfig" />

@@ -118,7 +118,7 @@ public class CategoryTests
         var updatedAt = DateTime.UtcNow.AddDays(-1);
 
         // Act
-        var category = Category.FromPersistence(id, name, createdAt, updatedAt);
+        var category = Category.FromPersistence(id, name, createdAt, updatedAt, false, null);
 
         // Assert
         category.Should().NotBeNull();
@@ -126,5 +126,7 @@ public class CategoryTests
         category.Name.Should().Be(name);
         category.CreatedAt.Should().Be(createdAt);
         category.UpdatedAt.Should().Be(updatedAt);
+        category.IsDeleted.Should().BeFalse();
+        category.DeletedAt.Should().BeNull();
     }
 }

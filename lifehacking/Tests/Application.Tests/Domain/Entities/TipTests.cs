@@ -286,7 +286,7 @@ public class TipTests
         var updatedAt = DateTime.UtcNow.AddDays(-1);
 
         // Act
-        var tip = Tip.FromPersistence(id, title, description, steps, categoryId, tags, youtubeUrl, createdAt, updatedAt);
+        var tip = Tip.FromPersistence(id, title, description, steps, categoryId, tags, youtubeUrl, createdAt, updatedAt, false, null);
 
         // Assert
         tip.Should().NotBeNull();

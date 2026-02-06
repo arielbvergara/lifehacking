@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using Application.Dtos.User;
+using Application.Interfaces;
 using Domain.Entities;
 using Domain.ValueObject;
 using FluentAssertions;
-using Infrastructure.Data.InMemory;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -92,15 +92,14 @@ public class UserControllerAuthorizationTests : IClassFixture<CustomWebApplicati
         Guid userId;
         using (var scope = _factory.Services.CreateScope())
         {
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
             var email = Email.Create("user1@example.com");
             var userName = UserName.Create("User One");
             var extId = ExternalAuthIdentifier.Create(externalId);
 
             var user = User.Create(email, userName, extId);
-            context.Users.Add(user);
-            await context.SaveChangesAsync(CancellationToken.None);
+            await userRepository.AddAsync(user);
 
             userId = user.Id.Value;
         }
@@ -126,7 +125,7 @@ public class UserControllerAuthorizationTests : IClassFixture<CustomWebApplicati
         Guid ownerUserId;
         using (var scope = _factory.Services.CreateScope())
         {
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
             var ownerEmail = Email.Create("owner@example.com");
             var ownerName = UserName.Create("Owner User");
@@ -139,9 +138,8 @@ public class UserControllerAuthorizationTests : IClassFixture<CustomWebApplicati
             var attackerExtId = ExternalAuthIdentifier.Create(attackerExternalId);
             var attackerUser = User.Create(attackerEmail, attackerName, attackerExtId);
 
-            context.Users.Add(ownerUser);
-            context.Users.Add(attackerUser);
-            await context.SaveChangesAsync(CancellationToken.None);
+            await userRepository.AddAsync(ownerUser);
+            await userRepository.AddAsync(attackerUser);
 
             ownerUserId = ownerUser.Id.Value;
         }
@@ -167,7 +165,7 @@ public class UserControllerAuthorizationTests : IClassFixture<CustomWebApplicati
         Guid ownerUserId;
         using (var scope = _factory.Services.CreateScope())
         {
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
             var ownerEmail = Email.Create("admin-target@example.com");
             var ownerName = UserName.Create("Admin Target User");
@@ -180,9 +178,8 @@ public class UserControllerAuthorizationTests : IClassFixture<CustomWebApplicati
             var adminExtId = ExternalAuthIdentifier.Create(adminExternalId);
             var adminUser = User.Create(adminEmail, adminName, adminExtId);
 
-            context.Users.Add(ownerUser);
-            context.Users.Add(adminUser);
-            await context.SaveChangesAsync(CancellationToken.None);
+            await userRepository.AddAsync(ownerUser);
+            await userRepository.AddAsync(adminUser);
 
             ownerUserId = ownerUser.Id.Value;
         }
@@ -231,15 +228,14 @@ public class UserControllerAuthorizationTests : IClassFixture<CustomWebApplicati
         Guid targetUserId;
         using (var scope = _factory.Services.CreateScope())
         {
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
             var email = Email.Create("target@example.com");
             var userName = UserName.Create("Target User");
             var extId = ExternalAuthIdentifier.Create("some-other-external-id");
 
             var user = User.Create(email, userName, extId);
-            context.Users.Add(user);
-            await context.SaveChangesAsync(CancellationToken.None);
+            await userRepository.AddAsync(user);
 
             targetUserId = user.Id.Value;
         }

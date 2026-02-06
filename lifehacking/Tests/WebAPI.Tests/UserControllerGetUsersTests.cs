@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
 using Application.Dtos.User;
+using Application.Interfaces;
 using Domain.Entities;
 using Domain.ValueObject;
 using FluentAssertions;
-using Infrastructure.Data.InMemory;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -45,7 +45,7 @@ public class UserControllerGetUsersTests : IClassFixture<CustomWebApplicationFac
 
         using (var scope = _factory.Services.CreateScope())
         {
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
             // Seed multiple users
             for (var index = 0; index < 15; index++)
@@ -55,7 +55,7 @@ public class UserControllerGetUsersTests : IClassFixture<CustomWebApplicationFac
                 var externalId = ExternalAuthIdentifier.Create($"list-external-{index}");
 
                 var user = User.Create(email, name, externalId);
-                context.Users.Add(user);
+                await userRepository.AddAsync(user);
             }
 
             var adminEmail = Email.Create("admin-list@example.com");
@@ -63,9 +63,7 @@ public class UserControllerGetUsersTests : IClassFixture<CustomWebApplicationFac
             var adminExtId = ExternalAuthIdentifier.Create(adminExternalId);
             var adminUser = User.Create(adminEmail, adminName, adminExtId);
 
-            context.Users.Add(adminUser);
-
-            await context.SaveChangesAsync(CancellationToken.None);
+            await userRepository.AddAsync(adminUser);
         }
 
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/admin/User?pageNumber=1&pageSize=10");
@@ -95,7 +93,7 @@ public class UserControllerGetUsersTests : IClassFixture<CustomWebApplicationFac
 
         using (var scope = _factory.Services.CreateScope())
         {
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
             // Seed deleted users
             for (var index = 0; index < 3; index++)
@@ -106,7 +104,7 @@ public class UserControllerGetUsersTests : IClassFixture<CustomWebApplicationFac
 
                 var user = User.Create(email, name, externalId);
                 user.MarkDeleted();
-                context.Users.Add(user);
+                await userRepository.AddAsync(user);
             }
 
             // Seed active users
@@ -117,7 +115,7 @@ public class UserControllerGetUsersTests : IClassFixture<CustomWebApplicationFac
                 var externalId = ExternalAuthIdentifier.Create($"active-external-{index}");
 
                 var user = User.Create(email, name, externalId);
-                context.Users.Add(user);
+                await userRepository.AddAsync(user);
             }
 
             // Seed admin user
@@ -126,9 +124,7 @@ public class UserControllerGetUsersTests : IClassFixture<CustomWebApplicationFac
             var adminExtId = ExternalAuthIdentifier.Create(adminExternalId);
             var adminUser = User.Create(adminEmail, adminName, adminExtId);
 
-            context.Users.Add(adminUser);
-
-            await context.SaveChangesAsync(CancellationToken.None);
+            await userRepository.AddAsync(adminUser);
         }
 
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/admin/User?isDeleted=true&pageNumber=1&pageSize=10");
