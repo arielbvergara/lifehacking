@@ -15,7 +15,8 @@ namespace WebAPI.Tests;
 /// TEST-ONLY WebApplicationFactory used by WebAPI.Tests to host the API in-memory.
 /// It overrides authentication with TestAuthHandler. DO NOT use this in production code paths.
 /// </summary>
-public class CustomWebApplicationFactory : WebApplicationFactory<WebAPI.Program>
+// ReSharper disable once ClassNeverInstantiated.Global
+public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     /// <summary>
     /// Collection name provider for test isolation.
@@ -41,7 +42,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<WebAPI.Program>
     {
         // Inject minimal configuration required for tests so Program.cs does not throw
         // (e.g., ClientApp:Origin required for CORS setup).
-        builder.ConfigureAppConfiguration((context, configurationBuilder) =>
+        builder.ConfigureAppConfiguration((_, configurationBuilder) =>
         {
             var testSettings = new Dictionary<string, string?>
             {
@@ -49,7 +50,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<WebAPI.Program>
                 ["Database:FirestoreProjectId"] = "demo-lifehacking-test",
             };
 
-            configurationBuilder.AddInMemoryCollection(testSettings!);
+            configurationBuilder.AddInMemoryCollection(testSettings);
         });
 
         builder.ConfigureServices(services =>
@@ -66,13 +67,13 @@ public class CustomWebApplicationFactory : WebApplicationFactory<WebAPI.Program>
 
             services.AddSingleton(_ =>
             {
-                var builder = new Google.Cloud.Firestore.FirestoreDbBuilder
+                var firestoreDbBuilder = new FirestoreDbBuilder
                 {
                     ProjectId = "demo-lifehacking-test",
                     Endpoint = "127.0.0.1:8080",
                     ChannelCredentials = Grpc.Core.ChannelCredentials.Insecure
                 };
-                return builder.Build();
+                return firestoreDbBuilder.Build();
             });
 
             // Override authentication with a lightweight test scheme.
@@ -83,7 +84,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<WebAPI.Program>
                 })
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
                     TestAuthHandler.SchemeName,
-                    options => { });
+                    _ => { });
 
             // Replace the real Firebase admin client with a test double that does not
             // require Google Application Default Credentials. This keeps WebAPI tests
@@ -124,7 +125,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<WebAPI.Program>
             string displayName,
             CancellationToken cancellationToken = default)
         {
-            // In tests we simply echo back a stable external identifier derived from
+            // In tests, we simply echo back a stable external identifier derived from
             // the email so that domain entities can be created without contacting
             // Firebase or requiring ADC configuration.
             var normalizedEmail = email.Trim().ToLowerInvariant();
