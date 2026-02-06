@@ -1,35 +1,26 @@
 using Application.Dtos;
 using Application.Dtos.Tip;
-using Application.Interfaces;
 using Domain.Entities;
 using Domain.ValueObject;
 using FluentAssertions;
-using Infrastructure.Data.InMemory;
-using Infrastructure.Repositories.InMemory;
-using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace Infrastructure.Tests;
 
-public sealed class TipRepositoryTests : IDisposable
+[Trait("Category", "Integration")]
+public sealed class TipRepositoryTests : FirestoreTestBase
 {
-    private readonly AppDbContext _context;
-    private readonly ITipRepository _repository;
     private readonly Category _testCategory;
 
     public TipRepositoryTests()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-
-        _context = new AppDbContext(options);
-        _repository = new InMemoryTipRepository(_context);
+        // Clean up any existing test data before each test
+        CleanupTestDataAsync().Wait();
 
         // Create a test category first
         _testCategory = Category.Create("Test Category");
-        _context.Set<Category>().Add(_testCategory);
-        _context.SaveChanges();
+        // Add the category to the repository so it exists for tip creation
+        CategoryRepository.AddAsync(_testCategory).Wait();
     }
 
     [Fact]
@@ -39,13 +30,13 @@ public sealed class TipRepositoryTests : IDisposable
         var tip = CreateTestTip();
 
         // Act
-        var result = await _repository.AddAsync(tip);
+        var result = await TipRepository.AddAsync(tip);
 
         // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be(tip.Id);
 
-        var persistedTip = await _repository.GetByIdAsync(tip.Id);
+        var persistedTip = await TipRepository.GetByIdAsync(tip.Id);
         persistedTip.Should().NotBeNull();
         persistedTip!.Title.Value.Should().Be(tip.Title.Value);
         persistedTip.Description.Value.Should().Be(tip.Description.Value);
@@ -60,7 +51,7 @@ public sealed class TipRepositoryTests : IDisposable
         var nonExistentId = TipId.NewId();
 
         // Act
-        var result = await _repository.GetByIdAsync(nonExistentId);
+        var result = await TipRepository.GetByIdAsync(nonExistentId);
 
         // Assert
         result.Should().BeNull();
@@ -71,10 +62,10 @@ public sealed class TipRepositoryTests : IDisposable
     {
         // Arrange
         var tip = CreateTestTip();
-        await _repository.AddAsync(tip);
+        await TipRepository.AddAsync(tip);
 
         // Act
-        var result = await _repository.GetByIdAsync(tip.Id);
+        var result = await TipRepository.GetByIdAsync(tip.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -90,9 +81,9 @@ public sealed class TipRepositoryTests : IDisposable
         var tip2 = CreateTestTip("Cleaning Guide", "How to cook and clean kitchen");
         var tip3 = CreateTestTip("Gardening", "How to plant flowers");
 
-        await _repository.AddAsync(tip1);
-        await _repository.AddAsync(tip2);
-        await _repository.AddAsync(tip3);
+        await TipRepository.AddAsync(tip1);
+        await TipRepository.AddAsync(tip2);
+        await TipRepository.AddAsync(tip3);
 
         var criteria = new TipQueryCriteria(
             SearchTerm: "cook",
@@ -104,7 +95,7 @@ public sealed class TipRepositoryTests : IDisposable
             PageSize: 10);
 
         // Act
-        var (items, totalCount) = await _repository.SearchAsync(criteria);
+        var (items, totalCount) = await TipRepository.SearchAsync(criteria);
 
         // Assert
         totalCount.Should().Be(2);
@@ -118,16 +109,15 @@ public sealed class TipRepositoryTests : IDisposable
     {
         // Arrange
         var anotherCategory = Category.Create("Another Category");
-        _context.Set<Category>().Add(anotherCategory);
-        await _context.SaveChangesAsync();
+        await CategoryRepository.AddAsync(anotherCategory);
 
         var tip1 = CreateTestTip("Tip 1", "Description 1", _testCategory.Id);
         var tip2 = CreateTestTip("Tip 2", "Description 2", anotherCategory.Id);
         var tip3 = CreateTestTip("Tip 3", "Description 3", _testCategory.Id);
 
-        await _repository.AddAsync(tip1);
-        await _repository.AddAsync(tip2);
-        await _repository.AddAsync(tip3);
+        await TipRepository.AddAsync(tip1);
+        await TipRepository.AddAsync(tip2);
+        await TipRepository.AddAsync(tip3);
 
         var criteria = new TipQueryCriteria(
             SearchTerm: null,
@@ -139,7 +129,7 @@ public sealed class TipRepositoryTests : IDisposable
             PageSize: 10);
 
         // Act
-        var (items, totalCount) = await _repository.SearchAsync(criteria);
+        var (items, totalCount) = await TipRepository.SearchAsync(criteria);
 
         // Assert
         totalCount.Should().Be(2);
@@ -155,9 +145,9 @@ public sealed class TipRepositoryTests : IDisposable
         var tip2 = CreateTestTip("Tip 2", "Description 2", tags: new[] { "cleaning", "quick" });
         var tip3 = CreateTestTip("Tip 3", "Description 3", tags: new[] { "cooking", "advanced" });
 
-        await _repository.AddAsync(tip1);
-        await _repository.AddAsync(tip2);
-        await _repository.AddAsync(tip3);
+        await TipRepository.AddAsync(tip1);
+        await TipRepository.AddAsync(tip2);
+        await TipRepository.AddAsync(tip3);
 
         var criteria = new TipQueryCriteria(
             SearchTerm: null,
@@ -169,7 +159,7 @@ public sealed class TipRepositoryTests : IDisposable
             PageSize: 10);
 
         // Act
-        var (items, totalCount) = await _repository.SearchAsync(criteria);
+        var (items, totalCount) = await TipRepository.SearchAsync(criteria);
 
         // Assert
         totalCount.Should().Be(2);
@@ -184,7 +174,7 @@ public sealed class TipRepositoryTests : IDisposable
         for (int i = 1; i <= 5; i++)
         {
             var tip = CreateTestTip($"Tip {i}", $"Description {i}");
-            await _repository.AddAsync(tip);
+            await TipRepository.AddAsync(tip);
         }
 
         var criteria = new TipQueryCriteria(
@@ -197,7 +187,7 @@ public sealed class TipRepositoryTests : IDisposable
             PageSize: 2);
 
         // Act
-        var (items, totalCount) = await _repository.SearchAsync(criteria);
+        var (items, totalCount) = await TipRepository.SearchAsync(criteria);
 
         // Assert
         totalCount.Should().Be(5);
@@ -209,19 +199,18 @@ public sealed class TipRepositoryTests : IDisposable
     {
         // Arrange
         var anotherCategory = Category.Create("Another Category");
-        _context.Set<Category>().Add(anotherCategory);
-        await _context.SaveChangesAsync();
+        await CategoryRepository.AddAsync(anotherCategory);
 
         var tip1 = CreateTestTip("Tip 1", "Description 1", _testCategory.Id);
         var tip2 = CreateTestTip("Tip 2", "Description 2", anotherCategory.Id);
         var tip3 = CreateTestTip("Tip 3", "Description 3", _testCategory.Id);
 
-        await _repository.AddAsync(tip1);
-        await _repository.AddAsync(tip2);
-        await _repository.AddAsync(tip3);
+        await TipRepository.AddAsync(tip1);
+        await TipRepository.AddAsync(tip2);
+        await TipRepository.AddAsync(tip3);
 
         // Act
-        var result = await _repository.GetByCategoryAsync(_testCategory.Id);
+        var result = await TipRepository.GetByCategoryAsync(_testCategory.Id);
 
         // Assert
         result.Should().HaveCount(2);
@@ -233,16 +222,16 @@ public sealed class TipRepositoryTests : IDisposable
     {
         // Arrange
         var tip = CreateTestTip();
-        await _repository.AddAsync(tip);
+        await TipRepository.AddAsync(tip);
 
         var newTitle = TipTitle.Create("Updated Title");
         tip.UpdateTitle(newTitle);
 
         // Act
-        await _repository.UpdateAsync(tip);
+        await TipRepository.UpdateAsync(tip);
 
         // Assert
-        var updatedTip = await _repository.GetByIdAsync(tip.Id);
+        var updatedTip = await TipRepository.GetByIdAsync(tip.Id);
         updatedTip.Should().NotBeNull();
         updatedTip!.Title.Value.Should().Be("Updated Title");
         updatedTip.UpdatedAt.Should().NotBeNull();
@@ -253,13 +242,13 @@ public sealed class TipRepositoryTests : IDisposable
     {
         // Arrange
         var tip = CreateTestTip();
-        await _repository.AddAsync(tip);
+        await TipRepository.AddAsync(tip);
 
         // Act
-        await _repository.DeleteAsync(tip.Id);
+        await TipRepository.DeleteAsync(tip.Id);
 
         // Assert
-        var deletedTip = await _repository.GetByIdAsync(tip.Id);
+        var deletedTip = await TipRepository.GetByIdAsync(tip.Id);
         deletedTip.Should().BeNull();
     }
 
@@ -270,7 +259,7 @@ public sealed class TipRepositoryTests : IDisposable
         var nonExistentId = TipId.NewId();
 
         // Act & Assert
-        var act = async () => await _repository.DeleteAsync(nonExistentId);
+        var act = async () => await TipRepository.DeleteAsync(nonExistentId);
         await act.Should().NotThrowAsync();
     }
 
@@ -291,10 +280,5 @@ public sealed class TipRepositoryTests : IDisposable
         var tipTags = tags?.Select(Tag.Create).ToArray() ?? new[] { Tag.Create("test") };
 
         return Tip.Create(tipTitle, tipDescription, steps, tipCategoryId, tipTags);
-    }
-
-    public void Dispose()
-    {
-        _context.Dispose();
     }
 }
