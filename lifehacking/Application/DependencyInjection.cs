@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Application.Services;
+using Application.UseCases.Category;
 using Application.UseCases.Tip;
 using Application.UseCases.User;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,10 @@ public static class DependencyInjection
         services.AddScoped<DeleteUserUseCase>();
         services.AddScoped<GetUserByExternalAuthIdUseCase>();
         services.AddScoped<GetUsersUseCase>();
+
+        // Category use cases
+        services.AddScoped<GetCategoriesUseCase>();
+        services.AddScoped<GetTipsByCategoryUseCase>();
 
         // Tip use cases
         services.AddScoped<GetTipByIdUseCase>();
