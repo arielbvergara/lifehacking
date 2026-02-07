@@ -36,16 +36,22 @@ public static class DatabaseConfiguration
         services.AddSingleton(_ => FirestoreDb.Create(projectId));
 
         // Register collection name provider for production (returns base collection names unchanged)
-        services.AddSingleton<ICollectionNameProvider, ProductionCollectionNameProvider>();
+        // Only register if not already registered (tests may provide their own)
+        if (services.All(d => d.ServiceType != typeof(ICollectionNameProvider)))
+        {
+            services.AddSingleton<ICollectionNameProvider, ProductionCollectionNameProvider>();
+        }
 
         services.AddScoped<IFirestoreUserDataStore, FirestoreUserDataStore>();
         services.AddScoped<IFirestoreTipDataStore, FirestoreTipDataStore>();
         services.AddScoped<IFirestoreCategoryDataStore, FirestoreCategoryDataStore>();
+        services.AddScoped<IFirestoreFavoriteDataStore, FirestoreFavoriteDataStore>();
 
         // Register Firestore-based repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ITipRepository, TipRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IFavoritesRepository, FavoritesRepository>();
 
         return services;
     }
