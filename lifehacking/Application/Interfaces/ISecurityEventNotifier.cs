@@ -18,6 +18,11 @@ public static class SecurityEventNames
     /// endpoint that is restricted to administrators.
     /// </summary>
     public const string AdminEndpointAccessDenied = "admin.endpoint.access.denied";
+
+    public const string FavoriteAdded = "favorite.added";
+    public const string FavoriteAddFailed = "favorite.add.failed";
+    public const string FavoriteRemoved = "favorite.removed";
+    public const string FavoriteRemoveFailed = "favorite.remove.failed";
 }
 
 /// <summary>
