@@ -23,6 +23,8 @@ public static class SecurityEventNames
     public const string FavoriteAddFailed = "favorite.add.failed";
     public const string FavoriteRemoved = "favorite.removed";
     public const string FavoriteRemoveFailed = "favorite.remove.failed";
+    public const string FavoritesMerged = "favorites.merged";
+    public const string FavoritesMergeFailed = "favorites.merge.failed";
 }
 
 /// <summary>
