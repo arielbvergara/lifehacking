@@ -164,7 +164,7 @@ public sealed class FavoritesRepositoryBatchTests : FirestoreTestBase
 
         // Assert
         result.Should().HaveCount(550);
-        
+
         // Verify a sample of favorites were actually persisted
         var sampleTipIds = tipIds.Take(10).ToList();
         foreach (var tipId in sampleTipIds)

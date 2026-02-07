@@ -357,7 +357,7 @@ public sealed class FavoritesControllerMergeTests : FirestoreWebApiTestBase
 
         var client = Factory.CreateClient();
         client.DefaultRequestHeaders.Add("X-Test-Only-ExternalId", user.ExternalAuthId.Value);
-        
+
         // Create JSON with invalid GUID manually
         var json = """{"tipIds":["not-a-guid"]}""";
         var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
