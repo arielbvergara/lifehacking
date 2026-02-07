@@ -37,6 +37,7 @@ public static class DependencyInjection
         services.AddScoped<SearchUserFavoritesUseCase>();
         services.AddScoped<AddFavoriteUseCase>();
         services.AddScoped<RemoveFavoriteUseCase>();
+        services.AddScoped<MergeFavoritesUseCase>();
 
         return services;
     }
