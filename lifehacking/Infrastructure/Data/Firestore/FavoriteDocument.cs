@@ -1,5 +1,4 @@
 using Domain.Entities;
-using Domain.ValueObject;
 using Google.Cloud.Firestore;
 
 namespace Infrastructure.Data.Firestore;
