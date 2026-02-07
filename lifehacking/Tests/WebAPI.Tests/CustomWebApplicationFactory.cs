@@ -1,3 +1,4 @@
+using System.Threading.RateLimiting;
 using Application.Interfaces;
 using Google.Cloud.Firestore;
 using Infrastructure.Data.Firestore;
@@ -13,8 +14,12 @@ namespace WebAPI.Tests;
 
 /// <summary>
 /// TEST-ONLY WebApplicationFactory used by WebAPI.Tests to host the API in-memory.
-/// It overrides authentication with TestAuthHandler. DO NOT use this in production code paths.
+/// It overrides authentication with TestAuthHandler and disables rate limiting for fast tests.
+/// DO NOT use this in production code paths.
 /// </summary>
+/// <remarks>
+/// For tests that need to verify rate limiting behavior, use <see cref="RateLimitingWebApplicationFactory"/> instead.
+/// </remarks>
 // ReSharper disable once ClassNeverInstantiated.Global
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
@@ -23,6 +28,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     /// Each factory instance gets a unique collection namespace.
     /// </summary>
     public ICollectionNameProvider CollectionNameProvider { get; } = new TestCollectionNameProvider();
+
+    /// <summary>
+    /// Controls whether rate limiting should be disabled for tests.
+    /// Override this in derived classes to preserve rate limiting behavior.
+    /// </summary>
+    protected virtual bool DisableRateLimiting => true;
 
     public CustomWebApplicationFactory()
     {
@@ -114,6 +125,31 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             }
 
             services.AddSingleton<ISecurityEventNotifier, TestSecurityEventNotifier>();
+
+            // Override rate limiting configuration with unlimited policies for tests
+            // unless explicitly disabled (e.g., for rate limiting tests).
+            if (DisableRateLimiting)
+            {
+                // Remove the existing rate limiting configuration first
+                var rateLimiterDescriptor = services.FirstOrDefault(d =>
+                    d.ServiceType.FullName != null &&
+                    d.ServiceType.FullName.Contains("RateLimiterOptions"));
+
+                if (rateLimiterDescriptor != null)
+                {
+                    services.Remove(rateLimiterDescriptor);
+                }
+
+                // Add unlimited rate limiting for tests
+                services.Configure<Microsoft.AspNetCore.RateLimiting.RateLimiterOptions>(options =>
+                {
+                    options.AddPolicy("fixed", context =>
+                        RateLimitPartition.GetNoLimiter<string>("test"));
+
+                    options.AddPolicy("strict", context =>
+                        RateLimitPartition.GetNoLimiter<string>("test"));
+                });
+            }
         });
     }
 

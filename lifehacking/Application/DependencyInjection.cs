@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Application.Services;
 using Application.UseCases.Category;
+using Application.UseCases.Favorite;
 using Application.UseCases.Tip;
 using Application.UseCases.User;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +32,11 @@ public static class DependencyInjection
         // Tip use cases
         services.AddScoped<GetTipByIdUseCase>();
         services.AddScoped<SearchTipsUseCase>();
+
+        // Favorite use cases
+        services.AddScoped<SearchUserFavoritesUseCase>();
+        services.AddScoped<AddFavoriteUseCase>();
+        services.AddScoped<RemoveFavoriteUseCase>();
 
         return services;
     }

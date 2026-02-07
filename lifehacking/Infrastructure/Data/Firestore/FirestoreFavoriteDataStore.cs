@@ -92,7 +92,7 @@ public sealed class FirestoreFavoriteDataStore(
     {
         // Get all favorites for the user
         var snapshot = await GetCollection()
-            .WhereEqualTo(nameof(FavoriteDocument.UserId), userId.Value.ToString())
+            .WhereEqualTo("userId", userId.Value.ToString())
             .GetSnapshotAsync(cancellationToken)
             .ConfigureAwait(false);
 
