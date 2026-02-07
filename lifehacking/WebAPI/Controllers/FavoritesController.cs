@@ -29,6 +29,7 @@ public class FavoritesController(
     SearchUserFavoritesUseCase searchUserFavoritesUseCase,
     AddFavoriteUseCase addFavoriteUseCase,
     RemoveFavoriteUseCase removeFavoriteUseCase,
+    MergeFavoritesUseCase mergeFavoritesUseCase,
     GetUserByExternalAuthIdUseCase getUserByExternalAuthIdUseCase,
     ILogger<FavoritesController> logger,
     ISecurityEventNotifier securityEventNotifier)
@@ -287,6 +288,121 @@ public class FavoritesController(
             cancellationToken);
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Merges client-stored anonymous favorites into the authenticated user's server-side favorites.
+    /// </summary>
+    /// <remarks>
+    /// Accepts a list of tip IDs from client local storage and merges them into the user's
+    /// server-side favorites. The operation performs validation, deduplication, and returns
+    /// a detailed summary of the merge results including counts of added, skipped, and failed tips.
+    /// 
+    /// The merge operation is idempotent - calling it multiple times with the same tip IDs
+    /// produces the same result. Existing favorites are never removed, only new ones are added.
+    /// 
+    /// Invalid or non-existent tip IDs are reported in the failed list but do not prevent
+    /// valid tips from being added (partial success).
+    /// </remarks>
+    /// <param name="requestDto">The merge request containing a list of tip IDs from client local storage.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A merge summary with counts of added, skipped, and failed tips.</returns>
+    [HttpPost("merge")]
+    [EnableRateLimiting(RateLimitingPolicies.Strict)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> MergeFavorites(
+        [FromBody] MergeFavoritesRequestDto requestDto,
+        CancellationToken cancellationToken = default)
+    {
+        var (currentUser, errorResult) = await GetCurrentUserAsync(cancellationToken);
+        if (errorResult is not null)
+        {
+            return errorResult;
+        }
+
+        // Validate request body
+        if (requestDto?.TipIds is null)
+        {
+            logger.LogWarning("Merge favorites request body is null or missing tip IDs");
+            return BadRequest(new { message = "Request body must contain a 'tipIds' array." });
+        }
+
+        // Convert GUIDs to TipId value objects
+        var tipIds = new List<TipId>();
+        var invalidGuids = new List<FailedTip>();
+
+        foreach (var tipIdGuid in requestDto.TipIds)
+        {
+            try
+            {
+                tipIds.Add(TipId.Create(tipIdGuid));
+            }
+            catch (ArgumentException)
+            {
+                invalidGuids.Add(new FailedTip(tipIdGuid, "Invalid tip ID format"));
+            }
+        }
+
+        // Create request
+        var userId = UserId.Create(currentUser!.Id);
+        var request = new MergeFavoritesRequest(userId, tipIds);
+
+        var result = await mergeFavoritesUseCase.ExecuteAsync(request, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            var error = result.Error!;
+            logger.LogError(error.InnerException, "Failed to merge favorites for user {UserId}: {Message}",
+                currentUser.Id, error.Message);
+
+            // Emit failure security event
+            await securityEventNotifier.NotifyAsync(
+                SecurityEventNames.FavoritesMergeFailed,
+                currentUser.Id.ToString(),
+                SecurityEventOutcomes.Failure,
+                HttpContext.TraceIdentifier,
+                new Dictionary<string, string?>
+                {
+                    ["RoutePath"] = HttpContext.Request.Path,
+                    ["TipCount"] = requestDto.TipIds.Count.ToString(),
+                    ["ExceptionType"] = error.GetType().Name
+                },
+                cancellationToken);
+
+            return this.ToActionResult(error, HttpContext.TraceIdentifier);
+        }
+
+        // Merge invalid GUIDs into the response
+        var response = result.Value!;
+        if (invalidGuids.Count > 0)
+        {
+            var allFailed = response.Failed.Concat(invalidGuids).ToList();
+            response = response with { Failed = allFailed };
+        }
+
+        // Emit success security event
+        await securityEventNotifier.NotifyAsync(
+            SecurityEventNames.FavoritesMerged,
+            currentUser.Id.ToString(),
+            SecurityEventOutcomes.Success,
+            HttpContext.TraceIdentifier,
+            new Dictionary<string, string?>
+            {
+                ["RoutePath"] = HttpContext.Request.Path,
+                ["TotalReceived"] = response.TotalReceived.ToString(),
+                ["Added"] = response.Added.ToString(),
+                ["Skipped"] = response.Skipped.ToString(),
+                ["Failed"] = response.Failed.Count.ToString()
+            },
+            cancellationToken);
+
+        return Ok(response);
     }
 
     /// <summary>

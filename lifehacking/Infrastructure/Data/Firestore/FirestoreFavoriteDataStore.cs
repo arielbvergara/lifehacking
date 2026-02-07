@@ -133,4 +133,82 @@ public sealed class FirestoreFavoriteDataStore(
 
         return favorite is not null;
     }
+
+    public async Task<IReadOnlySet<TipId>> GetExistingFavoritesAsync(
+        UserId userId,
+        IReadOnlyCollection<TipId> tipIds,
+        CancellationToken cancellationToken = default)
+    {
+        // Handle empty input
+        if (tipIds.Count == 0)
+        {
+            return new HashSet<TipId>();
+        }
+
+        // Firestore WhereIn supports max 10 items per query, so batch into groups of 10
+        const int batchSize = 10;
+        var tipIdsList = tipIds.ToList();
+        var existingTipIds = new HashSet<TipId>();
+
+        for (var i = 0; i < tipIdsList.Count; i += batchSize)
+        {
+            var batch = tipIdsList.Skip(i).Take(batchSize).ToList();
+            var tipIdStrings = batch.Select(id => id.Value.ToString()).ToList();
+
+            var snapshot = await GetCollection()
+                .WhereEqualTo("userId", userId.Value.ToString())
+                .WhereIn("tipId", tipIdStrings)
+                .GetSnapshotAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            foreach (var document in snapshot.Documents)
+            {
+                var favoriteDocument = document.ConvertTo<FavoriteDocument>();
+                if (favoriteDocument is not null)
+                {
+                    existingTipIds.Add(TipId.Create(Guid.Parse(favoriteDocument.TipId)));
+                }
+            }
+        }
+
+        return existingTipIds;
+    }
+
+    public async Task<IReadOnlyList<UserFavorites>> AddBatchAsync(
+        UserId userId,
+        IReadOnlyCollection<TipId> tipIds,
+        CancellationToken cancellationToken = default)
+    {
+        // Handle empty input
+        if (tipIds.Count == 0)
+        {
+            return Array.Empty<UserFavorites>();
+        }
+
+        // Firestore batch write supports max 500 operations, so batch into groups of 500
+        const int batchSize = 500;
+        var tipIdsList = tipIds.ToList();
+        var addedFavorites = new List<UserFavorites>();
+
+        for (var i = 0; i < tipIdsList.Count; i += batchSize)
+        {
+            var batch = tipIdsList.Skip(i).Take(batchSize).ToList();
+            var writeBatch = _database.StartBatch();
+
+            foreach (var tipId in batch)
+            {
+                var favorite = UserFavorites.Create(userId, tipId);
+                var document = FavoriteDocument.FromEntity(favorite);
+                var documentId = document.GetDocumentId();
+                var documentReference = GetCollection().Document(documentId);
+
+                writeBatch.Set(documentReference, document);
+                addedFavorites.Add(favorite);
+            }
+
+            await writeBatch.CommitAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        return addedFavorites;
+    }
 }

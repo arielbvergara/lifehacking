@@ -378,6 +378,118 @@ public sealed class TipRepositoryTests : FirestoreTestBase
         await act.Should().NotThrowAsync();
     }
 
+    [Fact]
+    public async Task GetByIdsAsync_ShouldReturnEmptyDictionary_WhenEmptyInputProvided()
+    {
+        // Arrange
+        var emptyTipIds = Array.Empty<TipId>();
+
+        // Act
+        var result = await TipRepository.GetByIdsAsync(emptyTipIds);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetByIdsAsync_ShouldReturnMatchingTips_WhenValidIdsProvided()
+    {
+        // Arrange
+        var tip1 = CreateTestTip("Tip 1");
+        var tip2 = CreateTestTip("Tip 2");
+        var tip3 = CreateTestTip("Tip 3");
+
+        await TipRepository.AddAsync(tip1);
+        await TipRepository.AddAsync(tip2);
+        await TipRepository.AddAsync(tip3);
+
+        var tipIds = new[] { tip1.Id, tip2.Id, tip3.Id };
+
+        // Act
+        var result = await TipRepository.GetByIdsAsync(tipIds);
+
+        // Assert
+        result.Should().HaveCount(3);
+        result.Should().ContainKey(tip1.Id);
+        result.Should().ContainKey(tip2.Id);
+        result.Should().ContainKey(tip3.Id);
+        result[tip1.Id].Title.Value.Should().Be("Tip 1");
+        result[tip2.Id].Title.Value.Should().Be("Tip 2");
+        result[tip3.Id].Title.Value.Should().Be("Tip 3");
+    }
+
+    [Fact]
+    public async Task GetByIdsAsync_ShouldReturnOnlyExistingTips_WhenSomeIdsDoNotExist()
+    {
+        // Arrange
+        var existingTip = CreateTestTip("Existing Tip");
+        await TipRepository.AddAsync(existingTip);
+
+        var nonExistentId1 = TipId.NewId();
+        var nonExistentId2 = TipId.NewId();
+
+        var tipIds = new[] { existingTip.Id, nonExistentId1, nonExistentId2 };
+
+        // Act
+        var result = await TipRepository.GetByIdsAsync(tipIds);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result.Should().ContainKey(existingTip.Id);
+        result.Should().NotContainKey(nonExistentId1);
+        result.Should().NotContainKey(nonExistentId2);
+    }
+
+    [Fact]
+    public async Task GetByIdsAsync_ShouldHandleLargeBatches_WhenMoreThan10IdsProvided()
+    {
+        // Arrange - Create 15 tips to test batching (Firestore WhereIn max is 10)
+        var tips = new List<Tip>();
+        for (int i = 0; i < 15; i++)
+        {
+            var tip = CreateTestTip($"Tip {i}");
+            await TipRepository.AddAsync(tip);
+            tips.Add(tip);
+        }
+
+        var tipIds = tips.Select(t => t.Id).ToArray();
+
+        // Act
+        var result = await TipRepository.GetByIdsAsync(tipIds);
+
+        // Assert
+        result.Should().HaveCount(15);
+        foreach (var tip in tips)
+        {
+            result.Should().ContainKey(tip.Id);
+        }
+    }
+
+    [Fact]
+    public async Task GetByIdsAsync_ShouldExcludeSoftDeletedTips_WhenSoftDeletedTipsExist()
+    {
+        // Arrange
+        var activeTip = CreateTestTip("Active Tip");
+        var deletedTip = CreateTestTip("Deleted Tip");
+
+        await TipRepository.AddAsync(activeTip);
+        await TipRepository.AddAsync(deletedTip);
+
+        // Soft delete one tip
+        await TipRepository.DeleteAsync(deletedTip.Id);
+
+        var tipIds = new[] { activeTip.Id, deletedTip.Id };
+
+        // Act
+        var result = await TipRepository.GetByIdsAsync(tipIds);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result.Should().ContainKey(activeTip.Id);
+        result.Should().NotContainKey(deletedTip.Id);
+    }
+
     private Tip CreateTestTip(
         string title = "Test Tip",
         string description = "This is a test tip description for testing purposes.",

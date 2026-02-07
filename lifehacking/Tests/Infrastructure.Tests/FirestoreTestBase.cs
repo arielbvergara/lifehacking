@@ -16,6 +16,7 @@ public abstract class FirestoreTestBase : IDisposable
     protected UserRepository UserRepository { get; private set; }
     protected TipRepository TipRepository { get; private set; }
     protected CategoryRepository CategoryRepository { get; private set; }
+    protected FavoritesRepository FavoritesRepository { get; private set; }
 
     protected FirestoreTestBase()
     {
@@ -43,11 +44,13 @@ public abstract class FirestoreTestBase : IDisposable
         var userDataStore = new FirestoreUserDataStore(FirestoreDb, CollectionNameProvider);
         var tipDataStore = new FirestoreTipDataStore(FirestoreDb, CollectionNameProvider);
         var categoryDataStore = new FirestoreCategoryDataStore(FirestoreDb, CollectionNameProvider);
+        var favoriteDataStore = new FirestoreFavoriteDataStore(FirestoreDb, CollectionNameProvider);
 
         // Create repositories
         UserRepository = new UserRepository(userDataStore);
         TipRepository = new TipRepository(tipDataStore);
         CategoryRepository = new CategoryRepository(categoryDataStore);
+        FavoritesRepository = new FavoritesRepository(favoriteDataStore, tipDataStore);
     }
 
     /// <summary>
@@ -61,7 +64,8 @@ public abstract class FirestoreTestBase : IDisposable
             var collections = new[] {
                 FirestoreCollectionNames.Users,
                 FirestoreCollectionNames.Tips,
-                FirestoreCollectionNames.Categories
+                FirestoreCollectionNames.Categories,
+                FirestoreCollectionNames.Favorites
             };
 
             foreach (var collectionName in collections)

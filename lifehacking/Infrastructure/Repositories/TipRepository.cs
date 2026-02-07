@@ -43,4 +43,11 @@ public sealed class TipRepository(IFirestoreTipDataStore dataStore) : ITipReposi
     {
         return _dataStore.DeleteAsync(id, cancellationToken);
     }
+
+    public Task<IReadOnlyDictionary<TipId, Tip>> GetByIdsAsync(
+        IReadOnlyCollection<TipId> tipIds,
+        CancellationToken cancellationToken = default)
+    {
+        return _dataStore.GetByIdsAsync(tipIds, cancellationToken);
+    }
 }
