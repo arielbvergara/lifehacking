@@ -378,8 +378,8 @@ public class MergeFavoritesUseCaseTests
         return DomainTip.FromPersistence(
             tipId,
             TipTitle.Create("Test Tip"),
-            TipDescription.Create("Test Description"),
-            new[] { TipStep.Create(1, "Step 1") },
+            TipDescription.Create("Test Description for the tip"),
+            new[] { TipStep.Create(1, "First step of the test tip") },
             categoryId,
             new[] { Tag.Create("test") },
             null,

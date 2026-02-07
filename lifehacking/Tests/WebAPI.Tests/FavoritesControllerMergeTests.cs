@@ -34,7 +34,7 @@ public sealed class FavoritesControllerMergeTests : FirestoreWebApiTestBase
     }
 
     [Fact]
-    public async Task MergeFavorites_ShouldReturn400_WhenRequestBodyIsNull()
+    public async Task MergeFavorites_ShouldReturn415_WhenRequestBodyIsNull()
     {
         // Arrange
         var userRepository = GetUserRepository();
@@ -48,7 +48,7 @@ public sealed class FavoritesControllerMergeTests : FirestoreWebApiTestBase
         var response = await client.PostAsync("/api/me/favorites/merge", null);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.UnsupportedMediaType);
     }
 
     [Fact]

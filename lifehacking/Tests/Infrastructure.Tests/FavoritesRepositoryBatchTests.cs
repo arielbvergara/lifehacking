@@ -14,25 +14,19 @@ public sealed class FavoritesRepositoryBatchTests : FirestoreTestBase
 
     public FavoritesRepositoryBatchTests()
     {
-        // Clean up any existing test data before each test
-        CleanupTestDataAsync().Wait();
-
-        // Create test user
-        _testUser = User.Create(
-            Email.Create("test@example.com"),
-            UserName.Create("Test User"),
-            ExternalAuthIdentifier.Create("test-auth-id"));
+        // Create test user with unique data
+        _testUser = TestDataFactory.CreateUser();
         UserRepository.AddAsync(_testUser).Wait();
 
-        // Create test category
-        _testCategory = Category.Create("Test Category");
+        // Create test category with unique data
+        _testCategory = TestDataFactory.CreateCategory();
         CategoryRepository.AddAsync(_testCategory).Wait();
 
-        // Create test tips
+        // Create test tips with unique data
         _testTips = new List<Tip>();
         for (int i = 0; i < 15; i++)
         {
-            var tip = CreateTestTip($"Test Tip {i}");
+            var tip = CreateTestTip($"Batch Test Tip {Guid.NewGuid():N}");
             TipRepository.AddAsync(tip).Wait();
             _testTips.Add(tip);
         }
