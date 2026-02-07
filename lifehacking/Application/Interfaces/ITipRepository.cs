@@ -21,4 +21,15 @@ public interface ITipRepository
     Task UpdateAsync(Tip tip, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(TipId id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets tips by their IDs in a batch operation.
+    /// Returns only the tips that exist and are not soft-deleted.
+    /// </summary>
+    /// <param name="tipIds">The collection of tip IDs to retrieve.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A dictionary mapping tip IDs to their corresponding tip entities.</returns>
+    Task<IReadOnlyDictionary<TipId, Tip>> GetByIdsAsync(
+        IReadOnlyCollection<TipId> tipIds,
+        CancellationToken cancellationToken = default);
 }

@@ -58,4 +58,30 @@ public interface IFavoritesRepository
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>True if the tip is favorited, otherwise false.</returns>
     Task<bool> ExistsAsync(UserId userId, TipId tipId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the set of tip IDs that are already favorited by the user from the provided list.
+    /// Used for deduplication during merge operations.
+    /// </summary>
+    /// <param name="userId">The ID of the user.</param>
+    /// <param name="tipIds">The collection of tip IDs to check.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A set containing only the tip IDs that are already in the user's favorites.</returns>
+    Task<IReadOnlySet<TipId>> GetExistingFavoritesAsync(
+        UserId userId,
+        IReadOnlyCollection<TipId> tipIds,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds multiple favorites in a batch operation.
+    /// Creates a favorite entry for each tip ID provided.
+    /// </summary>
+    /// <param name="userId">The ID of the user.</param>
+    /// <param name="tipIds">The collection of tip IDs to add as favorites.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The list of created favorite entities.</returns>
+    Task<IReadOnlyList<UserFavorites>> AddBatchAsync(
+        UserId userId,
+        IReadOnlyCollection<TipId> tipIds,
+        CancellationToken cancellationToken = default);
 }
