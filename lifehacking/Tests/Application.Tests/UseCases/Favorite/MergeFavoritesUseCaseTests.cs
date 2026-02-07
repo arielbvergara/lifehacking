@@ -87,7 +87,7 @@ public class MergeFavoritesUseCaseTests
 
         var validTips = tipIds.ToDictionary(
             id => id,
-            id => (DomainTip)CreateTestTip(id));
+            CreateTestTip);
 
         _userRepositoryMock
             .Setup(x => x.GetByIdAsync(userId, It.IsAny<CancellationToken>()))
@@ -132,7 +132,7 @@ public class MergeFavoritesUseCaseTests
 
         var validTips = tipIds.ToDictionary(
             id => id,
-            id => (DomainTip)CreateTestTip(id));
+            CreateTestTip);
 
         _userRepositoryMock
             .Setup(x => x.GetByIdAsync(userId, It.IsAny<CancellationToken>()))
@@ -175,7 +175,7 @@ public class MergeFavoritesUseCaseTests
 
         var validTips = tipIds.ToDictionary(
             id => id,
-            id => (DomainTip)CreateTestTip(id));
+            CreateTestTip);
 
         _userRepositoryMock
             .Setup(x => x.GetByIdAsync(userId, It.IsAny<CancellationToken>()))
@@ -379,9 +379,9 @@ public class MergeFavoritesUseCaseTests
             tipId,
             TipTitle.Create("Test Tip"),
             TipDescription.Create("Test Description for the tip"),
-            new[] { TipStep.Create(1, "First step of the test tip") },
+            [TipStep.Create(1, "First step of the test tip")],
             categoryId,
-            new[] { Tag.Create("test") },
+            [Tag.Create("test")],
             null,
             DateTime.UtcNow,
             null,
