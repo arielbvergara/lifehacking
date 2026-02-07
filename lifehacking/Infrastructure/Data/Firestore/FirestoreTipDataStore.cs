@@ -158,6 +158,46 @@ public sealed class FirestoreTipDataStore(
         return tips;
     }
 
+    public async Task<IReadOnlyDictionary<TipId, Tip>> GetByIdsAsync(
+        IReadOnlyCollection<TipId> tipIds,
+        CancellationToken cancellationToken = default)
+    {
+        // Handle empty input
+        if (tipIds.Count == 0)
+        {
+            return new Dictionary<TipId, Tip>();
+        }
+
+        // Firestore WhereIn supports max 10 items per query, so batch into groups of 10
+        const int batchSize = 10;
+        var tipIdsList = tipIds.ToList();
+        var allTips = new Dictionary<TipId, Tip>();
+
+        for (var i = 0; i < tipIdsList.Count; i += batchSize)
+        {
+            var batch = tipIdsList.Skip(i).Take(batchSize).ToList();
+            var tipIdStrings = batch.Select(id => id.Value.ToString()).ToList();
+
+            var snapshot = await GetCollection()
+                .WhereIn(FieldPath.DocumentId, tipIdStrings)
+                .WhereEqualTo("isDeleted", false)
+                .GetSnapshotAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            foreach (var document in snapshot.Documents)
+            {
+                var tipDocument = document.ConvertTo<TipDocument>();
+                if (tipDocument is not null)
+                {
+                    var tip = MapToDomainTip(tipDocument);
+                    allTips[tip.Id] = tip;
+                }
+            }
+        }
+
+        return allTips;
+    }
+
     private async Task<TipDocument?> GetDocumentByIdAsync(TipId id, CancellationToken cancellationToken)
     {
         var documentReference = GetCollection()

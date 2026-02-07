@@ -23,4 +23,8 @@ public interface IFirestoreTipDataStore
     Task DeleteAsync(TipId id, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyCollection<Tip>> GetAllIncludingDeletedAsync(CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyDictionary<TipId, Tip>> GetByIdsAsync(
+        IReadOnlyCollection<TipId> tipIds,
+        CancellationToken cancellationToken = default);
 }

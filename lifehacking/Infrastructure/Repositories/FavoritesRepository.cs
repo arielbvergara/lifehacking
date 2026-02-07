@@ -109,6 +109,22 @@ public sealed class FavoritesRepository(
         return await _favoriteDataStore.ExistsAsync(userId, tipId, cancellationToken);
     }
 
+    public async Task<IReadOnlySet<TipId>> GetExistingFavoritesAsync(
+        UserId userId,
+        IReadOnlyCollection<TipId> tipIds,
+        CancellationToken cancellationToken = default)
+    {
+        return await _favoriteDataStore.GetExistingFavoritesAsync(userId, tipIds, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<UserFavorites>> AddBatchAsync(
+        UserId userId,
+        IReadOnlyCollection<TipId> tipIds,
+        CancellationToken cancellationToken = default)
+    {
+        return await _favoriteDataStore.AddBatchAsync(userId, tipIds, cancellationToken);
+    }
+
     private static IReadOnlyList<Tip> ApplySorting(List<Tip> tips, TipQueryCriteria criteria)
     {
         return (criteria.SortField, criteria.SortDirection) switch

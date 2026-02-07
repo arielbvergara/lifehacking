@@ -38,4 +38,20 @@ public interface IFirestoreFavoriteDataStore
     /// Checks if a favorite exists.
     /// </summary>
     Task<bool> ExistsAsync(UserId userId, TipId tipId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the set of tip IDs that are already favorited by the user from the provided list.
+    /// </summary>
+    Task<IReadOnlySet<TipId>> GetExistingFavoritesAsync(
+        UserId userId,
+        IReadOnlyCollection<TipId> tipIds,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds multiple favorites in a batch operation.
+    /// </summary>
+    Task<IReadOnlyList<UserFavorites>> AddBatchAsync(
+        UserId userId,
+        IReadOnlyCollection<TipId> tipIds,
+        CancellationToken cancellationToken = default);
 }
