@@ -5,7 +5,7 @@ using Xunit;
 
 namespace WebAPI.Tests;
 
-public class RateLimitingTests(CustomWebApplicationFactory factory) : IClassFixture<CustomWebApplicationFactory>
+public class RateLimitingTests(RateLimitingWebApplicationFactory factory) : IClassFixture<RateLimitingWebApplicationFactory>
 {
     private const int ExtraRequestsToEnsureRejection = 5;
 
@@ -25,10 +25,8 @@ public class RateLimitingTests(CustomWebApplicationFactory factory) : IClassFixt
         HttpResponseMessage? lastResponse = null;
         for (var i = 0; i < totalRequests; i++)
         {
-            using var request = new HttpRequestMessage(HttpMethod.Post, url)
-            {
-                Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json")
-            };
+            using var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Content = new StringContent("{}", System.Text.Encoding.UTF8, "application/json");
 
             lastResponse = await _client.SendAsync(request);
         }

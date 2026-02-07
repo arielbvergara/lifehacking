@@ -32,6 +32,7 @@ public class TestAuthHandler(
         var claims = new List<Claim>
         {
             new("sub", externalId),
+            new(ClaimTypes.NameIdentifier, externalId), // Add NameIdentifier for rate limiting partitioning
         };
 
         if (Request.Headers.TryGetValue("X-Test-Only-Role", out var roleValues) &&
