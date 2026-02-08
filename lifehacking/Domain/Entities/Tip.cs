@@ -15,7 +15,7 @@ public sealed class Tip
     public IReadOnlyList<TipStep> Steps => _steps.AsReadOnly();
     public CategoryId CategoryId { get; private set; }
     public IReadOnlyList<Tag> Tags => _tags.AsReadOnly();
-    public YouTubeUrl? YouTubeUrl { get; private set; }
+    public VideoUrl? YouTubeUrl { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public bool IsDeleted { get; private set; }
@@ -28,7 +28,7 @@ public sealed class Tip
         IEnumerable<TipStep> steps,
         CategoryId categoryId,
         IEnumerable<Tag> tags,
-        YouTubeUrl? youtubeUrl,
+        VideoUrl? youtubeUrl,
         DateTime createdAt)
     {
         Id = id;
@@ -49,7 +49,7 @@ public sealed class Tip
         IEnumerable<TipStep> steps,
         CategoryId categoryId,
         IEnumerable<Tag>? tags = null,
-        YouTubeUrl? youtubeUrl = null)
+        VideoUrl? youtubeUrl = null)
     {
         var stepsList = steps.ToList();
         ValidateSteps(stepsList);
@@ -108,7 +108,7 @@ public sealed class Tip
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void UpdateYouTubeUrl(YouTubeUrl? youtubeUrl)
+    public void UpdateYouTubeUrl(VideoUrl? youtubeUrl)
     {
         YouTubeUrl = youtubeUrl;
         UpdatedAt = DateTime.UtcNow;
@@ -136,7 +136,7 @@ public sealed class Tip
         IEnumerable<TipStep> steps,
         CategoryId categoryId,
         IEnumerable<Tag> tags,
-        YouTubeUrl? youtubeUrl,
+        VideoUrl? youtubeUrl,
         DateTime createdAt,
         DateTime? updatedAt,
         bool isDeleted,

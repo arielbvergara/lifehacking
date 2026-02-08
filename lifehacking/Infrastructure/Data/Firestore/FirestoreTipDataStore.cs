@@ -249,9 +249,9 @@ public sealed class FirestoreTipDataStore(
         var steps = document.Steps.Select(s => TipStep.Create(s.StepNumber, s.Description)).ToList();
         var categoryId = CategoryId.Create(Guid.Parse(document.CategoryId));
         var tags = document.Tags.Select(Tag.Create).ToList();
-        var youtubeUrl = string.IsNullOrWhiteSpace(document.YouTubeUrl)
+        var videoUrl = string.IsNullOrWhiteSpace(document.YouTubeUrl)
             ? null
-            : YouTubeUrl.Create(document.YouTubeUrl);
+            : VideoUrl.Create(document.YouTubeUrl);
 
         return Tip.FromPersistence(
             id,
@@ -260,7 +260,7 @@ public sealed class FirestoreTipDataStore(
             steps,
             categoryId,
             tags,
-            youtubeUrl,
+            videoUrl,
             document.CreatedAt,
             document.UpdatedAt,
             document.IsDeleted,
