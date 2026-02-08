@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using Application.Dtos.Category;
 using Application.Interfaces;
-using Domain.Entities;
 using FluentAssertions;
 using Infrastructure.Tests;
 using Microsoft.Extensions.DependencyInjection;
@@ -544,10 +543,4 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
     }
 
     #endregion
-
-    private IFavoritesRepository GetFavoritesRepository()
-    {
-        using var scope = Factory.Services.CreateScope();
-        return scope.ServiceProvider.GetRequiredService<IFavoritesRepository>();
-    }
 }

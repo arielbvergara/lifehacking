@@ -2,7 +2,6 @@ using Application.Dtos.Favorite;
 using Application.Exceptions;
 using Application.Interfaces;
 using Domain.Primitives;
-using Domain.ValueObject;
 
 namespace Application.UseCases.Favorite;
 
