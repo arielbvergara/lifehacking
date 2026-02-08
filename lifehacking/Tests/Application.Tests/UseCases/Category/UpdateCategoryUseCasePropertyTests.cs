@@ -62,7 +62,7 @@ public class UpdateCategoryUseCasePropertyTests
         // Create two categories with different names
         var firstCategoryId = Guid.NewGuid();
         var secondCategoryId = Guid.NewGuid();
-        
+
         var firstCategory = DomainCategory.FromPersistence(
             CategoryId.Create(firstCategoryId),
             firstName,

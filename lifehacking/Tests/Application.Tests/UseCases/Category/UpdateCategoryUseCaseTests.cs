@@ -381,7 +381,7 @@ public class UpdateCategoryUseCaseTests
         // Arrange - Updating a category to its own name should succeed
         var categoryId = Guid.NewGuid();
         var categoryIdValueObject = CategoryId.Create(categoryId);
-        
+
         // Create a category with the specific ID using FromPersistence
         var existingCategory = DomainCategory.FromPersistence(
             categoryIdValueObject,
@@ -390,7 +390,7 @@ public class UpdateCategoryUseCaseTests
             null,
             false,
             null);
-        
+
         var request = new UpdateCategoryRequest("Same Name");
 
         _categoryRepositoryMock
