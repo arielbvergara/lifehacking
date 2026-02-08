@@ -9,7 +9,7 @@ public interface IFirestoreCategoryDataStore
 
     Task<IReadOnlyCollection<Category>> GetAllAsync(CancellationToken cancellationToken = default);
 
-    Task<Category?> GetByNameAsync(string name, CancellationToken cancellationToken = default);
+    Task<Category?> GetByNameAsync(string name, bool includeDeleted = false, CancellationToken cancellationToken = default);
 
     Task<Category> AddAsync(Category category, CancellationToken cancellationToken = default);
 
