@@ -184,8 +184,8 @@ public class TipControllerIntegrationTests(CustomWebApplicationFactory factory)
             TipStep.Create(2, "Follow along with the detailed instructions provided")
         };
         var tipTags = tags?.Select(Tag.Create).ToArray() ?? new[] { Tag.Create("video") };
-        var youtube = YouTubeUrl.Create(youtubeUrl);
+        var videoUrl = VideoUrl.Create(youtubeUrl);
 
-        return Tip.Create(tipTitle, tipDescription, steps, categoryId, tipTags, youtube);
+        return Tip.Create(tipTitle, tipDescription, steps, categoryId, tipTags, videoUrl);
     }
 }

@@ -21,12 +21,12 @@ public class TipTests
         };
         var categoryId = CategoryId.NewId();
         var tags = new List<Tag> { Tag.Create("cooking"), Tag.Create("pasta") };
-        var youtubeUrl = YouTubeUrl.Create("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        var videoUrl = VideoUrl.Create("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
 
         var before = DateTime.UtcNow;
 
         // Act
-        var tip = Tip.Create(title, description, steps, categoryId, tags, youtubeUrl);
+        var tip = Tip.Create(title, description, steps, categoryId, tags, videoUrl);
         var after = DateTime.UtcNow;
 
         // Assert
@@ -38,7 +38,7 @@ public class TipTests
         tip.CategoryId.Should().Be(categoryId);
         tip.Tags.Should().HaveCount(2);
         tip.Tags.Should().BeEquivalentTo(tags);
-        tip.YouTubeUrl.Should().Be(youtubeUrl);
+        tip.YouTubeUrl.Should().Be(videoUrl);
 
         tip.Id.Should().NotBe(null);
         tip.Id.Value.Should().NotBe(Guid.Empty);
@@ -257,7 +257,7 @@ public class TipTests
         // Arrange
         var tip = CreateValidTip();
         var originalCreatedAt = tip.CreatedAt;
-        var newUrl = YouTubeUrl.Create("https://www.youtube.com/watch?v=newVideoId");
+        var newUrl = VideoUrl.Create("https://www.youtube.com/watch?v=newVideoId");
         var before = DateTime.UtcNow;
 
         // Act
@@ -281,12 +281,12 @@ public class TipTests
         var steps = new List<TipStep> { TipStep.Create(1, "Boil water in a large pot.") };
         var categoryId = CategoryId.NewId();
         var tags = new List<Tag> { Tag.Create("cooking") };
-        var youtubeUrl = YouTubeUrl.Create("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        var videoUrl = VideoUrl.Create("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         var createdAt = DateTime.UtcNow.AddDays(-5);
         var updatedAt = DateTime.UtcNow.AddDays(-1);
 
         // Act
-        var tip = Tip.FromPersistence(id, title, description, steps, categoryId, tags, youtubeUrl, createdAt, updatedAt, false, null);
+        var tip = Tip.FromPersistence(id, title, description, steps, categoryId, tags, videoUrl, createdAt, updatedAt, false, null);
 
         // Assert
         tip.Should().NotBeNull();
@@ -296,7 +296,7 @@ public class TipTests
         tip.Steps.Should().BeEquivalentTo(steps);
         tip.CategoryId.Should().Be(categoryId);
         tip.Tags.Should().BeEquivalentTo(tags);
-        tip.YouTubeUrl.Should().Be(youtubeUrl);
+        tip.YouTubeUrl.Should().Be(videoUrl);
         tip.CreatedAt.Should().Be(createdAt);
         tip.UpdatedAt.Should().Be(updatedAt);
     }

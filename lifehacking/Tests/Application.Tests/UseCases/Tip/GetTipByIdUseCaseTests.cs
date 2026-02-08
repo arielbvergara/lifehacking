@@ -132,7 +132,7 @@ public class GetTipByIdUseCaseTests
             steps,
             categoryId,
             tags,
-            YouTubeUrl.Create(youtubeUrl),
+            VideoUrl.Create(youtubeUrl),
             DateTime.UtcNow,
             null,
             false,

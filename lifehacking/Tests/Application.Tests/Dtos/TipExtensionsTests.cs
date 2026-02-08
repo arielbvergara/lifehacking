@@ -204,10 +204,10 @@ public class TipExtensionsTests
         var tags = includeTags
             ? new List<Tag> { Tag.Create("cooking"), Tag.Create("pasta") }
             : null;
-        var youtubeUrl = includeYouTubeUrl
-            ? YouTubeUrl.Create("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+        var videoUrl = includeYouTubeUrl
+            ? VideoUrl.Create("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
             : null;
 
-        return Tip.Create(title, description, steps, categoryId, tags, youtubeUrl);
+        return Tip.Create(title, description, steps, categoryId, tags, videoUrl);
     }
 }
