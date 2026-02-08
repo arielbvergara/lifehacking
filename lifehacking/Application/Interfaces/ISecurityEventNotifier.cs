@@ -25,6 +25,13 @@ public static class SecurityEventNames
     public const string FavoriteRemoveFailed = "favorite.remove.failed";
     public const string FavoritesMerged = "favorites.merged";
     public const string FavoritesMergeFailed = "favorites.merge.failed";
+
+    public const string CategoryCreated = "category.created";
+    public const string CategoryCreateFailed = "category.create.failed";
+    public const string CategoryUpdated = "category.updated";
+    public const string CategoryUpdateFailed = "category.update.failed";
+    public const string CategoryDeleted = "category.deleted";
+    public const string CategoryDeleteFailed = "category.delete.failed";
 }
 
 /// <summary>
