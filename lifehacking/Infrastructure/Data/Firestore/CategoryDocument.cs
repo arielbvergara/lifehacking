@@ -11,6 +11,9 @@ public sealed class CategoryDocument
     [FirestoreProperty("name")]
     public string Name { get; set; } = string.Empty;
 
+    [FirestoreProperty("nameLowercase")]
+    public string NameLowercase { get; set; } = string.Empty;
+
     [FirestoreProperty("createdAt")]
     public DateTime CreatedAt { get; set; }
 
