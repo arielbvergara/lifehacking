@@ -1,6 +1,3 @@
 namespace Application.Dtos.Category;
 
-public record UpdateCategoryRequest(
-    Guid Id,
-    string Name
-);
+public record UpdateCategoryRequest(string Name);

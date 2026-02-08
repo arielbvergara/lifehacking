@@ -19,9 +19,9 @@ public sealed class CategoryRepository(IFirestoreCategoryDataStore dataStore) : 
         return _dataStore.GetAllAsync(cancellationToken);
     }
 
-    public Task<Category?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+    public Task<Category?> GetByNameAsync(string name, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        return _dataStore.GetByNameAsync(name, cancellationToken);
+        return _dataStore.GetByNameAsync(name, includeDeleted, cancellationToken);
     }
 
     public Task<Category> AddAsync(Category category, CancellationToken cancellationToken = default)

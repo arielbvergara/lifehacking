@@ -47,11 +47,21 @@ public sealed class FirestoreCategoryDataStore(
         return categories;
     }
 
-    public async Task<Category?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+    public async Task<Category?> GetByNameAsync(string name, bool includeDeleted = false, CancellationToken cancellationToken = default)
     {
-        var snapshot = await GetCollection()
-            .WhereEqualTo("isDeleted", false)
-            .WhereEqualTo("name", name.Trim()) // Use the actual Firestore field name, not the C# property name
+        Query query = GetCollection();
+
+        // Only filter by isDeleted if we don't want to include deleted categories
+        if (!includeDeleted)
+        {
+            query = query.WhereEqualTo("isDeleted", false);
+        }
+
+        // Use case-insensitive comparison by querying the lowercase field
+        var nameLowercase = name.Trim().ToLowerInvariant();
+
+        var snapshot = await query
+            .WhereEqualTo("nameLowercase", nameLowercase)
             .Limit(1)
             .GetSnapshotAsync(cancellationToken)
             .ConfigureAwait(false);
@@ -90,10 +100,19 @@ public sealed class FirestoreCategoryDataStore(
 
     public async Task DeleteAsync(CategoryId id, CancellationToken cancellationToken = default)
     {
-        var documentReference = GetCollection()
-            .Document(id.Value.ToString());
+        var document = await GetDocumentByIdAsync(id, cancellationToken).ConfigureAwait(false);
+        if (document is null || document.IsDeleted)
+        {
+            return;
+        }
 
-        await documentReference.DeleteAsync(cancellationToken: cancellationToken)
+        document.IsDeleted = true;
+        document.DeletedAt = DateTime.UtcNow;
+
+        var documentReference = GetCollection()
+            .Document(document.Id);
+
+        await documentReference.SetAsync(document, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -147,6 +166,7 @@ public sealed class FirestoreCategoryDataStore(
         {
             Id = category.Id.Value.ToString(),
             Name = category.Name,
+            NameLowercase = category.Name.ToLowerInvariant(),
             CreatedAt = category.CreatedAt,
             UpdatedAt = category.UpdatedAt,
             IsDeleted = category.IsDeleted,
