@@ -2,9 +2,19 @@ using Domain.ValueObject;
 
 namespace Domain.Entities;
 
+/// <summary>
+/// Represents a category for organizing tips.
+/// </summary>
 public sealed class Category
 {
+    /// <summary>
+    /// The minimum allowed length for a category name.
+    /// </summary>
     public const int MinNameLength = 2;
+
+    /// <summary>
+    /// The maximum allowed length for a category name.
+    /// </summary>
     public const int MaxNameLength = 100;
 
     public CategoryId Id { get; private set; }
