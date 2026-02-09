@@ -16,6 +16,13 @@ public class DeleteTipUseCase(ITipRepository tipRepository)
     /// <param name="id">The ID of the tip to delete.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A result indicating success or an application exception.</returns>
+    /// <remarks>
+    /// Error handling:
+    /// <list type="bullet">
+    /// <item><description>Returns <see cref="NotFoundException"/> if the tip does not exist or is already soft-deleted.</description></item>
+    /// <item><description>Returns <see cref="InfraException"/> if an unexpected error occurs during persistence.</description></item>
+    /// </list>
+    /// </remarks>
     public async Task<Result<bool, AppException>> ExecuteAsync(
         Guid id,
         CancellationToken cancellationToken = default)
@@ -29,7 +36,7 @@ public class DeleteTipUseCase(ITipRepository tipRepository)
             if (tip == null)
             {
                 return Result<bool, AppException>.Fail(
-                    new NotFoundException("Tip", id));
+                    new NotFoundException($"Tip with ID '{id}' not found"));
             }
 
             // 2. Mark tip as deleted via tip.MarkDeleted()
@@ -44,10 +51,6 @@ public class DeleteTipUseCase(ITipRepository tipRepository)
         catch (AppException ex)
         {
             return Result<bool, AppException>.Fail(ex);
-        }
-        catch (ArgumentException ex)
-        {
-            return Result<bool, AppException>.Fail(new ValidationException(ex.Message));
         }
         catch (Exception ex)
         {
