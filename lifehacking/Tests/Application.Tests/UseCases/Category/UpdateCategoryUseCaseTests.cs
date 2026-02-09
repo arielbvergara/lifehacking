@@ -93,7 +93,7 @@ public class UpdateCategoryUseCaseTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnValidationException_WhenNameIsTooShort()
+    public async Task ExecuteAsync_ShouldReturnValidationExceptionWithFieldLevelDetail_WhenNameIsTooShort()
     {
         // Arrange
         var categoryId = Guid.NewGuid();
@@ -109,12 +109,14 @@ public class UpdateCategoryUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("at least 2 characters");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey("Name");
+        validationError.Errors["Name"].Should().ContainSingle()
+            .Which.Should().Contain("at least 2 characters");
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnValidationException_WhenNameIsTooLong()
+    public async Task ExecuteAsync_ShouldReturnValidationExceptionWithFieldLevelDetail_WhenNameIsTooLong()
     {
         // Arrange
         var categoryId = Guid.NewGuid();
@@ -131,8 +133,10 @@ public class UpdateCategoryUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("cannot exceed 100 characters");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey("Name");
+        validationError.Errors["Name"].Should().ContainSingle()
+            .Which.Should().Contain("cannot exceed 100 characters");
     }
 
     [Fact]
@@ -277,7 +281,7 @@ public class UpdateCategoryUseCaseTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnValidationException_WhenNameIsEmpty()
+    public async Task ExecuteAsync_ShouldReturnValidationExceptionWithFieldLevelDetail_WhenNameIsEmpty()
     {
         // Arrange
         var categoryId = Guid.NewGuid();
@@ -293,12 +297,14 @@ public class UpdateCategoryUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("cannot be empty");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey("Name");
+        validationError.Errors["Name"].Should().ContainSingle()
+            .Which.Should().Contain("cannot be empty");
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnValidationException_WhenNameIsWhitespace()
+    public async Task ExecuteAsync_ShouldReturnValidationExceptionWithFieldLevelDetail_WhenNameIsWhitespace()
     {
         // Arrange
         var categoryId = Guid.NewGuid();
@@ -314,8 +320,10 @@ public class UpdateCategoryUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("cannot be empty");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey("Name");
+        validationError.Errors["Name"].Should().ContainSingle()
+            .Which.Should().Contain("cannot be empty");
     }
 
     [Fact]

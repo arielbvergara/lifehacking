@@ -46,25 +46,27 @@ public class CreateCategoryUseCaseTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnValidationException_WhenNameIsTooShort()
+    public async Task ExecuteAsync_ShouldReturnValidationExceptionWithFieldLevelDetail_WhenNameIsTooShort()
     {
         // Arrange
-        var request = new CreateCategoryRequest("A"); // 1 character, less than minimum of 2
+        var request = new CreateCategoryRequest("A");
 
         // Act
         var result = await _useCase.ExecuteAsync(request);
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("at least 2 characters");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey("Name");
+        validationError.Errors["Name"].Should().ContainSingle()
+            .Which.Should().Contain("at least 2 characters");
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnValidationException_WhenNameIsTooLong()
+    public async Task ExecuteAsync_ShouldReturnValidationExceptionWithFieldLevelDetail_WhenNameIsTooLong()
     {
         // Arrange
-        var longName = new string('A', 101); // 101 characters, exceeds maximum of 100
+        var longName = new string('A', 101);
         var request = new CreateCategoryRequest(longName);
 
         // Act
@@ -72,8 +74,10 @@ public class CreateCategoryUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("cannot exceed 100 characters");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey("Name");
+        validationError.Errors["Name"].Should().ContainSingle()
+            .Which.Should().Contain("cannot exceed 100 characters");
     }
 
     [Fact]
@@ -208,7 +212,7 @@ public class CreateCategoryUseCaseTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnValidationException_WhenNameIsEmpty()
+    public async Task ExecuteAsync_ShouldReturnValidationExceptionWithFieldLevelDetail_WhenNameIsEmpty()
     {
         // Arrange
         var request = new CreateCategoryRequest("");
@@ -218,8 +222,10 @@ public class CreateCategoryUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("cannot be empty");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey("Name");
+        validationError.Errors["Name"].Should().ContainSingle()
+            .Which.Should().Contain("cannot be empty");
     }
 
     [Fact]
@@ -233,8 +239,10 @@ public class CreateCategoryUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("cannot be empty");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey("Name");
+        validationError.Errors["Name"].Should().ContainSingle()
+            .Which.Should().Contain("cannot be empty");
     }
 
     [Fact]
