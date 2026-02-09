@@ -1,9 +1,19 @@
 namespace Domain.ValueObject;
 
+/// <summary>
+/// Represents a tag for categorizing tips with validation constraints.
+/// </summary>
 public sealed record Tag
 {
-    private const int MinLength = 1;
-    private const int MaxLength = 50;
+    /// <summary>
+    /// The minimum allowed length for a tag.
+    /// </summary>
+    public const int MinLength = 1;
+
+    /// <summary>
+    /// The maximum allowed length for a tag.
+    /// </summary>
+    public const int MaxLength = 50;
 
     public string Value { get; }
 

@@ -1,9 +1,19 @@
 namespace Domain.ValueObject;
 
+/// <summary>
+/// Represents a single step in a tip with validation constraints.
+/// </summary>
 public sealed record TipStep
 {
-    private const int MinDescriptionLength = 10;
-    private const int MaxDescriptionLength = 500;
+    /// <summary>
+    /// The minimum allowed length for a step description.
+    /// </summary>
+    public const int MinDescriptionLength = 10;
+
+    /// <summary>
+    /// The maximum allowed length for a step description.
+    /// </summary>
+    public const int MaxDescriptionLength = 500;
 
     public int StepNumber { get; }
     public string Description { get; }
