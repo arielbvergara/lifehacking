@@ -5,6 +5,7 @@ using Application.Interfaces;
 using FluentAssertions;
 using Infrastructure.Tests;
 using Microsoft.Extensions.DependencyInjection;
+using WebAPI.ErrorHandling;
 using Xunit;
 
 namespace WebAPI.Tests;
@@ -321,7 +322,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
     }
 
     [Fact]
-    public async Task CreateTip_ShouldReturn400BadRequest_WhenCategoryDoesNotExist()
+    public async Task CreateTip_ShouldReturn404NotFound_WhenCategoryDoesNotExist()
     {
         // Arrange
         var nonExistentCategoryId = Guid.NewGuid();
@@ -338,15 +339,15 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
         var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
-            "creating a tip with a non-existent category should return 400 Bad Request");
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound,
+            "creating a tip with a non-existent category should return 404 Not Found");
 
         var content = await response.Content.ReadAsStringAsync();
         content.Should().Contain("Category", "error message should mention the category");
     }
 
     [Fact]
-    public async Task CreateTip_ShouldReturn400BadRequest_WhenCategoryIsSoftDeleted()
+    public async Task CreateTip_ShouldReturn404NotFound_WhenCategoryIsSoftDeleted()
     {
         // Arrange
         var categoryRepository = GetCategoryRepository();
@@ -368,8 +369,8 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
         var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
-            "creating a tip with a soft-deleted category should return 400 Bad Request");
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound,
+            "creating a tip with a soft-deleted category should return 404 Not Found");
 
         var content = await response.Content.ReadAsStringAsync();
         content.Should().Contain("Category", "error message should mention the category");
@@ -516,6 +517,344 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
         var tipCreatedEvent = securityEvents.First(e => e.EventName == SecurityEventNames.TipCreated);
         tipCreatedEvent.Outcome.Should().Be(SecurityEventOutcomes.Success);
         tipCreatedEvent.SubjectId.Should().NotBeNullOrEmpty("the tip ID should be included in the security event");
+    }
+
+    #endregion
+
+    #region Validation Error Response Structure Tests
+
+    [Fact]
+    public async Task CreateTip_ShouldReturnRFC7807ValidationError_WhenTitleIsInvalid()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var category = TestDataFactory.CreateCategory("Test Category");
+        await categoryRepository.AddAsync(category);
+
+        var request = new CreateTipRequest(
+            Title: "Tip", // Too short
+            Description: "Valid description with enough characters",
+            Steps: CreateSteps("Step 1 with enough characters"),
+            CategoryId: category.Id.Value,
+            Tags: new[] { "test" },
+            VideoUrl: null);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.Title.Should().Be(ErrorResponseTitles.ValidationErrorTitle);
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+        errorResponse.Errors.Should().ContainKey("Title");
+        errorResponse.Errors["Title"].Should().Contain(e => e.Contains("at least 5 characters"));
+    }
+
+    [Fact]
+    public async Task CreateTip_ShouldReturnRFC7807ValidationError_WhenDescriptionIsInvalid()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var category = TestDataFactory.CreateCategory("Test Category");
+        await categoryRepository.AddAsync(category);
+
+        var request = new CreateTipRequest(
+            Title: "Valid Title",
+            Description: "Short", // Too short
+            Steps: CreateSteps("Step 1 with enough characters"),
+            CategoryId: category.Id.Value,
+            Tags: new[] { "test" },
+            VideoUrl: null);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+        errorResponse.Errors.Should().ContainKey("Description");
+        errorResponse.Errors["Description"].Should().Contain(e => e.Contains("at least 10 characters"));
+    }
+
+    [Fact]
+    public async Task CreateTip_ShouldReturnRFC7807ValidationError_WhenStepsAreEmpty()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var category = TestDataFactory.CreateCategory("Test Category");
+        await categoryRepository.AddAsync(category);
+
+        var request = new CreateTipRequest(
+            Title: "Valid Title",
+            Description: "Valid description with enough characters",
+            Steps: Array.Empty<TipStepRequest>(),
+            CategoryId: category.Id.Value,
+            Tags: new[] { "test" },
+            VideoUrl: null);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+        errorResponse.Errors.Should().ContainKey("Steps");
+        errorResponse.Errors["Steps"].Should().Contain(e => e.Contains("At least one step is required"));
+    }
+
+    [Fact]
+    public async Task CreateTip_ShouldReturnRFC7807ValidationError_WhenVideoUrlIsInvalid()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var category = TestDataFactory.CreateCategory("Test Category");
+        await categoryRepository.AddAsync(category);
+
+        var request = new CreateTipRequest(
+            Title: "Valid Title",
+            Description: "Valid description with enough characters",
+            Steps: CreateSteps("Step 1 with enough characters"),
+            CategoryId: category.Id.Value,
+            Tags: new[] { "test" },
+            VideoUrl: "https://invalid-domain.com/video");
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+        errorResponse.Errors.Should().ContainKey("VideoUrl");
+        errorResponse.Errors["VideoUrl"].Should().Contain(e => e.Contains("supported platform"));
+    }
+
+    [Fact]
+    public async Task CreateTip_ShouldReturnRFC7807ValidationError_WhenMultipleFieldsAreInvalid()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var category = TestDataFactory.CreateCategory("Test Category");
+        await categoryRepository.AddAsync(category);
+
+        var request = new CreateTipRequest(
+            Title: "Tip", // Too short
+            Description: "Short", // Too short
+            Steps: CreateSteps("Step 1 with enough characters"),
+            CategoryId: category.Id.Value,
+            Tags: new[] { "test" },
+            VideoUrl: "https://invalid-domain.com/video"); // Invalid
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+        errorResponse.Errors.Should().ContainKey("Title");
+        errorResponse.Errors.Should().ContainKey("Description");
+        errorResponse.Errors.Should().ContainKey("VideoUrl");
+        errorResponse.Errors["Title"].Should().Contain(e => e.Contains("at least 5 characters"));
+        errorResponse.Errors["Description"].Should().Contain(e => e.Contains("at least 10 characters"));
+        errorResponse.Errors["VideoUrl"].Should().Contain(e => e.Contains("supported platform"));
+    }
+
+    #endregion
+
+    #region Not-Found Error Response Structure Tests
+
+    [Fact]
+    public async Task CreateTip_ShouldReturnRFC7807NotFoundError_WhenCategoryDoesNotExist()
+    {
+        // Arrange
+        var nonExistentCategoryId = Guid.NewGuid();
+
+        var request = new CreateTipRequest(
+            Title: "Valid Title",
+            Description: "Valid description with enough characters",
+            Steps: CreateSteps("Step 1 with enough characters"),
+            CategoryId: nonExistentCategoryId,
+            Tags: new[] { "test" },
+            VideoUrl: null);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(404);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.NotFoundErrorType);
+        errorResponse.Title.Should().Be(ErrorResponseTitles.NotFoundErrorTitle);
+        errorResponse.Detail.Should().Contain("Category");
+        errorResponse.Detail.Should().Contain(nonExistentCategoryId.ToString());
+        errorResponse.Detail.Should().Contain("not found");
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task UpdateTip_ShouldReturnRFC7807NotFoundError_WhenTipDoesNotExist()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var category = TestDataFactory.CreateCategory("Test Category");
+        await categoryRepository.AddAsync(category);
+
+        var nonExistentTipId = Guid.NewGuid();
+
+        var request = new UpdateTipRequest(
+            Id: nonExistentTipId,
+            Title: "Updated Title",
+            Description: "Updated description with enough characters",
+            Steps: CreateSteps("Step 1 with enough characters"),
+            CategoryId: category.Id.Value,
+            Tags: new[] { "test" },
+            VideoUrl: null);
+
+        // Act
+        var response = await _adminClient.PutAsJsonAsync($"/api/admin/tips/{nonExistentTipId}", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(404);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.NotFoundErrorType);
+        errorResponse.Title.Should().Be(ErrorResponseTitles.NotFoundErrorTitle);
+        errorResponse.Detail.Should().Contain("Tip");
+        errorResponse.Detail.Should().Contain(nonExistentTipId.ToString());
+        errorResponse.Detail.Should().Contain("not found");
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task DeleteTip_ShouldReturnRFC7807NotFoundError_WhenTipDoesNotExist()
+    {
+        // Arrange
+        var nonExistentTipId = Guid.NewGuid();
+
+        // Act
+        var response = await _adminClient.DeleteAsync($"/api/admin/tips/{nonExistentTipId}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(404);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.NotFoundErrorType);
+        errorResponse.Title.Should().Be(ErrorResponseTitles.NotFoundErrorTitle);
+        errorResponse.Detail.Should().Contain("Tip");
+        errorResponse.Detail.Should().Contain(nonExistentTipId.ToString());
+        errorResponse.Detail.Should().Contain("not found");
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task CreateTip_ShouldReturnRFC7807NotFoundError_WhenCategoryIsSoftDeleted()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var category = TestDataFactory.CreateCategory("Deleted Category");
+        await categoryRepository.AddAsync(category);
+
+        // Soft delete the category
+        await categoryRepository.DeleteAsync(category.Id);
+
+        var request = new CreateTipRequest(
+            Title: "Valid Title",
+            Description: "Valid description with enough characters",
+            Steps: CreateSteps("Step 1 with enough characters"),
+            CategoryId: category.Id.Value,
+            Tags: new[] { "test" },
+            VideoUrl: null);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(404);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.NotFoundErrorType);
+        errorResponse.Title.Should().Be(ErrorResponseTitles.NotFoundErrorTitle);
+        errorResponse.Detail.Should().Contain("Category");
+        errorResponse.Detail.Should().Contain(category.Id.Value.ToString());
+        errorResponse.Detail.Should().Contain("not found");
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task UpdateTip_ShouldReturnRFC7807NotFoundError_WhenCategoryIsSoftDeleted()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var tipRepository = GetTipRepository();
+
+        var category1 = TestDataFactory.CreateCategory("Active Category");
+        var category2 = TestDataFactory.CreateCategory("Deleted Category");
+        await categoryRepository.AddAsync(category1);
+        await categoryRepository.AddAsync(category2);
+
+        var tip = TestDataFactory.CreateTip(category1.Id, title: "Original Title");
+        await tipRepository.AddAsync(tip);
+
+        // Soft delete category2
+        await categoryRepository.DeleteAsync(category2.Id);
+
+        var request = new UpdateTipRequest(
+            Id: tip.Id.Value,
+            Title: "Valid Title",
+            Description: "Valid description with enough characters",
+            Steps: CreateSteps("Step 1 with enough characters"),
+            CategoryId: category2.Id.Value,
+            Tags: new[] { "test" },
+            VideoUrl: null);
+
+        // Act
+        var response = await _adminClient.PutAsJsonAsync($"/api/admin/tips/{tip.Id.Value}", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(404);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.NotFoundErrorType);
+        errorResponse.Title.Should().Be(ErrorResponseTitles.NotFoundErrorTitle);
+        errorResponse.Detail.Should().Contain("Category");
+        errorResponse.Detail.Should().Contain(category2.Id.Value.ToString());
+        errorResponse.Detail.Should().Contain("not found");
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
     }
 
     #endregion
@@ -690,7 +1029,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
     }
 
     [Fact]
-    public async Task UpdateTip_ShouldReturn400BadRequest_WhenCategoryDoesNotExist()
+    public async Task UpdateTip_ShouldReturn404NotFound_WhenCategoryDoesNotExist()
     {
         // Arrange
         var categoryRepository = GetCategoryRepository();
@@ -717,15 +1056,15 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
         var response = await _adminClient.PutAsJsonAsync($"/api/admin/tips/{tip.Id.Value}", request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
-            "updating a tip with a non-existent category should return 400 Bad Request");
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound,
+            "updating a tip with a non-existent category should return 404 Not Found");
 
         var content = await response.Content.ReadAsStringAsync();
         content.Should().Contain("Category", "error message should mention the category");
     }
 
     [Fact]
-    public async Task UpdateTip_ShouldReturn400BadRequest_WhenCategoryIsSoftDeleted()
+    public async Task UpdateTip_ShouldReturn404NotFound_WhenCategoryIsSoftDeleted()
     {
         // Arrange
         var categoryRepository = GetCategoryRepository();
@@ -755,8 +1094,8 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
         var response = await _adminClient.PutAsJsonAsync($"/api/admin/tips/{tip.Id.Value}", request);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
-            "updating a tip to a soft-deleted category should return 400 Bad Request");
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound,
+            "updating a tip to a soft-deleted category should return 404 Not Found");
 
         var content = await response.Content.ReadAsStringAsync();
         content.Should().Contain("Category", "error message should mention the category");
