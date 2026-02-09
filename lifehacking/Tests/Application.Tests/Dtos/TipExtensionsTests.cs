@@ -28,22 +28,22 @@ public class TipExtensionsTests
         result.Tags.Should().HaveCount(2);
         result.Tags.Should().Contain("cooking");
         result.Tags.Should().Contain("pasta");
-        result.YouTubeUrl.Should().Be(tip.YouTubeUrl!.Value);
+        result.VideoUrl.Should().Be(tip.VideoUrl!.Value);
         result.CreatedAt.Should().Be(tip.CreatedAt);
     }
 
     [Fact]
-    public void ToTipSummaryResponse_ShouldHandleNullYouTubeUrl()
+    public void ToTipSummaryResponse_ShouldHandleNullVideoUrl()
     {
         // Arrange
-        var tip = CreateValidTip(includeYouTubeUrl: false);
+        var tip = CreateValidTip(includeVideoUrl: false);
         var categoryName = "Cooking";
 
         // Act
         var result = tip.ToTipSummaryResponse(categoryName);
 
         // Assert
-        result.YouTubeUrl.Should().BeNull();
+        result.VideoUrl.Should().BeNull();
     }
 
     [Fact]
@@ -107,8 +107,8 @@ public class TipExtensionsTests
         result.CategoryId.Should().Be(tip.CategoryId.Value);
         result.CategoryName.Should().Be(categoryName);
         result.Tags.Should().HaveCount(2);
-        result.YouTubeUrl.Should().Be(tip.YouTubeUrl!.Value);
-        result.YouTubeVideoId.Should().NotBeNullOrEmpty();
+        result.VideoUrl.Should().Be(tip.VideoUrl!.Value);
+        result.VideoUrlId.Should().NotBeNullOrEmpty();
         result.CreatedAt.Should().Be(tip.CreatedAt);
         result.UpdatedAt.Should().BeNull();
     }
@@ -134,7 +134,7 @@ public class TipExtensionsTests
     }
 
     [Fact]
-    public void ToTipDetailResponse_ShouldExtractVideoId_WhenYouTubeUrlPresent()
+    public void ToTipDetailResponse_ShouldExtractVideoId_WhenVideoUrlPresent()
     {
         // Arrange
         var tip = CreateValidTip();
@@ -144,22 +144,22 @@ public class TipExtensionsTests
         var result = tip.ToTipDetailResponse(categoryName);
 
         // Assert
-        result.YouTubeVideoId.Should().Be("dQw4w9WgXcQ");
+        result.VideoUrlId.Should().Be("dQw4w9WgXcQ");
     }
 
     [Fact]
-    public void ToTipDetailResponse_ShouldHandleNullYouTubeUrl()
+    public void ToTipDetailResponse_ShouldHandleNullVideoUrl()
     {
         // Arrange
-        var tip = CreateValidTip(includeYouTubeUrl: false);
+        var tip = CreateValidTip(includeVideoUrl: false);
         var categoryName = "Cooking";
 
         // Act
         var result = tip.ToTipDetailResponse(categoryName);
 
         // Assert
-        result.YouTubeUrl.Should().BeNull();
-        result.YouTubeVideoId.Should().BeNull();
+        result.VideoUrl.Should().BeNull();
+        result.VideoUrlId.Should().BeNull();
     }
 
     [Fact]
@@ -190,7 +190,7 @@ public class TipExtensionsTests
         act.Should().Throw<ArgumentNullException>();
     }
 
-    private static Tip CreateValidTip(bool includeYouTubeUrl = true, bool includeTags = true)
+    private static Tip CreateValidTip(bool includeVideoUrl = true, bool includeTags = true)
     {
         var title = TipTitle.Create("How to cook pasta");
         var description = TipDescription.Create("A comprehensive guide to cooking perfect pasta every time.");
@@ -204,7 +204,7 @@ public class TipExtensionsTests
         var tags = includeTags
             ? new List<Tag> { Tag.Create("cooking"), Tag.Create("pasta") }
             : null;
-        var videoUrl = includeYouTubeUrl
+        var videoUrl = includeVideoUrl
             ? VideoUrl.Create("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
             : null;
 

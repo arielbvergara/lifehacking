@@ -51,14 +51,14 @@ public class TipControllerIntegrationTests(CustomWebApplicationFactory factory)
         tipDetail.Steps[1].Description.Should().Be("This is the second step of the tip with enough characters");
         tipDetail.Tags.Should().HaveCount(1);
         tipDetail.Tags.Should().Contain("test");
-        tipDetail.YouTubeUrl.Should().BeNull();
-        tipDetail.YouTubeVideoId.Should().BeNull();
+        tipDetail.VideoUrl.Should().BeNull();
+        tipDetail.VideoUrlId.Should().BeNull();
         tipDetail.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(1));
         tipDetail.UpdatedAt.Should().BeNull();
     }
 
     [Fact]
-    public async Task GetTipById_ShouldReturnTipDetailWithYouTube_WhenTipHasYouTubeUrl()
+    public async Task GetTipById_ShouldReturnTipDetailWithVideo_WhenTipHasVideoUrl()
     {
         // Arrange
         using var scope = factory.Services.CreateScope();
@@ -70,7 +70,7 @@ public class TipControllerIntegrationTests(CustomWebApplicationFactory factory)
         await categoryRepository.AddAsync(category);
 
         // Create test tip with YouTube URL
-        var tip = CreateTestTipWithYouTube("Video Tip", "Watch this video", category.Id, "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        var tip = CreateTestTipWithVideo("Video Tip", "Watch this video", category.Id, "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         await tipRepository.AddAsync(tip);
 
         // Act
@@ -83,8 +83,8 @@ public class TipControllerIntegrationTests(CustomWebApplicationFactory factory)
         tipDetail.Should().NotBeNull();
         tipDetail!.Id.Should().Be(tip.Id.Value);
         tipDetail.Title.Should().Be("Video Tip");
-        tipDetail.YouTubeUrl.Should().Be("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-        tipDetail.YouTubeVideoId.Should().Be("dQw4w9WgXcQ");
+        tipDetail.VideoUrl.Should().Be("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        tipDetail.VideoUrlId.Should().Be("dQw4w9WgXcQ");
     }
 
     [Fact]
@@ -169,11 +169,11 @@ public class TipControllerIntegrationTests(CustomWebApplicationFactory factory)
         return Tip.Create(tipTitle, tipDescription, steps, categoryId, tipTags);
     }
 
-    private static Tip CreateTestTipWithYouTube(
+    private static Tip CreateTestTipWithVideo(
         string title,
         string description,
         CategoryId categoryId,
-        string youtubeUrl,
+        string videoUrl,
         string[]? tags = null)
     {
         var tipTitle = TipTitle.Create(title);
@@ -184,8 +184,8 @@ public class TipControllerIntegrationTests(CustomWebApplicationFactory factory)
             TipStep.Create(2, "Follow along with the detailed instructions provided")
         };
         var tipTags = tags?.Select(Tag.Create).ToArray() ?? new[] { Tag.Create("video") };
-        var videoUrl = VideoUrl.Create(youtubeUrl);
+        var videoUrlObject = VideoUrl.Create(videoUrl);
 
-        return Tip.Create(tipTitle, tipDescription, steps, categoryId, tipTags, videoUrl);
+        return Tip.Create(tipTitle, tipDescription, steps, categoryId, tipTags, videoUrlObject);
     }
 }

@@ -41,7 +41,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: new List<string> { "tag1", "tag2" },
-            YouTubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+            VideoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         );
 
         _categoryRepositoryMock
@@ -62,7 +62,7 @@ public class CreateTipUseCaseTests
         result.Value.Description.Should().Be("This is a valid tip description with enough characters");
         result.Value.Steps.Should().HaveCount(2);
         result.Value.Tags.Should().HaveCount(2);
-        result.Value.YouTubeUrl.Should().Be("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        result.Value.VideoUrl.Should().Be("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         result.Value.CategoryName.Should().Be("Test Category");
         result.Value.Id.Should().NotBeEmpty();
         result.Value.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
@@ -83,7 +83,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         // Act
@@ -110,7 +110,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         // Act
@@ -137,7 +137,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         // Act
@@ -164,7 +164,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         // Act
@@ -188,7 +188,7 @@ public class CreateTipUseCaseTests
             Steps: new List<TipStepRequest>(), // Empty steps list
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         // Act
@@ -212,7 +212,7 @@ public class CreateTipUseCaseTests
             Steps: null!, // Null steps
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         // Act
@@ -239,7 +239,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _categoryRepositoryMock
@@ -272,7 +272,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _categoryRepositoryMock
@@ -303,7 +303,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: "https://invalid-url.com/video"
+            VideoUrl: "https://invalid-url.com/video"
         );
 
         // Act
@@ -331,7 +331,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+            VideoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         );
 
         _categoryRepositoryMock
@@ -347,7 +347,7 @@ public class CreateTipUseCaseTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value!.YouTubeUrl.Should().Be("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        result.Value!.VideoUrl.Should().Be("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
     }
 
     [Fact]
@@ -366,7 +366,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: "https://www.instagram.com/p/ABC123"
+            VideoUrl: "https://www.instagram.com/p/ABC123"
         );
 
         _categoryRepositoryMock
@@ -382,7 +382,7 @@ public class CreateTipUseCaseTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value!.YouTubeUrl.Should().Be("https://www.instagram.com/p/ABC123");
+        result.Value!.VideoUrl.Should().Be("https://www.instagram.com/p/ABC123");
     }
 
     [Fact]
@@ -401,7 +401,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: "https://www.youtube.com/shorts/ABC123"
+            VideoUrl: "https://www.youtube.com/shorts/ABC123"
         );
 
         _categoryRepositoryMock
@@ -417,7 +417,7 @@ public class CreateTipUseCaseTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value!.YouTubeUrl.Should().Be("https://www.youtube.com/shorts/ABC123");
+        result.Value!.VideoUrl.Should().Be("https://www.youtube.com/shorts/ABC123");
     }
 
     [Fact]
@@ -436,7 +436,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _categoryRepositoryMock
@@ -452,7 +452,7 @@ public class CreateTipUseCaseTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value!.YouTubeUrl.Should().BeNull();
+        result.Value!.VideoUrl.Should().BeNull();
     }
 
     [Fact]
@@ -471,7 +471,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _categoryRepositoryMock
@@ -506,7 +506,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _categoryRepositoryMock
@@ -546,7 +546,7 @@ public class CreateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _categoryRepositoryMock

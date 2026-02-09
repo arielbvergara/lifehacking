@@ -8,8 +8,8 @@ public record TipDetailResponse(
     Guid CategoryId,
     string CategoryName,
     IReadOnlyList<string> Tags,
-    string? YouTubeUrl,
-    string? YouTubeVideoId,
+    string? VideoUrl,
+    string? VideoUrlId,
     DateTime CreatedAt,
     DateTime? UpdatedAt
 );

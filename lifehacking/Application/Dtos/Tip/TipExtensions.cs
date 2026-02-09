@@ -16,7 +16,7 @@ public static class TipExtensions
                 tip.CategoryId.Value,
                 categoryName,
                 tip.Tags.Select(t => t.Value).ToList(),
-                tip.YouTubeUrl?.Value,
+                tip.VideoUrl?.Value,
                 tip.CreatedAt
             );
         }
@@ -34,8 +34,8 @@ public static class TipExtensions
                 tip.CategoryId.Value,
                 categoryName,
                 tip.Tags.Select(t => t.Value).ToList(),
-                tip.YouTubeUrl?.Value,
-                tip.YouTubeUrl?.VideoId,
+                tip.VideoUrl?.Value,
+                tip.VideoUrl?.VideoId,
                 tip.CreatedAt,
                 tip.UpdatedAt
             );

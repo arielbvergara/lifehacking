@@ -11,7 +11,7 @@ public class VideoUrlTests
     [InlineData("https://youtube.com/watch?v=dQw4w9WgXcQ")]
     [InlineData("http://www.youtube.com/watch?v=dQw4w9WgXcQ")]
     [InlineData("http://youtube.com/watch?v=dQw4w9WgXcQ")]
-    public void Create_ShouldCreateVideoUrlWithExpectedValue_WhenValidYouTubeUrlProvided(string validUrl)
+    public void Create_ShouldCreateVideoUrlWithExpectedValue_WhenValidVideoUrlProvided(string validUrl)
     {
         // Act
         var videoUrl = VideoUrl.Create(validUrl);

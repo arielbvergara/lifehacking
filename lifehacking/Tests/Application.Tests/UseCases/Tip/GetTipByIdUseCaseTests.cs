@@ -89,8 +89,8 @@ public class GetTipByIdUseCaseTests
         result.Value.Tags.Should().HaveCount(2);
         result.Value.Tags.Should().Contain("tag1");
         result.Value.Tags.Should().Contain("tag2");
-        result.Value.YouTubeUrl.Should().BeNull();
-        result.Value.YouTubeVideoId.Should().BeNull();
+        result.Value.VideoUrl.Should().BeNull();
+        result.Value.VideoUrlId.Should().BeNull();
 
         tipRepositoryMock.Verify(
             r => r.GetByIdAsync(tipId, It.IsAny<CancellationToken>()),
@@ -102,7 +102,7 @@ public class GetTipByIdUseCaseTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnTipDetailResponseWithYouTube_WhenTipHasYouTubeUrl()
+    public async Task ExecuteAsync_ShouldReturnTipDetailResponseWithVideo_WhenTipHasVideoUrl()
     {
         // Arrange
         var tipRepositoryMock = new Mock<ITipRepository>();
@@ -112,7 +112,7 @@ public class GetTipByIdUseCaseTests
         var tipId = TipId.NewId();
         var categoryId = CategoryId.NewId();
         const string categoryName = "Test Category";
-        const string youtubeUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+        const string videoUrl = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
         var category = DomainCategory.FromPersistence(
             categoryId,
@@ -132,7 +132,7 @@ public class GetTipByIdUseCaseTests
             steps,
             categoryId,
             tags,
-            VideoUrl.Create(youtubeUrl),
+            VideoUrl.Create(videoUrl),
             DateTime.UtcNow,
             null,
             false,
@@ -154,8 +154,8 @@ public class GetTipByIdUseCaseTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
-        result.Value!.YouTubeUrl.Should().Be(youtubeUrl);
-        result.Value.YouTubeVideoId.Should().Be("dQw4w9WgXcQ");
+        result.Value!.VideoUrl.Should().Be(videoUrl);
+        result.Value.VideoUrlId.Should().Be("dQw4w9WgXcQ");
     }
 
     [Fact]

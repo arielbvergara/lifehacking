@@ -64,9 +64,9 @@ public class UpdateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
 
             // Create video URL if provided (optional)
             VideoUrl? videoUrl = null;
-            if (!string.IsNullOrWhiteSpace(request.YouTubeUrl))
+            if (!string.IsNullOrWhiteSpace(request.VideoUrl))
             {
-                videoUrl = VideoUrl.Create(request.YouTubeUrl);
+                videoUrl = VideoUrl.Create(request.VideoUrl);
             }
 
             // 3. Check if category exists
@@ -92,7 +92,7 @@ public class UpdateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
             tip.UpdateSteps(steps);
             tip.UpdateCategory(categoryId);
             tip.UpdateTags(tags);
-            tip.UpdateYouTubeUrl(videoUrl);
+            tip.UpdateVideoUrl(videoUrl);
 
             // 6. Persist via repository
             await tipRepository.UpdateAsync(tip, cancellationToken);

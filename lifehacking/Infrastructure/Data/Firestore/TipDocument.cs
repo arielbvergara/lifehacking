@@ -23,8 +23,8 @@ public sealed class TipDocument
     [FirestoreProperty("tags")]
     public List<string> Tags { get; set; } = new();
 
-    [FirestoreProperty("youtubeUrl")]
-    public string? YouTubeUrl { get; set; }
+    [FirestoreProperty("videoUrl")]
+    public string? VideoUrl { get; set; }
 
     [FirestoreProperty("createdAt")]
     public DateTime CreatedAt { get; set; }

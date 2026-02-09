@@ -51,7 +51,7 @@ public class UpdateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: new List<string> { "tag1", "tag2" },
-            YouTubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+            VideoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
         );
 
         _tipRepositoryMock
@@ -76,7 +76,7 @@ public class UpdateTipUseCaseTests
         result.Value.Description.Should().Be("This is an updated tip description with enough characters");
         result.Value.Steps.Should().HaveCount(2);
         result.Value.Tags.Should().HaveCount(2);
-        result.Value.YouTubeUrl.Should().Be("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        result.Value.VideoUrl.Should().Be("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         result.Value.CategoryName.Should().Be("Test Category");
     }
 
@@ -97,7 +97,7 @@ public class UpdateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _tipRepositoryMock
@@ -138,7 +138,7 @@ public class UpdateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _tipRepositoryMock
@@ -179,7 +179,7 @@ public class UpdateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _tipRepositoryMock
@@ -217,7 +217,7 @@ public class UpdateTipUseCaseTests
             Steps: new List<TipStepRequest>(), // Empty steps list
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _tipRepositoryMock
@@ -258,7 +258,7 @@ public class UpdateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _tipRepositoryMock
@@ -305,7 +305,7 @@ public class UpdateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _tipRepositoryMock
@@ -352,7 +352,7 @@ public class UpdateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _tipRepositoryMock
@@ -397,7 +397,7 @@ public class UpdateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: "https://invalid-url.com/video"
+            VideoUrl: "https://invalid-url.com/video"
         );
 
         _tipRepositoryMock
@@ -439,7 +439,7 @@ public class UpdateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _tipRepositoryMock
@@ -493,7 +493,7 @@ public class UpdateTipUseCaseTests
             },
             CategoryId: categoryId,
             Tags: null,
-            YouTubeUrl: null
+            VideoUrl: null
         );
 
         _tipRepositoryMock

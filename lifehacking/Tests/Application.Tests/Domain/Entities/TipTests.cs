@@ -38,7 +38,7 @@ public class TipTests
         tip.CategoryId.Should().Be(categoryId);
         tip.Tags.Should().HaveCount(2);
         tip.Tags.Should().BeEquivalentTo(tags);
-        tip.YouTubeUrl.Should().Be(videoUrl);
+        tip.VideoUrl.Should().Be(videoUrl);
 
         tip.Id.Should().NotBe(null);
         tip.Id.Value.Should().NotBe(Guid.Empty);
@@ -100,7 +100,7 @@ public class TipTests
     }
 
     [Fact]
-    public void Create_ShouldAllowNullYouTubeUrl()
+    public void Create_ShouldAllowNullVideoUrl()
     {
         // Arrange
         var title = TipTitle.Create("How to cook pasta");
@@ -109,10 +109,10 @@ public class TipTests
         var categoryId = CategoryId.NewId();
 
         // Act
-        var tip = Tip.Create(title, description, steps, categoryId, youtubeUrl: null);
+        var tip = Tip.Create(title, description, steps, categoryId, videoUrl: null);
 
         // Assert
-        tip.YouTubeUrl.Should().BeNull();
+        tip.VideoUrl.Should().BeNull();
     }
 
     [Fact]
@@ -252,7 +252,7 @@ public class TipTests
     }
 
     [Fact]
-    public void UpdateYouTubeUrl_ShouldUpdateUrlAndSetUpdatedAt()
+    public void UpdateVideoUrl_ShouldUpdateUrlAndSetUpdatedAt()
     {
         // Arrange
         var tip = CreateValidTip();
@@ -261,11 +261,11 @@ public class TipTests
         var before = DateTime.UtcNow;
 
         // Act
-        tip.UpdateYouTubeUrl(newUrl);
+        tip.UpdateVideoUrl(newUrl);
         var after = DateTime.UtcNow;
 
         // Assert
-        tip.YouTubeUrl.Should().Be(newUrl);
+        tip.VideoUrl.Should().Be(newUrl);
         tip.CreatedAt.Should().Be(originalCreatedAt);
         tip.UpdatedAt.Should().NotBeNull();
         tip.UpdatedAt.Should().BeOnOrAfter(before).And.BeOnOrBefore(after);
@@ -296,7 +296,7 @@ public class TipTests
         tip.Steps.Should().BeEquivalentTo(steps);
         tip.CategoryId.Should().Be(categoryId);
         tip.Tags.Should().BeEquivalentTo(tags);
-        tip.YouTubeUrl.Should().Be(videoUrl);
+        tip.VideoUrl.Should().Be(videoUrl);
         tip.CreatedAt.Should().Be(createdAt);
         tip.UpdatedAt.Should().Be(updatedAt);
     }

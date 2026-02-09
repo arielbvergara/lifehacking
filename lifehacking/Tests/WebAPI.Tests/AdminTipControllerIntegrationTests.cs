@@ -65,7 +65,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1", "Step 2"),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _nonAdminClient.PostAsJsonAsync("/api/admin/tips", request);
@@ -89,7 +89,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1", "Step 2"),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _unauthenticatedClient.PostAsJsonAsync("/api/admin/tips", request);
@@ -119,7 +119,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1", "Step 2"),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _nonAdminClient.PutAsJsonAsync($"/api/admin/tips/{tip.Id.Value}", request);
@@ -149,7 +149,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1", "Step 2"),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _unauthenticatedClient.PutAsJsonAsync($"/api/admin/tips/{tip.Id.Value}", request);
@@ -220,7 +220,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1: Do this", "Step 2: Do that"),
             CategoryId: category.Id.Value,
             Tags: new[] { "productivity", "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
@@ -253,7 +253,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1"),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
@@ -280,7 +280,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1"),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
@@ -307,7 +307,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: Array.Empty<TipStepRequest>(),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
@@ -332,7 +332,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1 with enough characters"),
             CategoryId: nonExistentCategoryId,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
@@ -362,7 +362,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1 with enough characters"),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
@@ -389,7 +389,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1 with enough characters"),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: "https://invalid-domain.com/video");
+            VideoUrl: "https://invalid-domain.com/video");
 
         // Act
         var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
@@ -403,7 +403,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
     }
 
     [Fact]
-    public async Task CreateTip_ShouldReturn201Created_WhenYouTubeUrlIsValid()
+    public async Task CreateTip_ShouldReturn201Created_WhenVideoUrlIsValid()
     {
         // Arrange
         var categoryRepository = GetCategoryRepository();
@@ -416,7 +416,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1: Watch the video"),
             CategoryId: category.Id.Value,
             Tags: new[] { "video", "youtube" },
-            YouTubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+            VideoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ");
 
         // Act
         var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
@@ -427,7 +427,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
 
         var tipResponse = await response.Content.ReadFromJsonAsync<TipDetailResponse>();
         tipResponse.Should().NotBeNull();
-        tipResponse!.YouTubeUrl.Should().Be("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        tipResponse!.VideoUrl.Should().Be("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
     }
 
     [Fact]
@@ -444,7 +444,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1: Watch the video"),
             CategoryId: category.Id.Value,
             Tags: new[] { "video", "instagram" },
-            YouTubeUrl: "https://www.instagram.com/p/ABC123xyz/");
+            VideoUrl: "https://www.instagram.com/p/ABC123xyz/");
 
         // Act
         var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
@@ -455,7 +455,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
 
         var tipResponse = await response.Content.ReadFromJsonAsync<TipDetailResponse>();
         tipResponse.Should().NotBeNull();
-        tipResponse!.YouTubeUrl.Should().Be("https://www.instagram.com/p/ABC123xyz/");
+        tipResponse!.VideoUrl.Should().Be("https://www.instagram.com/p/ABC123xyz/");
     }
 
     [Fact]
@@ -472,7 +472,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1: Watch the short video"),
             CategoryId: category.Id.Value,
             Tags: new[] { "video", "shorts" },
-            YouTubeUrl: "https://www.youtube.com/shorts/ABC123xyz");
+            VideoUrl: "https://www.youtube.com/shorts/ABC123xyz");
 
         // Act
         var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
@@ -483,7 +483,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
 
         var tipResponse = await response.Content.ReadFromJsonAsync<TipDetailResponse>();
         tipResponse.Should().NotBeNull();
-        tipResponse!.YouTubeUrl.Should().Be("https://www.youtube.com/shorts/ABC123xyz");
+        tipResponse!.VideoUrl.Should().Be("https://www.youtube.com/shorts/ABC123xyz");
     }
 
     [Fact]
@@ -501,7 +501,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1 with enough characters"),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
@@ -543,7 +543,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Updated Step 1", "Updated Step 2", "Updated Step 3"),
             CategoryId: category.Id.Value,
             Tags: new[] { "updated", "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PutAsJsonAsync($"/api/admin/tips/{tip.Id.Value}", request);
@@ -577,7 +577,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1 with enough characters"),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PutAsJsonAsync($"/api/admin/tips/{nonExistentTipId}", request);
@@ -610,7 +610,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1"),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PutAsJsonAsync($"/api/admin/tips/{tip.Id.Value}", request);
@@ -643,7 +643,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1"),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PutAsJsonAsync($"/api/admin/tips/{tip.Id.Value}", request);
@@ -676,7 +676,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: Array.Empty<TipStepRequest>(),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PutAsJsonAsync($"/api/admin/tips/{tip.Id.Value}", request);
@@ -711,7 +711,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1 with enough characters"),
             CategoryId: nonExistentCategoryId,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PutAsJsonAsync($"/api/admin/tips/{tip.Id.Value}", request);
@@ -749,7 +749,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1 with enough characters"),
             CategoryId: category2.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PutAsJsonAsync($"/api/admin/tips/{tip.Id.Value}", request);
@@ -782,7 +782,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1 with enough characters"),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: "https://invalid-domain.com/video");
+            VideoUrl: "https://invalid-domain.com/video");
 
         // Act
         var response = await _adminClient.PutAsJsonAsync($"/api/admin/tips/{tip.Id.Value}", request);
@@ -816,7 +816,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
             Steps: CreateSteps("Step 1 with enough characters"),
             CategoryId: category.Id.Value,
             Tags: new[] { "test" },
-            YouTubeUrl: null);
+            VideoUrl: null);
 
         // Act
         var response = await _adminClient.PutAsJsonAsync($"/api/admin/tips/{tip.Id.Value}", request);
