@@ -29,7 +29,7 @@ public class CreateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
 
             // Create steps from request
             var steps = new List<TipStep>();
-            if (request.Steps.Count == 0)
+            if (request.Steps == null || request.Steps.Count == 0)
             {
                 return Result<TipDetailResponse, AppException>.Fail(
                     new ValidationException("At least one step is required"));
@@ -52,9 +52,9 @@ public class CreateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
 
             // Create video URL if provided (optional)
             VideoUrl? videoUrl = null;
-            if (!string.IsNullOrWhiteSpace(request.YouTubeUrl))
+            if (!string.IsNullOrWhiteSpace(request.VideoUrl))
             {
-                videoUrl = VideoUrl.Create(request.YouTubeUrl);
+                videoUrl = VideoUrl.Create(request.VideoUrl);
             }
 
             // 2. Check if category exists
