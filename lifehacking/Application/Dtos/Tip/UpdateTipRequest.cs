@@ -7,5 +7,5 @@ public record UpdateTipRequest(
     IReadOnlyList<TipStepRequest> Steps,
     Guid CategoryId,
     IReadOnlyList<string>? Tags,
-    string? YouTubeUrl
+    string? VideoUrl
 );

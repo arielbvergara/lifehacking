@@ -7,6 +7,6 @@ public record TipSummaryResponse(
     Guid CategoryId,
     string CategoryName,
     IReadOnlyList<string> Tags,
-    string? YouTubeUrl,
+    string? VideoUrl,
     DateTime CreatedAt
 );

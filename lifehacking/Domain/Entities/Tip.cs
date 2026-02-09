@@ -15,7 +15,7 @@ public sealed class Tip
     public IReadOnlyList<TipStep> Steps => _steps.AsReadOnly();
     public CategoryId CategoryId { get; private set; }
     public IReadOnlyList<Tag> Tags => _tags.AsReadOnly();
-    public YouTubeUrl? YouTubeUrl { get; private set; }
+    public VideoUrl? VideoUrl { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public bool IsDeleted { get; private set; }
@@ -28,7 +28,7 @@ public sealed class Tip
         IEnumerable<TipStep> steps,
         CategoryId categoryId,
         IEnumerable<Tag> tags,
-        YouTubeUrl? youtubeUrl,
+        VideoUrl? videoUrl,
         DateTime createdAt)
     {
         Id = id;
@@ -37,7 +37,7 @@ public sealed class Tip
         _steps = steps.ToList();
         CategoryId = categoryId;
         _tags = tags.ToList();
-        YouTubeUrl = youtubeUrl;
+        VideoUrl = videoUrl;
         CreatedAt = createdAt;
         IsDeleted = false;
         DeletedAt = null;
@@ -49,7 +49,7 @@ public sealed class Tip
         IEnumerable<TipStep> steps,
         CategoryId categoryId,
         IEnumerable<Tag>? tags = null,
-        YouTubeUrl? youtubeUrl = null)
+        VideoUrl? videoUrl = null)
     {
         var stepsList = steps.ToList();
         ValidateSteps(stepsList);
@@ -64,7 +64,7 @@ public sealed class Tip
             stepsList,
             categoryId,
             tagsList,
-            youtubeUrl,
+            videoUrl,
             DateTime.UtcNow);
 
         return tip;
@@ -108,9 +108,9 @@ public sealed class Tip
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void UpdateYouTubeUrl(YouTubeUrl? youtubeUrl)
+    public void UpdateVideoUrl(VideoUrl? videoUrl)
     {
-        YouTubeUrl = youtubeUrl;
+        VideoUrl = videoUrl;
         UpdatedAt = DateTime.UtcNow;
     }
 
@@ -136,7 +136,7 @@ public sealed class Tip
         IEnumerable<TipStep> steps,
         CategoryId categoryId,
         IEnumerable<Tag> tags,
-        YouTubeUrl? youtubeUrl,
+        VideoUrl? videoUrl,
         DateTime createdAt,
         DateTime? updatedAt,
         bool isDeleted,
@@ -149,7 +149,7 @@ public sealed class Tip
             steps,
             categoryId,
             tags,
-            youtubeUrl,
+            videoUrl,
             createdAt)
         {
             UpdatedAt = updatedAt,
