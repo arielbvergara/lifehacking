@@ -2,8 +2,14 @@ using Domain.ValueObject;
 
 namespace Domain.Entities;
 
+/// <summary>
+/// Represents a tip with title, description, steps, and optional metadata.
+/// </summary>
 public sealed class Tip
 {
+    /// <summary>
+    /// The maximum number of tags allowed per tip.
+    /// </summary>
     private const int MaxTagsCount = 10;
 
     private readonly List<TipStep> _steps;

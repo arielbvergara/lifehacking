@@ -1,6 +1,7 @@
 using Application.Dtos.Tip;
 using Application.Exceptions;
 using Application.Interfaces;
+using Application.Validation;
 using Domain.Primitives;
 using Domain.ValueObject;
 
@@ -17,44 +18,103 @@ public class CreateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
     /// <param name="request">The create tip request containing tip details.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A result containing the created tip response or an application exception.</returns>
+    /// <remarks>
+    /// Error handling:
+    /// <list type="bullet">
+    /// <item><description>Returns <see cref="ValidationException"/> with field-level errors if any field fails validation (title, description, steps, tags, video URL).</description></item>
+    /// <item><description>Returns <see cref="NotFoundException"/> if the specified category does not exist or is soft-deleted.</description></item>
+    /// <item><description>Returns <see cref="InfraException"/> if an unexpected error occurs during persistence.</description></item>
+    /// </list>
+    /// Multiple validation failures are aggregated into a single ValidationException with field-level detail.
+    /// </remarks>
     public async Task<Result<TipDetailResponse, AppException>> ExecuteAsync(
         CreateTipRequest request,
         CancellationToken cancellationToken = default)
     {
         try
         {
-            // 1. Validate and create value objects
-            var title = TipTitle.Create(request.Title);
-            var description = TipDescription.Create(request.Description);
-
-            // Create steps from request
+            // 1. Validate and create value objects using ValidationErrorBuilder
+            var validationBuilder = new ValidationErrorBuilder();
+            TipTitle? title = null;
+            TipDescription? description = null;
             var steps = new List<TipStep>();
+            var tags = new List<Tag>();
+            VideoUrl? videoUrl = null;
+
+            // Validate title
+            try
+            {
+                title = TipTitle.Create(request.Title);
+            }
+            catch (ArgumentException ex)
+            {
+                validationBuilder.AddError(nameof(request.Title), ex.Message);
+            }
+
+            // Validate description
+            try
+            {
+                description = TipDescription.Create(request.Description);
+            }
+            catch (ArgumentException ex)
+            {
+                validationBuilder.AddError(nameof(request.Description), ex.Message);
+            }
+
+            // Validate steps collection
             if (request.Steps == null || request.Steps.Count == 0)
             {
-                return Result<TipDetailResponse, AppException>.Fail(
-                    new ValidationException("At least one step is required"));
+                validationBuilder.AddError(nameof(request.Steps), "At least one step is required");
             }
-
-            foreach (var stepRequest in request.Steps)
+            else
             {
-                steps.Add(TipStep.Create(stepRequest.StepNumber, stepRequest.Description));
-            }
-
-            // Create tags from request (optional)
-            var tags = new List<Tag>();
-            if (request.Tags != null)
-            {
-                foreach (var tagValue in request.Tags)
+                // Validate each step
+                for (int i = 0; i < request.Steps.Count; i++)
                 {
-                    tags.Add(Tag.Create(tagValue));
+                    try
+                    {
+                        steps.Add(TipStep.Create(request.Steps[i].StepNumber, request.Steps[i].Description));
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        validationBuilder.AddError($"{nameof(request.Steps)}[{i}]", ex.Message);
+                    }
                 }
             }
 
-            // Create video URL if provided (optional)
-            VideoUrl? videoUrl = null;
+            // Validate tags (optional)
+            if (request.Tags != null)
+            {
+                for (int i = 0; i < request.Tags.Count; i++)
+                {
+                    try
+                    {
+                        tags.Add(Tag.Create(request.Tags[i]));
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        validationBuilder.AddError($"{nameof(request.Tags)}[{i}]", ex.Message);
+                    }
+                }
+            }
+
+            // Validate video URL (optional)
             if (!string.IsNullOrWhiteSpace(request.VideoUrl))
             {
-                videoUrl = VideoUrl.Create(request.VideoUrl);
+                try
+                {
+                    videoUrl = VideoUrl.Create(request.VideoUrl);
+                }
+                catch (ArgumentException ex)
+                {
+                    validationBuilder.AddError(nameof(request.VideoUrl), ex.Message);
+                }
+            }
+
+            // Return early if validation errors exist
+            if (validationBuilder.HasErrors)
+            {
+                return Result<TipDetailResponse, AppException>.Fail(validationBuilder.Build());
             }
 
             // 2. Check if category exists
@@ -64,20 +124,20 @@ public class CreateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
             if (category == null)
             {
                 return Result<TipDetailResponse, AppException>.Fail(
-                    new ValidationException("Category does not exist"));
+                    new NotFoundException($"Category with ID '{request.CategoryId}' not found"));
             }
 
             // 3. Validate category is not soft-deleted
             if (category.IsDeleted)
             {
                 return Result<TipDetailResponse, AppException>.Fail(
-                    new ValidationException("Cannot assign tip to a deleted category"));
+                    new NotFoundException($"Category with ID '{request.CategoryId}' not found"));
             }
 
             // 4. Create Tip entity
             var tip = Domain.Entities.Tip.Create(
-                title,
-                description,
+                title!,
+                description!,
                 steps,
                 categoryId,
                 tags,
@@ -93,10 +153,6 @@ public class CreateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
         catch (AppException ex)
         {
             return Result<TipDetailResponse, AppException>.Fail(ex);
-        }
-        catch (ArgumentException ex)
-        {
-            return Result<TipDetailResponse, AppException>.Fail(new ValidationException(ex.Message));
         }
         catch (Exception ex)
         {

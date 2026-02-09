@@ -109,8 +109,10 @@ public class UpdateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<NotFoundException>();
-        result.Error!.Message.Should().Contain("Tip");
+        var notFoundError = result.Error.Should().BeOfType<NotFoundException>().Subject;
+        notFoundError.Message.Should().Contain("Tip");
+        notFoundError.Message.Should().Contain(tipId.ToString());
+        notFoundError.Message.Should().Contain("not found");
     }
 
     [Fact]
@@ -150,8 +152,9 @@ public class UpdateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("title cannot be empty");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey(nameof(request.Title));
+        validationError.Errors[nameof(request.Title)].Should().Contain(e => e.Contains("title cannot be empty"));
     }
 
     [Fact]
@@ -191,8 +194,9 @@ public class UpdateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("description cannot be empty");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey(nameof(request.Description));
+        validationError.Errors[nameof(request.Description)].Should().Contain(e => e.Contains("description cannot be empty"));
     }
 
     [Fact]
@@ -229,12 +233,13 @@ public class UpdateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("At least one step is required");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey(nameof(request.Steps));
+        validationError.Errors[nameof(request.Steps)].Should().Contain(e => e.Contains("At least one step is required"));
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnValidationError_WhenCategoryDoesNotExist()
+    public async Task ExecuteAsync_ShouldReturnNotFoundException_WhenCategoryDoesNotExist()
     {
         // Arrange
         var tipId = Guid.NewGuid();
@@ -274,12 +279,14 @@ public class UpdateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("Category does not exist");
+        var notFoundError = result.Error.Should().BeOfType<NotFoundException>().Subject;
+        notFoundError.Message.Should().Contain("Category");
+        notFoundError.Message.Should().Contain(categoryId.ToString());
+        notFoundError.Message.Should().Contain("not found");
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnValidationError_WhenCategoryIsSoftDeleted()
+    public async Task ExecuteAsync_ShouldReturnNotFoundException_WhenCategoryIsSoftDeleted()
     {
         // Arrange
         var tipId = Guid.NewGuid();
@@ -321,12 +328,14 @@ public class UpdateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("Cannot assign tip to a deleted category");
+        var notFoundError = result.Error.Should().BeOfType<NotFoundException>().Subject;
+        notFoundError.Message.Should().Contain("Category");
+        notFoundError.Message.Should().Contain(categoryId.ToString());
+        notFoundError.Message.Should().Contain("not found");
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnSpecificError_WhenUpdatingToDeletedCategory()
+    public async Task ExecuteAsync_ShouldReturnNotFoundException_WhenUpdatingToDeletedCategory()
     {
         // Arrange
         var tipId = Guid.NewGuid();
@@ -368,8 +377,10 @@ public class UpdateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Be("Cannot assign tip to a deleted category");
+        var notFoundError = result.Error.Should().BeOfType<NotFoundException>().Subject;
+        notFoundError.Message.Should().Contain("Category");
+        notFoundError.Message.Should().Contain(categoryId.ToString());
+        notFoundError.Message.Should().Contain("not found");
     }
 
     [Fact]
@@ -409,8 +420,9 @@ public class UpdateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("supported platform");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey(nameof(request.VideoUrl));
+        validationError.Errors[nameof(request.VideoUrl)].Should().Contain(e => e.Contains("supported platform"));
     }
 
     [Fact]

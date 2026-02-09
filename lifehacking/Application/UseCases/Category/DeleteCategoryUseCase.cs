@@ -18,6 +18,14 @@ public class DeleteCategoryUseCase(
     /// <param name="id">The ID of the category to delete.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A result indicating success or an application exception.</returns>
+    /// <remarks>
+    /// Error handling:
+    /// <list type="bullet">
+    /// <item><description>Returns <see cref="NotFoundException"/> if the category does not exist or is already soft-deleted.</description></item>
+    /// <item><description>Returns <see cref="InfraException"/> if an unexpected error occurs during persistence.</description></item>
+    /// </list>
+    /// This operation cascades the soft-delete to all tips associated with the category.
+    /// </remarks>
     public async Task<Result<bool, AppException>> ExecuteAsync(
         Guid id,
         CancellationToken cancellationToken = default)
@@ -53,10 +61,6 @@ public class DeleteCategoryUseCase(
         catch (AppException ex)
         {
             return Result<bool, AppException>.Fail(ex);
-        }
-        catch (ArgumentException ex)
-        {
-            return Result<bool, AppException>.Fail(new ValidationException(ex.Message));
         }
         catch (Exception ex)
         {

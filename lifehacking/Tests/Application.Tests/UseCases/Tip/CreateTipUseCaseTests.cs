@@ -91,8 +91,9 @@ public class CreateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("title cannot be empty");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey(nameof(request.Title));
+        validationError.Errors[nameof(request.Title)].Should().Contain(e => e.Contains("title cannot be empty"));
     }
 
     [Fact]
@@ -118,8 +119,9 @@ public class CreateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("at least 5 characters");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey(nameof(request.Title));
+        validationError.Errors[nameof(request.Title)].Should().Contain(e => e.Contains("at least 5 characters"));
     }
 
     [Fact]
@@ -145,8 +147,9 @@ public class CreateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("description cannot be empty");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey(nameof(request.Description));
+        validationError.Errors[nameof(request.Description)].Should().Contain(e => e.Contains("description cannot be empty"));
     }
 
     [Fact]
@@ -172,8 +175,9 @@ public class CreateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("at least 10 characters");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey(nameof(request.Description));
+        validationError.Errors[nameof(request.Description)].Should().Contain(e => e.Contains("at least 10 characters"));
     }
 
     [Fact]
@@ -196,8 +200,9 @@ public class CreateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("At least one step is required");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey(nameof(request.Steps));
+        validationError.Errors[nameof(request.Steps)].Should().Contain(e => e.Contains("At least one step is required"));
     }
 
     [Fact]
@@ -220,12 +225,13 @@ public class CreateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("At least one step is required");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey(nameof(request.Steps));
+        validationError.Errors[nameof(request.Steps)].Should().Contain(e => e.Contains("At least one step is required"));
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnValidationError_WhenCategoryDoesNotExist()
+    public async Task ExecuteAsync_ShouldReturnNotFoundException_WhenCategoryDoesNotExist()
     {
         // Arrange
         var categoryId = Guid.NewGuid();
@@ -251,12 +257,14 @@ public class CreateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("Category does not exist");
+        var notFoundError = result.Error.Should().BeOfType<NotFoundException>().Subject;
+        notFoundError.Message.Should().Contain("Category");
+        notFoundError.Message.Should().Contain(categoryId.ToString());
+        notFoundError.Message.Should().Contain("not found");
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnValidationError_WhenCategoryIsSoftDeleted()
+    public async Task ExecuteAsync_ShouldReturnNotFoundException_WhenCategoryIsSoftDeleted()
     {
         // Arrange
         var categoryId = Guid.NewGuid();
@@ -284,8 +292,10 @@ public class CreateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("Cannot assign tip to a deleted category");
+        var notFoundError = result.Error.Should().BeOfType<NotFoundException>().Subject;
+        notFoundError.Message.Should().Contain("Category");
+        notFoundError.Message.Should().Contain(categoryId.ToString());
+        notFoundError.Message.Should().Contain("not found");
     }
 
     [Fact]
@@ -311,8 +321,41 @@ public class CreateTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
-        result.Error!.Message.Should().Contain("supported platform");
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey(nameof(request.VideoUrl));
+        validationError.Errors[nameof(request.VideoUrl)].Should().Contain(e => e.Contains("supported platform"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldReturnValidationError_WhenMultipleFieldsAreInvalid()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+
+        var request = new CreateTipRequest(
+            Title: "Tip", // Too short
+            Description: "Short", // Too short
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First step with enough characters")
+            },
+            CategoryId: categoryId,
+            Tags: null,
+            VideoUrl: "https://invalid-url.com/video" // Invalid URL
+        );
+
+        // Act
+        var result = await _useCase.ExecuteAsync(request);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey(nameof(request.Title));
+        validationError.Errors.Should().ContainKey(nameof(request.Description));
+        validationError.Errors.Should().ContainKey(nameof(request.VideoUrl));
+        validationError.Errors[nameof(request.Title)].Should().Contain(e => e.Contains("at least 5 characters"));
+        validationError.Errors[nameof(request.Description)].Should().Contain(e => e.Contains("at least 10 characters"));
+        validationError.Errors[nameof(request.VideoUrl)].Should().Contain(e => e.Contains("supported platform"));
     }
 
     [Fact]

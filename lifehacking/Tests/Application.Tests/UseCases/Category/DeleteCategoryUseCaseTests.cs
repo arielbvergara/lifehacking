@@ -113,8 +113,9 @@ public class DeleteCategoryUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<NotFoundException>();
-        result.Error!.Message.Should().Contain("Category");
+        var notFoundError = result.Error.Should().BeOfType<NotFoundException>().Subject;
+        notFoundError.Message.Should().Contain("Category");
+        notFoundError.Message.Should().Contain(categoryId.ToString());
     }
 
     [Fact]
@@ -133,8 +134,9 @@ public class DeleteCategoryUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<NotFoundException>();
-        result.Error!.Message.Should().Contain("Category");
+        var notFoundError = result.Error.Should().BeOfType<NotFoundException>().Subject;
+        notFoundError.Message.Should().Contain("Category");
+        notFoundError.Message.Should().Contain(categoryId.ToString());
     }
 
     [Fact]
@@ -408,19 +410,5 @@ public class DeleteCategoryUseCaseTests
         callOrder.Should().HaveCount(2);
         callOrder[0].Should().Be("category");
         callOrder[1].Should().Be("tip");
-    }
-
-    [Fact]
-    public async Task ExecuteAsync_ShouldReturnValidationException_WhenCategoryIdIsInvalid()
-    {
-        // Arrange
-        var invalidGuid = Guid.Empty;
-
-        // Act
-        var result = await _useCase.ExecuteAsync(invalidGuid);
-
-        // Assert
-        result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
     }
 }

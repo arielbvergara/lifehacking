@@ -15,14 +15,14 @@ namespace Application.Tests.UseCases.Category;
 /// <summary>
 /// Property-based tests for UpdateCategoryUseCase.
 /// Feature: admin-category-management
-/// 
+///
 /// These tests verify universal properties that should hold across all valid inputs
 /// using FsCheck to generate random test data and run 100+ iterations per property.
 /// </summary>
 public class UpdateCategoryUseCasePropertyTests
 {
     // Feature: admin-category-management, Property 5: Case-insensitive uniqueness on update
-    // For any two existing categories, attempting to update one category to have the same name 
+    // For any two existing categories, attempting to update one category to have the same name
     // as the other (regardless of casing) should return HTTP 409 Conflict.
     // Validates: Requirements 2.7
 
@@ -90,7 +90,7 @@ public class UpdateCategoryUseCasePropertyTests
         // with any casing variation of the second category's name
         categoryRepositoryMock
             .Setup(x => x.GetByNameAsync(It.IsAny<string>(), true, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((string name, bool includeDeleted, CancellationToken ct) =>
+            .ReturnsAsync((string name, bool _, CancellationToken _) =>
             {
                 // Return the second category if the name matches (case-insensitive)
                 if (string.Equals(name, secondName, StringComparison.OrdinalIgnoreCase))
@@ -170,7 +170,7 @@ public class UpdateCategoryUseCasePropertyTests
     }
 
     // Feature: admin-category-management, Property 6: Soft-deleted categories block name reuse on update
-    // For any existing category and any soft-deleted category, attempting to update the existing 
+    // For any existing category and any soft-deleted category, attempting to update the existing
     // category to have the same name as the soft-deleted category should return HTTP 409 Conflict.
     // Validates: Requirements 2.8
 
@@ -238,7 +238,7 @@ public class UpdateCategoryUseCasePropertyTests
         // with any casing variation of the deleted category's name
         categoryRepositoryMock
             .Setup(x => x.GetByNameAsync(It.IsAny<string>(), true, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((string name, bool includeDeleted, CancellationToken ct) =>
+            .ReturnsAsync((string name, bool includeDeleted, CancellationToken _) =>
             {
                 // Return the soft-deleted category if the name matches (case-insensitive)
                 // and includeDeleted is true
@@ -276,5 +276,306 @@ public class UpdateCategoryUseCasePropertyTests
             x => x.UpdateAsync(It.IsAny<DomainCategory>(), It.IsAny<CancellationToken>()),
             Times.Never(),
             "repository UpdateAsync should not be called when uniqueness validation fails");
+    }
+
+    // Feature: admin-api-validation-strengthening, Property: Valid names always succeed
+    // For any valid category name (2-100 characters), update should succeed.
+    // Validates: Requirements US-2 (Acceptance Criteria 1, 2)
+
+    /// <summary>
+    /// Property: Updating a category with a valid name (2-100 characters) should always succeed.
+    /// **Validates: Requirements US-2 (Acceptance Criteria 1, 2)**
+    /// </summary>
+    [Property(MaxTest = 100)]
+    [Trait("Feature", "admin-api-validation-strengthening")]
+    [Trait("Property", "Valid names always succeed")]
+    public async Task ValidNames_ShouldAlwaysSucceed_WhenLengthBetween2And100(NonEmptyString nameGen)
+    {
+        // Generate a valid name (2-100 characters)
+        var baseName = nameGen.Get.Trim();
+
+        // Ensure the name is within valid range
+        if (baseName.Length < DomainCategory.MinNameLength)
+        {
+            baseName = baseName.PadRight(DomainCategory.MinNameLength, 'a');
+        }
+        if (baseName.Length > DomainCategory.MaxNameLength)
+        {
+            baseName = baseName.Substring(0, DomainCategory.MaxNameLength);
+        }
+
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        var existingCategory = DomainCategory.FromPersistence(
+            CategoryId.Create(categoryId),
+            "Original Name",
+            DateTime.UtcNow.AddDays(-1),
+            null,
+            false,
+            null);
+
+        var categoryRepositoryMock = new Mock<ICategoryRepository>();
+        categoryRepositoryMock
+            .Setup(x => x.GetByIdAsync(
+                It.Is<CategoryId>(id => id.Value == categoryId),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingCategory);
+
+        categoryRepositoryMock
+            .Setup(x => x.GetByNameAsync(It.IsAny<string>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DomainCategory?)null); // No name conflict
+
+        categoryRepositoryMock
+            .Setup(x => x.UpdateAsync(It.IsAny<DomainCategory>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var useCase = new UpdateCategoryUseCase(categoryRepositoryMock.Object);
+        var request = new UpdateCategoryRequest(baseName);
+
+        // Act
+        var result = await useCase.ExecuteAsync(categoryId, request);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue(
+            $"updating category with valid name '{baseName}' (length {baseName.Length}) should succeed");
+        result.Value.Should().NotBeNull("successful result should contain category response");
+        result.Value!.Name.Should().Be(baseName.Trim(), "category name should match the trimmed input");
+    }
+
+    // Feature: admin-api-validation-strengthening, Property: Names < 2 chars always fail
+    // For any category name shorter than 2 characters, update should fail with ValidationException.
+    // Validates: Requirements US-2 (Acceptance Criteria 1, 2)
+
+    /// <summary>
+    /// Property: Updating a category with a name shorter than 2 characters should always fail
+    /// with ValidationException.
+    /// **Validates: Requirements US-2 (Acceptance Criteria 1, 2)**
+    /// </summary>
+    [Property(MaxTest = 100)]
+    [Trait("Feature", "admin-api-validation-strengthening")]
+    [Trait("Property", "Names < 2 chars always fail")]
+    public async Task TooShortNames_ShouldAlwaysFail_WhenLengthLessThan2(NonEmptyString nameGen)
+    {
+        // Generate a name that's too short (0-1 characters after trimming)
+        var baseName = nameGen.Get.Trim();
+
+        // Skip if already valid length or empty (empty is tested separately)
+        if (baseName.Length >= DomainCategory.MinNameLength || baseName.Length == 0)
+        {
+            baseName = "a"; // Exactly 1 character
+        }
+        else if (baseName.Length > 1)
+        {
+            baseName = baseName.Substring(0, 1); // Take only 1 character
+        }
+
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        var existingCategory = DomainCategory.FromPersistence(
+            CategoryId.Create(categoryId),
+            "Original Name",
+            DateTime.UtcNow.AddDays(-1),
+            null,
+            false,
+            null);
+
+        var categoryRepositoryMock = new Mock<ICategoryRepository>();
+        categoryRepositoryMock
+            .Setup(x => x.GetByIdAsync(
+                It.Is<CategoryId>(id => id.Value == categoryId),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingCategory);
+
+        var useCase = new UpdateCategoryUseCase(categoryRepositoryMock.Object);
+        var request = new UpdateCategoryRequest(baseName);
+
+        // Act
+        var result = await useCase.ExecuteAsync(categoryId, request);
+
+        // Assert
+        result.IsFailure.Should().BeTrue(
+            $"updating category with too-short name '{baseName}' (length {baseName.Length}) should fail");
+        result.Error.Should().BeOfType<ValidationException>(
+            "error should be ValidationException for too-short name");
+
+        var validationError = (ValidationException)result.Error!;
+        validationError.Errors.Should().ContainKey("Name",
+            "validation error should include Name field");
+        var errorMessages = string.Join(" ", validationError.Errors["Name"]);
+        errorMessages.Should().Contain("at least",
+            "error message should mention minimum length requirement");
+    }
+
+    // Feature: admin-api-validation-strengthening, Property: Names > 100 chars always fail
+    // For any category name longer than 100 characters, update should fail with ValidationException.
+    // Validates: Requirements US-2 (Acceptance Criteria 1, 2)
+
+    /// <summary>
+    /// Property: Updating a category with a name longer than 100 characters should always fail
+    /// with ValidationException.
+    /// **Validates: Requirements US-2 (Acceptance Criteria 1, 2)**
+    /// </summary>
+    [Property(MaxTest = 100)]
+    [Trait("Feature", "admin-api-validation-strengthening")]
+    [Trait("Property", "Names > 100 chars always fail")]
+    public async Task TooLongNames_ShouldAlwaysFail_WhenLengthGreaterThan100(NonEmptyString nameGen)
+    {
+        // Generate a name that's too long (> 100 characters after trimming)
+        var baseName = nameGen.Get.Trim();
+
+        // Ensure the name is actually longer than max length
+        if (baseName.Length <= DomainCategory.MaxNameLength)
+        {
+            baseName = baseName.PadRight(DomainCategory.MaxNameLength + 1, 'x');
+        }
+
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        var existingCategory = DomainCategory.FromPersistence(
+            CategoryId.Create(categoryId),
+            "Original Name",
+            DateTime.UtcNow.AddDays(-1),
+            null,
+            false,
+            null);
+
+        var categoryRepositoryMock = new Mock<ICategoryRepository>();
+        categoryRepositoryMock
+            .Setup(x => x.GetByIdAsync(
+                It.Is<CategoryId>(id => id.Value == categoryId),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingCategory);
+
+        var useCase = new UpdateCategoryUseCase(categoryRepositoryMock.Object);
+        var request = new UpdateCategoryRequest(baseName);
+
+        // Act
+        var result = await useCase.ExecuteAsync(categoryId, request);
+
+        // Assert
+        result.IsFailure.Should().BeTrue(
+            $"updating category with too-long name (length {baseName.Length}) should fail");
+        result.Error.Should().BeOfType<ValidationException>(
+            "error should be ValidationException for too-long name");
+
+        var validationError = (ValidationException)result.Error!;
+        validationError.Errors.Should().ContainKey("Name",
+            "validation error should include Name field");
+        var errorMessages = string.Join(" ", validationError.Errors["Name"]);
+        errorMessages.Should().Contain("cannot exceed",
+            "error message should mention maximum length constraint");
+    }
+
+    // Feature: admin-api-validation-strengthening, Property: Boundary values always succeed
+    // For category names with exactly 2 or exactly 100 characters, update should succeed.
+    // Validates: Requirements US-2 (Acceptance Criteria 1, 2), US-5 (Acceptance Criteria 3)
+
+    /// <summary>
+    /// Property: Updating a category with exactly 2 characters should always succeed.
+    /// **Validates: Requirements US-2 (Acceptance Criteria 1, 2), US-5 (Acceptance Criteria 3)**
+    /// </summary>
+    [Property(MaxTest = 100)]
+    [Trait("Feature", "admin-api-validation-strengthening")]
+    [Trait("Property", "Boundary values always succeed")]
+    public async Task BoundaryMinimum_ShouldAlwaysSucceed_WhenExactly2Characters(char c1, char c2)
+    {
+        // Generate a name with exactly 2 characters (minimum boundary)
+        var categoryName = $"{c1}{c2}".Trim();
+
+        // Skip if trimming resulted in less than 2 characters
+        if (categoryName.Length < 2)
+        {
+            return;
+        }
+
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        var existingCategory = DomainCategory.FromPersistence(
+            CategoryId.Create(categoryId),
+            "Original Name",
+            DateTime.UtcNow.AddDays(-1),
+            null,
+            false,
+            null);
+
+        var categoryRepositoryMock = new Mock<ICategoryRepository>();
+        categoryRepositoryMock
+            .Setup(x => x.GetByIdAsync(
+                It.Is<CategoryId>(id => id.Value == categoryId),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingCategory);
+
+        categoryRepositoryMock
+            .Setup(x => x.GetByNameAsync(It.IsAny<string>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DomainCategory?)null);
+
+        categoryRepositoryMock
+            .Setup(x => x.UpdateAsync(It.IsAny<DomainCategory>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var useCase = new UpdateCategoryUseCase(categoryRepositoryMock.Object);
+        var request = new UpdateCategoryRequest(categoryName);
+
+        // Act
+        var result = await useCase.ExecuteAsync(categoryId, request);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue(
+            $"updating category with exactly {DomainCategory.MinNameLength} characters should succeed");
+        result.Value.Should().NotBeNull("successful result should contain category response");
+    }
+
+    /// <summary>
+    /// Property: Updating a category with exactly 100 characters should always succeed.
+    /// **Validates: Requirements US-2 (Acceptance Criteria 1, 2), US-5 (Acceptance Criteria 3)**
+    /// </summary>
+    [Property(MaxTest = 100)]
+    [Trait("Feature", "admin-api-validation-strengthening")]
+    [Trait("Property", "Boundary values always succeed")]
+    public async Task BoundaryMaximum_ShouldAlwaysSucceed_WhenExactly100Characters(NonEmptyString nameGen)
+    {
+        // Generate a name with exactly 100 characters (maximum boundary)
+        var baseName = nameGen.Get.Trim();
+        var categoryName = baseName.Length >= DomainCategory.MaxNameLength
+            ? baseName.Substring(0, DomainCategory.MaxNameLength)
+            : baseName.PadRight(DomainCategory.MaxNameLength, 'a');
+
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        var existingCategory = DomainCategory.FromPersistence(
+            CategoryId.Create(categoryId),
+            "Original Name",
+            DateTime.UtcNow.AddDays(-1),
+            null,
+            false,
+            null);
+
+        var categoryRepositoryMock = new Mock<ICategoryRepository>();
+        categoryRepositoryMock
+            .Setup(x => x.GetByIdAsync(
+                It.Is<CategoryId>(id => id.Value == categoryId),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingCategory);
+
+        categoryRepositoryMock
+            .Setup(x => x.GetByNameAsync(It.IsAny<string>(), true, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DomainCategory?)null);
+
+        categoryRepositoryMock
+            .Setup(x => x.UpdateAsync(It.IsAny<DomainCategory>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var useCase = new UpdateCategoryUseCase(categoryRepositoryMock.Object);
+        var request = new UpdateCategoryRequest(categoryName);
+
+        // Act
+        var result = await useCase.ExecuteAsync(categoryId, request);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue(
+            $"updating category with exactly {DomainCategory.MaxNameLength} characters should succeed");
+        result.Value.Should().NotBeNull("successful result should contain category response");
+        result.Value!.Name.Should().HaveLength(DomainCategory.MaxNameLength,
+            "category name should have exactly 100 characters");
     }
 }

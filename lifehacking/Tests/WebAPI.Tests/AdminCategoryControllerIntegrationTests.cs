@@ -5,6 +5,7 @@ using Application.Interfaces;
 using FluentAssertions;
 using Infrastructure.Tests;
 using Microsoft.Extensions.DependencyInjection;
+using WebAPI.ErrorHandling;
 using Xunit;
 
 namespace WebAPI.Tests;
@@ -255,6 +256,79 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
 
     #endregion
 
+    #region Validation Error Response Structure Tests
+
+    [Fact]
+    public async Task CreateCategory_ShouldReturnRFC7807ValidationError_WhenNameIsEmpty()
+    {
+        // Arrange
+        var request = new CreateCategoryRequest("");
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/categories", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.Title.Should().Be(ErrorResponseTitles.ValidationErrorTitle);
+        errorResponse.Detail.Should().NotBeNullOrEmpty();
+        errorResponse.Instance.Should().NotBeNullOrEmpty();
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+        errorResponse.Errors.Should().ContainKey("Name");
+        errorResponse.Errors["Name"].Should().Contain(e => e.Contains("cannot be empty"));
+    }
+
+    [Fact]
+    public async Task CreateCategory_ShouldReturnRFC7807ValidationError_WhenNameIsTooShort()
+    {
+        // Arrange
+        var request = new CreateCategoryRequest("A");
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/categories", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.Title.Should().Be(ErrorResponseTitles.ValidationErrorTitle);
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+        errorResponse.Errors.Should().ContainKey("Name");
+        errorResponse.Errors["Name"].Should().Contain(e => e.Contains("at least 2 characters"));
+    }
+
+    [Fact]
+    public async Task CreateCategory_ShouldReturnRFC7807ValidationError_WhenNameIsTooLong()
+    {
+        // Arrange
+        var longName = new string('A', 101);
+        var request = new CreateCategoryRequest(longName);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/categories", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.Title.Should().Be(ErrorResponseTitles.ValidationErrorTitle);
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+        errorResponse.Errors.Should().ContainKey("Name");
+        errorResponse.Errors["Name"].Should().Contain(e => e.Contains("100 characters"));
+    }
+
+    #endregion
+
     #region UpdateCategory Tests
 
     [Fact]
@@ -397,6 +471,115 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
             "updating a category with a name longer than 100 characters should return 400 Bad Request");
+    }
+
+    #endregion
+
+    #region Not-Found Error Response Structure Tests
+
+    [Fact]
+    public async Task UpdateCategory_ShouldReturnRFC7807NotFoundError_WhenCategoryDoesNotExist()
+    {
+        // Arrange
+        var nonExistentId = Guid.NewGuid();
+        var request = new UpdateCategoryRequest("New Name");
+
+        // Act
+        var response = await _adminClient.PutAsJsonAsync($"/api/admin/categories/{nonExistentId}", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(404);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.NotFoundErrorType);
+        errorResponse.Title.Should().Be(ErrorResponseTitles.NotFoundErrorTitle);
+        errorResponse.Detail.Should().Contain("Category");
+        errorResponse.Detail.Should().Contain(nonExistentId.ToString());
+        errorResponse.Detail.Should().Contain("not found");
+        errorResponse.Instance.Should().NotBeNullOrEmpty();
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task DeleteCategory_ShouldReturnRFC7807NotFoundError_WhenCategoryDoesNotExist()
+    {
+        // Arrange
+        var nonExistentId = Guid.NewGuid();
+
+        // Act
+        var response = await _adminClient.DeleteAsync($"/api/admin/categories/{nonExistentId}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(404);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.NotFoundErrorType);
+        errorResponse.Title.Should().Be(ErrorResponseTitles.NotFoundErrorTitle);
+        errorResponse.Detail.Should().Contain("Category");
+        errorResponse.Detail.Should().Contain(nonExistentId.ToString());
+        errorResponse.Detail.Should().Contain("not found");
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+    }
+
+    #endregion
+
+    #region Conflict Error Response Structure Tests
+
+    [Fact]
+    public async Task CreateCategory_ShouldReturnRFC7807ConflictError_WhenNameAlreadyExists()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var existingCategory = TestDataFactory.CreateCategory("Duplicate Name");
+        await categoryRepository.AddAsync(existingCategory);
+
+        var request = new CreateCategoryRequest("Duplicate Name");
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/categories", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(409);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ConflictErrorType);
+        errorResponse.Title.Should().Be(ErrorResponseTitles.ConflictErrorTitle);
+        errorResponse.Detail.Should().Contain("already exists");
+        errorResponse.Detail.Should().Contain("Duplicate Name");
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task UpdateCategory_ShouldReturnRFC7807ConflictError_WhenNewNameExistsOnDifferentCategory()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var category1 = TestDataFactory.CreateCategory("Category 1");
+        var category2 = TestDataFactory.CreateCategory("Category 2");
+        await categoryRepository.AddAsync(category1);
+        await categoryRepository.AddAsync(category2);
+
+        var request = new UpdateCategoryRequest("Category 2");
+
+        // Act
+        var response = await _adminClient.PutAsJsonAsync($"/api/admin/categories/{category1.Id.Value}", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Conflict);
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(409);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ConflictErrorType);
+        errorResponse.Title.Should().Be(ErrorResponseTitles.ConflictErrorTitle);
+        errorResponse.Detail.Should().Contain("already exists");
+        errorResponse.CorrelationId.Should().NotBeNullOrEmpty();
     }
 
     #endregion

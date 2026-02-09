@@ -2,6 +2,17 @@ using System.Text.RegularExpressions;
 
 namespace Domain.ValueObject;
 
+/// <summary>
+/// Represents a validated video URL from supported platforms (YouTube, Instagram).
+/// </summary>
+/// <remarks>
+/// Supported formats:
+/// <list type="bullet">
+/// <item><description>YouTube Watch: https://www.youtube.com/watch?v=*</description></item>
+/// <item><description>YouTube Shorts: https://www.youtube.com/shorts/*</description></item>
+/// <item><description>Instagram: https://www.instagram.com/p/*</description></item>
+/// </list>
+/// </remarks>
 public sealed record VideoUrl
 {
     private static readonly Regex _youTubeWatchUrlRegex = new(

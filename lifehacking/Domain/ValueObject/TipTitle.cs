@@ -1,8 +1,18 @@
 namespace Domain.ValueObject;
 
+/// <summary>
+/// Represents a tip title with validation constraints.
+/// </summary>
 public sealed record TipTitle
 {
+    /// <summary>
+    /// The minimum allowed length for a tip title.
+    /// </summary>
     public const int MinLength = 5;
+
+    /// <summary>
+    /// The maximum allowed length for a tip title.
+    /// </summary>
     public const int MaxLength = 200;
 
     public string Value { get; }

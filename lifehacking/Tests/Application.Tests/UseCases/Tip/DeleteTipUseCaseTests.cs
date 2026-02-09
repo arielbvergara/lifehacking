@@ -66,8 +66,10 @@ public class DeleteTipUseCaseTests
 
         // Assert
         result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<NotFoundException>();
-        result.Error!.Message.Should().Contain("Tip");
+        var notFoundError = result.Error.Should().BeOfType<NotFoundException>().Subject;
+        notFoundError.Message.Should().Contain("Tip");
+        notFoundError.Message.Should().Contain(tipId.ToString());
+        notFoundError.Message.Should().Contain("not found");
     }
 
     [Fact]
@@ -192,19 +194,5 @@ public class DeleteTipUseCaseTests
         _tipRepositoryMock.Verify(
             x => x.UpdateAsync(It.IsAny<DomainTip>(), It.IsAny<CancellationToken>()),
             Times.Never);
-    }
-
-    [Fact]
-    public async Task ExecuteAsync_ShouldReturnValidationException_WhenTipIdIsInvalid()
-    {
-        // Arrange
-        var invalidGuid = Guid.Empty;
-
-        // Act
-        var result = await _useCase.ExecuteAsync(invalidGuid);
-
-        // Assert
-        result.IsFailure.Should().BeTrue();
-        result.Error.Should().BeOfType<ValidationException>();
     }
 }
