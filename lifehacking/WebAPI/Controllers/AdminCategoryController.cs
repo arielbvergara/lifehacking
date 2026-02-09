@@ -33,8 +33,52 @@ public class AdminCategoryController(
     /// </summary>
     /// <remarks>
     /// This endpoint is restricted to administrators. Creates a new category with the specified name.
-    /// Category names must be unique (case-insensitive) and between 2-100 characters.
-    /// Soft-deleted categories are included in uniqueness checks to prevent name reuse.
+    /// 
+    /// **Validation Rules:**
+    /// - **Name**: Required, 2-100 characters (trimmed), case-insensitive uniqueness check
+    /// 
+    /// **Possible Error Responses:**
+    /// 
+    /// **400 Bad Request** - Validation error with field-level details:
+    /// ```json
+    /// {
+    ///   "status": 400,
+    ///   "type": "https://httpstatuses.io/400/validation-error",
+    ///   "title": "Validation error",
+    ///   "detail": "One or more validation errors occurred.",
+    ///   "instance": "/api/admin/categories",
+    ///   "correlationId": "abc123",
+    ///   "errors": {
+    ///     "Name": ["Category name must be at least 2 characters"]
+    ///   }
+    /// }
+    /// ```
+    /// 
+    /// **409 Conflict** - Category name already exists (case-insensitive):
+    /// ```json
+    /// {
+    ///   "status": 409,
+    ///   "type": "https://httpstatuses.io/409/conflict",
+    ///   "title": "Conflict",
+    ///   "detail": "Category with name 'Productivity' already exists",
+    ///   "instance": "/api/admin/categories",
+    ///   "correlationId": "def456"
+    /// }
+    /// ```
+    /// 
+    /// **500 Internal Server Error** - Unexpected server error:
+    /// ```json
+    /// {
+    ///   "status": 500,
+    ///   "type": "https://httpstatuses.io/500/infrastructure-error",
+    ///   "title": "Infrastructure error",
+    ///   "detail": "An unexpected error occurred while processing your request.",
+    ///   "instance": "/api/admin/categories",
+    ///   "correlationId": "ghi789"
+    /// }
+    /// ```
+    /// 
+    /// All error responses include a `correlationId` for tracing and follow RFC 7807 Problem Details format.
     /// </remarks>
     /// <param name="request">The create category request containing the category name.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
@@ -104,9 +148,64 @@ public class AdminCategoryController(
     /// </summary>
     /// <remarks>
     /// This endpoint is restricted to administrators. Updates the category with the specified ID.
-    /// The new name must be unique (case-insensitive) and between 2-100 characters.
-    /// Soft-deleted categories are included in uniqueness checks to prevent name reuse.
-    /// Returns 404 if the category does not exist or is soft-deleted.
+    /// 
+    /// **Validation Rules:**
+    /// - **Name**: Required, 2-100 characters (trimmed), case-insensitive uniqueness check
+    /// 
+    /// **Possible Error Responses:**
+    /// 
+    /// **400 Bad Request** - Validation error with field-level details:
+    /// ```json
+    /// {
+    ///   "status": 400,
+    ///   "type": "https://httpstatuses.io/400/validation-error",
+    ///   "title": "Validation error",
+    ///   "detail": "One or more validation errors occurred.",
+    ///   "instance": "/api/admin/categories/{id}",
+    ///   "correlationId": "abc123",
+    ///   "errors": {
+    ///     "Name": ["Category name cannot exceed 100 characters"]
+    ///   }
+    /// }
+    /// ```
+    /// 
+    /// **404 Not Found** - Category does not exist or is soft-deleted:
+    /// ```json
+    /// {
+    ///   "status": 404,
+    ///   "type": "https://httpstatuses.io/404/resource-not-found",
+    ///   "title": "Resource not found",
+    ///   "detail": "Category with id '123e4567-e89b-12d3-a456-426614174000' was not found.",
+    ///   "instance": "/api/admin/categories/123e4567-e89b-12d3-a456-426614174000",
+    ///   "correlationId": "def456"
+    /// }
+    /// ```
+    /// 
+    /// **409 Conflict** - Category name already exists (case-insensitive):
+    /// ```json
+    /// {
+    ///   "status": 409,
+    ///   "type": "https://httpstatuses.io/409/conflict",
+    ///   "title": "Conflict",
+    ///   "detail": "Category with name 'Productivity' already exists",
+    ///   "instance": "/api/admin/categories/{id}",
+    ///   "correlationId": "ghi789"
+    /// }
+    /// ```
+    /// 
+    /// **500 Internal Server Error** - Unexpected server error:
+    /// ```json
+    /// {
+    ///   "status": 500,
+    ///   "type": "https://httpstatuses.io/500/infrastructure-error",
+    ///   "title": "Infrastructure error",
+    ///   "detail": "An unexpected error occurred while processing your request.",
+    ///   "instance": "/api/admin/categories/{id}",
+    ///   "correlationId": "jkl012"
+    /// }
+    /// ```
+    /// 
+    /// All error responses include a `correlationId` for tracing and follow RFC 7807 Problem Details format.
     /// </remarks>
     /// <param name="id">The ID of the category to update.</param>
     /// <param name="request">The update category request containing the new name.</param>
@@ -179,7 +278,34 @@ public class AdminCategoryController(
     /// <remarks>
     /// This endpoint is restricted to administrators. Soft-deletes the category with the specified ID
     /// and cascades the soft-delete to all tips associated with that category.
-    /// Returns 404 if the category does not exist or is already soft-deleted.
+    /// 
+    /// **Possible Error Responses:**
+    /// 
+    /// **404 Not Found** - Category does not exist or is already soft-deleted:
+    /// ```json
+    /// {
+    ///   "status": 404,
+    ///   "type": "https://httpstatuses.io/404/resource-not-found",
+    ///   "title": "Resource not found",
+    ///   "detail": "Category with id '123e4567-e89b-12d3-a456-426614174000' was not found.",
+    ///   "instance": "/api/admin/categories/123e4567-e89b-12d3-a456-426614174000",
+    ///   "correlationId": "abc123"
+    /// }
+    /// ```
+    /// 
+    /// **500 Internal Server Error** - Unexpected server error:
+    /// ```json
+    /// {
+    ///   "status": 500,
+    ///   "type": "https://httpstatuses.io/500/infrastructure-error",
+    ///   "title": "Infrastructure error",
+    ///   "detail": "An unexpected error occurred while processing your request.",
+    ///   "instance": "/api/admin/categories/{id}",
+    ///   "correlationId": "def456"
+    /// }
+    /// ```
+    /// 
+    /// All error responses include a `correlationId` for tracing and follow RFC 7807 Problem Details format.
     /// </remarks>
     /// <param name="id">The ID of the category to delete.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
