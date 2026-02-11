@@ -29,7 +29,6 @@
     <File Path="CODEOWNERS" />
     <File Path="docker-compose.yml" />
     <File Path="Dockerfile" />
-    <File Path="mcp.json" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/Tests/">

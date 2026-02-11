@@ -15,7 +15,7 @@ public static class SwaggerConfiguration
         {
             options.SwaggerDoc("v1", new OpenApiInfo
             {
-                Title = "CleanArchitecture API",
+                Title = "LifeHacking API",
                 Version = "v1"
             });
 
