@@ -220,4 +220,149 @@ public sealed class CategoryRepositoryTests : FirestoreTestBase
         persistedCategory.CreatedAt.Should().BeBefore(afterAdd);
         persistedCategory.UpdatedAt.Should().BeNull();
     }
+
+    [Fact]
+    public async Task AddAsync_ShouldPersistCategoryWithImage_WhenImageMetadataProvided()
+    {
+        // Arrange
+        var uploadedAt = DateTime.UtcNow;
+        var image = CategoryImage.Create(
+            "https://cdn.example.com/test-image.jpg",
+            "categories/test-image.jpg",
+            "test-image.jpg",
+            "image/jpeg",
+            1024000,
+            uploadedAt);
+
+        var category = Category.Create("Category with Image", image);
+
+        // Act
+        var result = await CategoryRepository.AddAsync(category);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be(category.Id);
+        result.Image.Should().NotBeNull();
+
+        var persistedCategory = await CategoryRepository.GetByIdAsync(category.Id);
+        persistedCategory.Should().NotBeNull();
+        persistedCategory!.Name.Should().Be("Category with Image");
+        persistedCategory.Image.Should().NotBeNull();
+        persistedCategory.Image!.ImageUrl.Should().Be("https://cdn.example.com/test-image.jpg");
+        persistedCategory.Image.ImageStoragePath.Should().Be("categories/test-image.jpg");
+        persistedCategory.Image.OriginalFileName.Should().Be("test-image.jpg");
+        persistedCategory.Image.ContentType.Should().Be("image/jpeg");
+        persistedCategory.Image.FileSizeBytes.Should().Be(1024000);
+        persistedCategory.Image.UploadedAt.Should().BeCloseTo(uploadedAt, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public async Task AddAsync_ShouldPersistCategoryWithoutImage_WhenNoImageProvided()
+    {
+        // Arrange
+        var category = Category.Create("Category without Image");
+
+        // Act
+        var result = await CategoryRepository.AddAsync(category);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be(category.Id);
+        result.Image.Should().BeNull();
+
+        var persistedCategory = await CategoryRepository.GetByIdAsync(category.Id);
+        persistedCategory.Should().NotBeNull();
+        persistedCategory!.Name.Should().Be("Category without Image");
+        persistedCategory.Image.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnCategoryWithImage_WhenCategoryHasImage()
+    {
+        // Arrange
+        var uploadedAt = DateTime.UtcNow;
+        var image = CategoryImage.Create(
+            "https://cdn.example.com/another-image.png",
+            "categories/another-image.png",
+            "another-image.png",
+            "image/png",
+            2048000,
+            uploadedAt);
+
+        var category = Category.Create("Category with PNG", image);
+        await CategoryRepository.AddAsync(category);
+
+        // Act
+        var result = await CategoryRepository.GetByIdAsync(category.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Image.Should().NotBeNull();
+        result.Image!.ImageUrl.Should().Be("https://cdn.example.com/another-image.png");
+        result.Image.ContentType.Should().Be("image/png");
+        result.Image.FileSizeBytes.Should().Be(2048000);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_ShouldReturnMixOfCategoriesWithAndWithoutImages()
+    {
+        // Arrange
+        var categoryWithoutImage = Category.Create("No Image Category");
+        
+        var image = CategoryImage.Create(
+            "https://cdn.example.com/image.jpg",
+            "categories/image.jpg",
+            "image.jpg",
+            "image/jpeg",
+            512000,
+            DateTime.UtcNow);
+        var categoryWithImage = Category.Create("Image Category", image);
+
+        await CategoryRepository.AddAsync(categoryWithoutImage);
+        await CategoryRepository.AddAsync(categoryWithImage);
+
+        // Act
+        var result = await CategoryRepository.GetAllAsync();
+
+        // Assert
+        result.Should().HaveCount(2);
+        
+        var withoutImage = result.FirstOrDefault(c => c.Name == "No Image Category");
+        withoutImage.Should().NotBeNull();
+        withoutImage!.Image.Should().BeNull();
+
+        var withImage = result.FirstOrDefault(c => c.Name == "Image Category");
+        withImage.Should().NotBeNull();
+        withImage!.Image.Should().NotBeNull();
+        withImage.Image!.ImageUrl.Should().Be("https://cdn.example.com/image.jpg");
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldPreserveImage_WhenCategoryUpdated()
+    {
+        // Arrange
+        var image = CategoryImage.Create(
+            "https://cdn.example.com/original.jpg",
+            "categories/original.jpg",
+            "original.jpg",
+            "image/jpeg",
+            1024000,
+            DateTime.UtcNow);
+
+        var category = Category.Create("Original Name", image);
+        await CategoryRepository.AddAsync(category);
+
+        category.UpdateName("Updated Name");
+
+        // Act
+        await CategoryRepository.UpdateAsync(category);
+
+        // Assert
+        var updatedCategory = await CategoryRepository.GetByIdAsync(category.Id);
+        updatedCategory.Should().NotBeNull();
+        updatedCategory!.Name.Should().Be("Updated Name");
+        updatedCategory.Image.Should().NotBeNull();
+        updatedCategory.Image!.ImageUrl.Should().Be("https://cdn.example.com/original.jpg");
+        updatedCategory.Image.ContentType.Should().Be("image/jpeg");
+    }
 }
