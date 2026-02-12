@@ -1,5 +1,7 @@
 using System.Threading.RateLimiting;
+using Application.Dtos.Category;
 using Application.Interfaces;
+using Domain.Primitives;
 using Google.Cloud.Firestore;
 using Infrastructure.Data.Firestore;
 using Microsoft.AspNetCore.Authentication;
@@ -126,6 +128,16 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
             services.AddSingleton<ISecurityEventNotifier, TestSecurityEventNotifier>();
 
+            // Replace the real image storage service with a test double that simulates
+            // successful uploads without requiring AWS credentials or S3 access.
+            var imageStorageDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IImageStorageService));
+            if (imageStorageDescriptor is not null)
+            {
+                services.Remove(imageStorageDescriptor);
+            }
+
+            services.AddSingleton<IImageStorageService, TestImageStorageService>();
+
             // Override rate limiting configuration with unlimited policies for tests
             // unless explicitly disabled (e.g., for rate limiting tests).
             if (DisableRateLimiting)
@@ -166,6 +178,28 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             // Firebase or requiring ADC configuration.
             var normalizedEmail = email.Trim().ToLowerInvariant();
             return Task.FromResult($"test-{normalizedEmail}");
+        }
+    }
+
+    private sealed class TestImageStorageService : IImageStorageService
+    {
+        public Task<ImageStorageResult> UploadAsync(
+            Stream fileStream,
+            string originalFileName,
+            string contentType,
+            CancellationToken cancellationToken = default)
+        {
+            // Simulate successful upload with predictable test data
+            var sanitizedFileName = originalFileName.Replace(" ", "_").Replace("..", "");
+            var storagePath = $"categories/{DateTime.UtcNow.Year}/{DateTime.UtcNow.Month:D2}/{Guid.NewGuid()}{Path.GetExtension(sanitizedFileName)}";
+            var cdnUrl = $"https://test-cdn.example.com/{storagePath}";
+
+            var result = new ImageStorageResult(
+                StoragePath: storagePath,
+                PublicUrl: cdnUrl
+            );
+
+            return Task.FromResult(result);
         }
     }
 }
