@@ -10,7 +10,39 @@ public static class CategoryExtensions
             category.Id.Value,
             category.Name,
             category.CreatedAt,
-            category.UpdatedAt
+            category.UpdatedAt,
+            category.Image?.ToCategoryImageDto()
+        );
+    }
+
+    public static CategoryImageDto ToCategoryImageDto(this Domain.ValueObject.CategoryImage image)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+
+        return new CategoryImageDto(
+            image.ImageUrl,
+            image.ImageStoragePath,
+            image.OriginalFileName,
+            image.ContentType,
+            image.FileSizeBytes,
+            image.UploadedAt
+        );
+    }
+
+    public static Domain.ValueObject.CategoryImage? ToCategoryImage(this CategoryImageDto? dto)
+    {
+        if (dto is null)
+        {
+            return null;
+        }
+
+        return Domain.ValueObject.CategoryImage.Create(
+            dto.ImageUrl,
+            dto.ImageStoragePath,
+            dto.OriginalFileName,
+            dto.ContentType,
+            dto.FileSizeBytes,
+            dto.UploadedAt
         );
     }
 }
