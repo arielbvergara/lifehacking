@@ -23,24 +23,21 @@ This file provides guidance to AI agents (e.g., Warp, Cursor, Claude, GitHub Cop
     - `UseCases/DependencyInjection.cs` exposes `AddUseCases(this IServiceCollection)` to register all use cases with DI.
   - `Infrastructure/`
     - Data access and other external concerns.
-    - `Data/AppDbContext` is the EF Core `DbContext` for the application, configured with entity type configurations.
-    - `Data/AppDbContextFactory.AddInMemoryDatabase` wires an in-memory `AppDb` for development/testing scenarios.
-    - `Configurations/UserConfiguration` maps domain value objects to scalar database columns using EF Core value converters.
-    - `Repositories/UserRepository` implements `IUserRepository` on top of `AppDbContext`.
+    - `Data/Firestore/` contains Firestore-specific implementations:
+      - Document classes (e.g., `UserDocument`, `CategoryDocument`) represent Firestore document structure with `[FirestoreData]` and `[FirestoreProperty]` attributes.
+      - Data store classes (e.g., `FirestoreUserDataStore`, `FirestoreCategoryDataStore`) handle mapping between domain entities and Firestore documents.
+    - `Repositories/` contains repository implementations (e.g., `UserRepository`, `CategoryRepository`) that implement application interfaces and delegate to Firestore data stores.
   - `WebAPI/`
     - ASP.NET Core Web API host and composition root.
     - `Program.cs` wires up:
       - Controllers and global filters (including `GlobalExceptionFilter`).
       - Swagger/Swashbuckle for API exploration in development.
-      - Dependency injection for `IUserRepository` → `UserRepository` and application use cases via `AddUseCases()`.
-      - Database configuration:
-        - Reads `UseInMemoryDB` from configuration.
-        - When `UseInMemoryDB` is `true`, uses `AddInMemoryDatabase()` to configure an in-memory EF Core database.
-        - Otherwise, configures SQL Server via `UseSqlServer` using the `ConnectionStrings:DbContext` connection string.
-      - Database initialization at startup (`EnsureCreated` when using a real database).
-    - `Controllers/UserController` exposes CRUD-style endpoints for `User`, consuming application use cases directly via constructor injection and mapping `Result<..., AppException>` to HTTP status codes.
+      - Dependency injection for repositories and application use cases via `AddUseCases()`.
+      - Firebase/Firestore configuration for data persistence.
+      - Authentication and authorization using Firebase Authentication.
+    - Controllers (e.g., `UserController`, `AdminCategoryController`) expose REST endpoints, consuming application use cases via constructor injection and mapping `Result<..., AppException>` to HTTP status codes.
     - `Filters/GlobalExceptionFilter` provides a last-resort 500 handler for unhandled exceptions.
-    - `appsettings.json` and `appsettings.Development.json` configure logging, `UseInMemoryDB`, and database connection strings.
+    - `appsettings.json` and `appsettings.Development.json` configure logging, Firebase project settings, and other application configuration.
   - `Tests/`
     - `Application.Tests/`, `Infrastructure.Tests/`, and `WebAPI.Tests` test projects target `net10.0` and reference the corresponding layers.
     - All test projects set `<DotNetTestRunner>Microsoft.Testing.Platform</DotNetTestRunner>` and use xUnit (`[Fact]`, etc.) plus supporting packages like `FluentAssertions` and `Moq`.
@@ -75,9 +72,8 @@ This will compile the Web API, application, domain, infrastructure, and test pro
 Behavior:
 
 - In `Development` environment, Swagger UI is enabled and configuration is read from `WebAPI/appsettings.Development.json`.
-- Database selection is controlled by configuration:
-  - `UseInMemoryDB = true` → uses in-memory EF Core database (`AddInMemoryDatabase`).
-  - `UseInMemoryDB = false` → uses SQL Server with the `ConnectionStrings:DbContext` connection string and calls `EnsureCreated()` on startup.
+- The application uses Firebase/Firestore for data persistence.
+- For local development and testing, the Firestore emulator can be used (configured via environment variables or Firebase configuration).
 
 ## Testing
 
@@ -148,9 +144,13 @@ Use the standard `--filter` syntax supported by `dotnet test` (and honored by Mi
   - Define meaningful named constants, enums, or configuration values.
   - Centralize reusable values in a single place when appropriate.
   - Use self-describing names that clearly express intent.
-- Keep the `Domain` project free of any references to EF Core, ASP.NET, or external infrastructure libraries.
+- Keep the `Domain` project free of any references to Firestore, Firebase, ASP.NET, or external infrastructure libraries.
 - Use value objects and entities consistently; prefer rich domain models over anemic ones, but keep persistence-specific concerns in `Infrastructure`.
 - Prefer explicit error handling via `Domain.Primitives.Result<..., AppException>` over throwing exceptions in normal control flow.
+- When mapping between domain entities and Firestore documents:
+  - Use document classes with `[FirestoreData]` and `[FirestoreProperty]` attributes for Firestore serialization.
+  - Keep mapping logic in data store classes, separate from repositories.
+  - Use factory methods like `FromPersistence` on domain entities to reconstruct from persistence data.
 
 ## Testing conventions
 
@@ -161,8 +161,9 @@ Use the standard `--filter` syntax supported by `dotnet test` (and honored by Mi
   - Example: `CreateUserAsync_ShouldReturnValidationError_WhenEmailIsInvalid`.
 - Group tests by feature/use case and target the appropriate test project:
   - Application layer behaviors → `lifehacking/Tests/Application.Tests/`.
-  - Infrastructure behaviors (repositories, EF mappings, etc.) → `lifehacking/Tests/Infrastructure.Tests/`.
+  - Infrastructure behaviors (repositories, Firestore mappings, etc.) → `lifehacking/Tests/Infrastructure.Tests/`.
   - Web API behaviors (filters, controllers, pipeline) → `lifehacking/Tests/WebAPI.Tests/`.
+- Infrastructure and WebAPI tests use the Firestore emulator for integration testing to ensure realistic persistence behavior.
 
 ## Git, branching, and commits
 
