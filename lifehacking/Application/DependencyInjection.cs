@@ -31,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<CreateCategoryUseCase>();
         services.AddScoped<UpdateCategoryUseCase>();
         services.AddScoped<DeleteCategoryUseCase>();
+        services.AddScoped<UploadCategoryImageUseCase>();
 
         // Tip use cases
         services.AddScoped<GetTipByIdUseCase>();
