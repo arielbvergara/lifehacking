@@ -41,6 +41,8 @@ public static class SecurityEventNames
     public const string TipUpdateFailed = "tip.update.failed";
     public const string TipDeleted = "tip.deleted";
     public const string TipDeleteFailed = "tip.delete.failed";
+    public const string TipImageUploadSuccess = "tip.image.upload.success";
+    public const string TipImageUploadFailed = "tip.image.upload.failed";
 }
 
 /// <summary>

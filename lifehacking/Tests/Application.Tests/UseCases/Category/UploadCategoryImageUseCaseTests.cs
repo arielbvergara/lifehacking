@@ -43,7 +43,7 @@ public sealed class UploadCategoryImageUseCaseTests
             "https://cdn.example.com/public/categories/2025/01/guid.jpg");
 
         _mockImageStorageService
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), contentType, It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), contentType, It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedStorageResult);
 
         // Act
@@ -60,7 +60,7 @@ public sealed class UploadCategoryImageUseCaseTests
         result.Value.UploadedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
 
         _mockImageStorageService.Verify(
-            x => x.UploadAsync(stream, fileName, contentType, It.IsAny<CancellationToken>()),
+            x => x.UploadAsync(stream, fileName, contentType, It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -79,7 +79,7 @@ public sealed class UploadCategoryImageUseCaseTests
             "https://cdn.example.com/public/categories/2025/01/guid.png");
 
         _mockImageStorageService
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), contentType, It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), contentType, It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedStorageResult);
 
         // Act
@@ -105,7 +105,7 @@ public sealed class UploadCategoryImageUseCaseTests
             "https://cdn.example.com/public/categories/2025/01/guid.gif");
 
         _mockImageStorageService
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), contentType, It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), contentType, It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedStorageResult);
 
         // Act
@@ -131,7 +131,7 @@ public sealed class UploadCategoryImageUseCaseTests
             "https://cdn.example.com/public/categories/2025/01/guid.webp");
 
         _mockImageStorageService
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), contentType, It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), contentType, It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedStorageResult);
 
         // Act
@@ -160,7 +160,7 @@ public sealed class UploadCategoryImageUseCaseTests
         validationError.Errors["File"].Should().Contain("File is required");
 
         _mockImageStorageService.Verify(
-            x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -183,7 +183,7 @@ public sealed class UploadCategoryImageUseCaseTests
         validationError.Errors["File"].Should().Contain(e => e.Contains("cannot exceed") && e.Contains("MB"));
 
         _mockImageStorageService.Verify(
-            x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -205,7 +205,7 @@ public sealed class UploadCategoryImageUseCaseTests
         validationError.Errors["File"].Should().Contain(e => e.Contains("Content type must be one of"));
 
         _mockImageStorageService.Verify(
-            x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -227,7 +227,7 @@ public sealed class UploadCategoryImageUseCaseTests
         validationError.Errors["File"].Should().Contain("File format does not match the declared content type");
 
         _mockImageStorageService.Verify(
-            x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -248,7 +248,7 @@ public sealed class UploadCategoryImageUseCaseTests
         validationError!.Errors.Should().ContainKey("File");
 
         _mockImageStorageService.Verify(
-            x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -270,7 +270,7 @@ public sealed class UploadCategoryImageUseCaseTests
             "https://cdn.example.com/public/categories/2025/01/guid.jpg");
 
         _mockImageStorageService
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), expectedSanitizedName, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), expectedSanitizedName, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedStorageResult);
 
         // Act
@@ -281,7 +281,7 @@ public sealed class UploadCategoryImageUseCaseTests
         result.Value!.OriginalFileName.Should().Be(expectedSanitizedName, "filename should be sanitized");
 
         _mockImageStorageService.Verify(
-            x => x.UploadAsync(It.IsAny<Stream>(), expectedSanitizedName, It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            x => x.UploadAsync(It.IsAny<Stream>(), expectedSanitizedName, It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -297,7 +297,7 @@ public sealed class UploadCategoryImageUseCaseTests
         using var stream = new MemoryStream(jpegMagicBytes);
 
         _mockImageStorageService
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InfraException("S3", "S3 upload failed"));
 
         // Act
@@ -317,7 +317,7 @@ public sealed class UploadCategoryImageUseCaseTests
         using var stream = new MemoryStream(jpegMagicBytes);
 
         _mockImageStorageService
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("Unexpected error"));
 
         // Act
@@ -346,7 +346,7 @@ public sealed class UploadCategoryImageUseCaseTests
             "https://cdn.example.com/public/categories/2025/01/guid.jpg");
 
         _mockImageStorageService
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedStorageResult);
 
         // Act
@@ -380,7 +380,7 @@ public sealed class UploadCategoryImageUseCaseTests
         using var stream = new MemoryStream(jpegMagicBytes);
 
         _mockImageStorageService
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InfraException("S3", "Upload failed"));
 
         // Act
@@ -414,7 +414,7 @@ public sealed class UploadCategoryImageUseCaseTests
             "https://cdn.example.com/public/categories/2025/01/guid.jpg");
 
         _mockImageStorageService
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedStorageResult);
 
         // Act
@@ -439,7 +439,7 @@ public sealed class UploadCategoryImageUseCaseTests
             "https://d123.cloudfront.net/public/categories/2025/01/abc-123.jpg");
 
         _mockImageStorageService
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedStorageResult);
 
         // Act
@@ -464,7 +464,7 @@ public sealed class UploadCategoryImageUseCaseTests
             "https://cdn.example.com/public/categories/2025/01/guid.jpg");
 
         _mockImageStorageService
-            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), "image/jpeg", It.IsAny<CancellationToken>()))
+            .Setup(x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), "image/jpeg", It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedStorageResult);
 
         // Act
@@ -475,7 +475,7 @@ public sealed class UploadCategoryImageUseCaseTests
         result.Value!.ContentType.Should().Be("image/jpeg", "content type should be normalized to lowercase");
 
         _mockImageStorageService.Verify(
-            x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), "image/jpeg", It.IsAny<CancellationToken>()),
+            x => x.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>(), "image/jpeg", It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 

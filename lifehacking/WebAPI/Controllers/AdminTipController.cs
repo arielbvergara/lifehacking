@@ -24,6 +24,7 @@ public class AdminTipController(
     CreateTipUseCase createTipUseCase,
     UpdateTipUseCase updateTipUseCase,
     DeleteTipUseCase deleteTipUseCase,
+    UploadTipImageUseCase uploadTipImageUseCase,
     ISecurityEventNotifier securityEventNotifier,
     ILogger<AdminTipController> logger)
     : ControllerBase
@@ -406,5 +407,159 @@ public class AdminTipController(
             cancellationToken);
 
         return NoContent();
+    }
+
+    /// <summary>
+    /// Uploads a tip image to AWS S3 storage.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint is restricted to administrators. Uploads an image file to S3 with validation
+    /// for size, content type, and format. Returns complete image metadata including CloudFront CDN URL.
+    ///
+    /// **Validation Rules:**
+    /// - **File**: Required, maximum 5MB
+    /// - **Content Type**: Must be image/jpeg, image/png, image/gif, or image/webp
+    /// - **Format**: Magic bytes must match declared content type
+    ///
+    /// **Possible Error Responses:**
+    ///
+    /// **400 Bad Request** - Validation error with field-level details:
+    /// ```json
+    /// {
+    ///   "status": 400,
+    ///   "type": "https://httpstatuses.io/400/validation-error",
+    ///   "title": "Validation error",
+    ///   "detail": "One or more validation errors occurred.",
+    ///   "instance": "/api/admin/tips/images",
+    ///   "correlationId": "abc123",
+    ///   "errors": {
+    ///     "File": ["File size cannot exceed 5MB"]
+    ///   }
+    /// }
+    /// ```
+    ///
+    /// **500 Internal Server Error** - Unexpected server error:
+    /// ```json
+    /// {
+    ///   "status": 500,
+    ///   "type": "https://httpstatuses.io/500/infrastructure-error",
+    ///   "title": "Infrastructure error",
+    ///   "detail": "An unexpected error occurred while processing your request.",
+    ///   "instance": "/api/admin/tips/images",
+    ///   "correlationId": "def456"
+    /// }
+    /// ```
+    ///
+    /// All error responses include a `correlationId` for tracing and follow RFC 7807 Problem Details format.
+    /// </remarks>
+    /// <param name="file">The image file to upload.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>The uploaded image metadata with HTTP 201 Created status.</returns>
+    [HttpPost("images")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType<TipImageDto>(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [RequestSizeLimit(5 * 1024 * 1024)]
+    public async Task<IActionResult> UploadTipImage(
+        IFormFile file,
+        CancellationToken cancellationToken = default)
+    {
+        // Validate file is provided
+        if (file == null || file.Length == 0)
+        {
+            logger.LogWarning("Image upload failed: No file provided");
+
+            await securityEventNotifier.NotifyAsync(
+                SecurityEventNames.TipImageUploadFailed,
+                null,
+                SecurityEventOutcomes.Failure,
+                HttpContext.TraceIdentifier,
+                new Dictionary<string, string?>
+                {
+                    ["RoutePath"] = HttpContext.Request.Path,
+                    ["Reason"] = "NoFileProvided",
+                    ["AdminId"] = User.Identity?.Name
+                },
+                cancellationToken);
+
+            return BadRequest(new
+            {
+                status = 400,
+                type = "https://httpstatuses.io/400/validation-error",
+                title = "Validation error",
+                detail = "One or more validation errors occurred.",
+                instance = HttpContext.Request.Path.Value,
+                correlationId = HttpContext.TraceIdentifier,
+                errors = new Dictionary<string, string[]>
+                {
+                    ["File"] = new[] { "File is required" }
+                }
+            });
+        }
+
+        // Call use case with file stream
+        await using var fileStream = file.OpenReadStream();
+        var result = await uploadTipImageUseCase.ExecuteAsync(
+            fileStream,
+            file.FileName,
+            file.ContentType,
+            file.Length,
+            cancellationToken);
+
+        if (result.IsFailure)
+        {
+            var error = result.Error!;
+            logger.LogError(error.InnerException, "Failed to upload tip image: {Message}", error.Message);
+
+            await securityEventNotifier.NotifyAsync(
+                SecurityEventNames.TipImageUploadFailed,
+                null,
+                SecurityEventOutcomes.Failure,
+                HttpContext.TraceIdentifier,
+                new Dictionary<string, string?>
+                {
+                    ["RoutePath"] = HttpContext.Request.Path,
+                    ["FileName"] = file.FileName,
+                    ["ContentType"] = file.ContentType,
+                    ["FileSize"] = file.Length.ToString(),
+                    ["ExceptionType"] = error.Type.ToString(),
+                    ["AdminId"] = User.Identity?.Name
+                },
+                cancellationToken);
+
+            return this.ToActionResult(error, HttpContext.TraceIdentifier);
+        }
+
+        var imageDto = result.Value!;
+
+        logger.LogInformation(
+            "Admin {AdminId} uploaded tip image. StoragePath: {StoragePath}, FileName: {FileName}, Size: {Size} bytes",
+            User.Identity?.Name,
+            imageDto.ImageStoragePath,
+            imageDto.OriginalFileName,
+            imageDto.FileSizeBytes);
+
+        await securityEventNotifier.NotifyAsync(
+            SecurityEventNames.TipImageUploadSuccess,
+            imageDto.ImageStoragePath,
+            SecurityEventOutcomes.Success,
+            HttpContext.TraceIdentifier,
+            new Dictionary<string, string?>
+            {
+                ["RoutePath"] = HttpContext.Request.Path,
+                ["StoragePath"] = imageDto.ImageStoragePath,
+                ["FileName"] = imageDto.OriginalFileName,
+                ["ContentType"] = imageDto.ContentType,
+                ["FileSize"] = imageDto.FileSizeBytes.ToString(),
+                ["AdminId"] = User.Identity?.Name
+            },
+            cancellationToken);
+
+        return CreatedAtAction(
+            nameof(UploadTipImage),
+            new { storagePath = imageDto.ImageStoragePath },
+            imageDto);
     }
 }

@@ -66,7 +66,7 @@ public sealed class S3ImageStorageServiceTests
             .ReturnsAsync(expectedResponse);
 
         // Act
-        var result = await _service.UploadAsync(stream, fileName, contentType, CancellationToken.None);
+        var result = await _service.UploadAsync(stream, fileName, contentType, cancellationToken: CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -98,8 +98,8 @@ public sealed class S3ImageStorageServiceTests
             .ReturnsAsync(new PutObjectResponse { ETag = "test-etag" });
 
         // Act
-        var result1 = await _service.UploadAsync(stream1, fileName, contentType, CancellationToken.None);
-        var result2 = await _service.UploadAsync(stream2, fileName, contentType, CancellationToken.None);
+        var result1 = await _service.UploadAsync(stream1, fileName, contentType, cancellationToken: CancellationToken.None);
+        var result2 = await _service.UploadAsync(stream2, fileName, contentType, cancellationToken: CancellationToken.None);
 
         // Assert
         result1.StoragePath.Should().NotBe(result2.StoragePath, "each upload should generate a unique GUID-based path");
@@ -118,7 +118,7 @@ public sealed class S3ImageStorageServiceTests
             .ReturnsAsync(new PutObjectResponse { ETag = "test-etag" });
 
         // Act
-        var result = await _service.UploadAsync(stream, fileName, contentType, CancellationToken.None);
+        var result = await _service.UploadAsync(stream, fileName, contentType, cancellationToken: CancellationToken.None);
 
         // Assert
         result.PublicUrl.Should().StartWith($"https://{_cloudFrontOptions.Value.Domain}/");
@@ -140,7 +140,7 @@ public sealed class S3ImageStorageServiceTests
             .ReturnsAsync(new PutObjectResponse { ETag = "test-etag" });
 
         // Act
-        await _service.UploadAsync(stream, fileName, contentType, CancellationToken.None);
+        await _service.UploadAsync(stream, fileName, contentType, cancellationToken: CancellationToken.None);
 
         // Assert
         capturedRequest.Should().NotBeNull();
@@ -163,7 +163,7 @@ public sealed class S3ImageStorageServiceTests
             .ReturnsAsync(new PutObjectResponse { ETag = "test-etag" });
 
         // Act
-        await _service.UploadAsync(stream, fileName, contentType, CancellationToken.None);
+        await _service.UploadAsync(stream, fileName, contentType, cancellationToken: CancellationToken.None);
 
         // Assert
         capturedRequest.Should().NotBeNull();
@@ -184,7 +184,7 @@ public sealed class S3ImageStorageServiceTests
             .ReturnsAsync(new PutObjectResponse { ETag = "test-etag" });
 
         // Act
-        var result = await _service.UploadAsync(stream, fileName, contentType, CancellationToken.None);
+        var result = await _service.UploadAsync(stream, fileName, contentType, cancellationToken: CancellationToken.None);
 
         // Assert
         result.StoragePath.Should().EndWith(".png", "file extension should be extracted from original filename");
@@ -203,7 +203,7 @@ public sealed class S3ImageStorageServiceTests
             .ReturnsAsync(new PutObjectResponse { ETag = "test-etag" });
 
         // Act
-        var result = await _service.UploadAsync(stream, fileName, contentType, CancellationToken.None);
+        var result = await _service.UploadAsync(stream, fileName, contentType, cancellationToken: CancellationToken.None);
 
         // Assert
         result.StoragePath.Should().EndWith(".jpg", "default extension should be .jpg when no extension is provided");
@@ -222,7 +222,7 @@ public sealed class S3ImageStorageServiceTests
             .ReturnsAsync(new PutObjectResponse { ETag = "test-etag" });
 
         // Act
-        var result = await _service.UploadAsync(stream, fileName, contentType, CancellationToken.None);
+        var result = await _service.UploadAsync(stream, fileName, contentType, cancellationToken: CancellationToken.None);
 
         // Assert
         var now = DateTime.UtcNow;
@@ -248,7 +248,7 @@ public sealed class S3ImageStorageServiceTests
             .ThrowsAsync(new AmazonS3Exception("S3 service unavailable"));
 
         // Act
-        var act = async () => await _service.UploadAsync(stream, fileName, contentType, CancellationToken.None);
+        var act = async () => await _service.UploadAsync(stream, fileName, contentType, cancellationToken: CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<InfraException>()
@@ -259,7 +259,7 @@ public sealed class S3ImageStorageServiceTests
     public async Task UploadAsync_ShouldThrowArgumentNullException_WhenFileStreamIsNull()
     {
         // Act
-        var act = async () => await _service.UploadAsync(null!, "test.jpg", "image/jpeg", CancellationToken.None);
+        var act = async () => await _service.UploadAsync(null!, "test.jpg", "image/jpeg", cancellationToken: CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentNullException>()
@@ -273,7 +273,7 @@ public sealed class S3ImageStorageServiceTests
         using var stream = new MemoryStream(new byte[] { 0xFF, 0xD8, 0xFF });
 
         // Act
-        var act = async () => await _service.UploadAsync(stream, string.Empty, "image/jpeg", CancellationToken.None);
+        var act = async () => await _service.UploadAsync(stream, string.Empty, "image/jpeg", cancellationToken: CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentException>()
@@ -287,7 +287,7 @@ public sealed class S3ImageStorageServiceTests
         using var stream = new MemoryStream(new byte[] { 0xFF, 0xD8, 0xFF });
 
         // Act
-        var act = async () => await _service.UploadAsync(stream, "   ", "image/jpeg", CancellationToken.None);
+        var act = async () => await _service.UploadAsync(stream, "   ", "image/jpeg", cancellationToken: CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentException>()
@@ -301,7 +301,7 @@ public sealed class S3ImageStorageServiceTests
         using var stream = new MemoryStream(new byte[] { 0xFF, 0xD8, 0xFF });
 
         // Act
-        var act = async () => await _service.UploadAsync(stream, "test.jpg", string.Empty, CancellationToken.None);
+        var act = async () => await _service.UploadAsync(stream, "test.jpg", string.Empty, cancellationToken: CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentException>()
@@ -315,7 +315,7 @@ public sealed class S3ImageStorageServiceTests
         using var stream = new MemoryStream(new byte[] { 0xFF, 0xD8, 0xFF });
 
         // Act
-        var act = async () => await _service.UploadAsync(stream, "test.jpg", "   ", CancellationToken.None);
+        var act = async () => await _service.UploadAsync(stream, "test.jpg", "   ", cancellationToken: CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<ArgumentException>()
@@ -335,7 +335,7 @@ public sealed class S3ImageStorageServiceTests
             .ThrowsAsync(new InvalidOperationException("Unexpected error"));
 
         // Act
-        var act = async () => await _service.UploadAsync(stream, fileName, contentType, CancellationToken.None);
+        var act = async () => await _service.UploadAsync(stream, fileName, contentType, cancellationToken: CancellationToken.None);
 
         // Assert
         await act.Should().ThrowAsync<InfraException>()
@@ -359,7 +359,7 @@ public sealed class S3ImageStorageServiceTests
             .ReturnsAsync(new PutObjectResponse { ETag = "test-etag" });
 
         // Act
-        await _service.UploadAsync(stream, fileName, contentType, CancellationToken.None);
+        await _service.UploadAsync(stream, fileName, contentType, cancellationToken: CancellationToken.None);
 
         // Assert
         _mockLogger.Verify(
@@ -396,7 +396,7 @@ public sealed class S3ImageStorageServiceTests
         // Act
         try
         {
-            await _service.UploadAsync(stream, fileName, contentType, CancellationToken.None);
+            await _service.UploadAsync(stream, fileName, contentType, cancellationToken: CancellationToken.None);
         }
         catch
         {
@@ -441,7 +441,7 @@ public sealed class S3ImageStorageServiceTests
             using var stream = new MemoryStream(new byte[] { 0xFF, 0xD8, 0xFF });
 
             // Act
-            var result = await _service.UploadAsync(stream, fileName, "image/jpeg", CancellationToken.None);
+            var result = await _service.UploadAsync(stream, fileName, "image/jpeg", cancellationToken: CancellationToken.None);
 
             // Assert
             result.StoragePath.Should().EndWith(expectedExtension, $"extension should be extracted correctly from {fileName}");
@@ -463,7 +463,7 @@ public sealed class S3ImageStorageServiceTests
             .ReturnsAsync(new PutObjectResponse { ETag = "test-etag" });
 
         // Act
-        await _service.UploadAsync(stream, fileName, contentType, CancellationToken.None);
+        await _service.UploadAsync(stream, fileName, contentType, cancellationToken: CancellationToken.None);
 
         // Assert
         capturedRequest.Should().NotBeNull();
@@ -486,7 +486,7 @@ public sealed class S3ImageStorageServiceTests
             .ReturnsAsync(new PutObjectResponse { ETag = "test-etag" });
 
         // Act
-        await _service.UploadAsync(stream, fileName, contentType, cts.Token);
+        await _service.UploadAsync(stream, fileName, contentType, cancellationToken: cts.Token);
 
         // Assert
         capturedToken.Should().Be(cts.Token, "cancellation token should be passed to S3 client");

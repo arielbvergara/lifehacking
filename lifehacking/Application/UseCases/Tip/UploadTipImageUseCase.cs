@@ -1,4 +1,4 @@
-using Application.Dtos.Category;
+using Application.Dtos.Tip;
 using Application.Exceptions;
 using Application.Interfaces;
 using Application.Validation;
@@ -6,27 +6,27 @@ using Domain.Constants;
 using Domain.Primitives;
 using Microsoft.Extensions.Logging;
 
-namespace Application.UseCases.Category;
+namespace Application.UseCases.Tip;
 
 /// <summary>
-/// Use case for uploading category images to cloud storage.
+/// Use case for uploading tip images to cloud storage.
 /// Validates image files and uploads them to AWS S3 with CloudFront CDN URLs.
 /// </summary>
-public class UploadCategoryImageUseCase
+public class UploadTipImageUseCase
 {
     private readonly IImageStorageService _imageStorageService;
-    private readonly ILogger<UploadCategoryImageUseCase> _logger;
+    private readonly ILogger<UploadTipImageUseCase> _logger;
 
-    public UploadCategoryImageUseCase(
+    public UploadTipImageUseCase(
         IImageStorageService imageStorageService,
-        ILogger<UploadCategoryImageUseCase> logger)
+        ILogger<UploadTipImageUseCase> logger)
     {
         _imageStorageService = imageStorageService ?? throw new ArgumentNullException(nameof(imageStorageService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
-    /// Executes the use case to upload a category image.
+    /// Executes the use case to upload a tip image.
     /// </summary>
     /// <param name="fileStream">The stream containing the image file data.</param>
     /// <param name="fileName">The original filename of the uploaded image.</param>
@@ -44,7 +44,7 @@ public class UploadCategoryImageUseCase
     /// <item><description>Returns <see cref="InfraException"/> if the S3 upload fails.</description></item>
     /// </list>
     /// </remarks>
-    public async Task<Result<CategoryImageDto, AppException>> ExecuteAsync(
+    public async Task<Result<TipImageDto, AppException>> ExecuteAsync(
         Stream fileStream,
         string fileName,
         string contentType,
@@ -59,7 +59,7 @@ public class UploadCategoryImageUseCase
             if (fileStream == null)
             {
                 validationBuilder.AddError("File", "File is required");
-                return Result<CategoryImageDto, AppException>.Fail(validationBuilder.Build());
+                return Result<TipImageDto, AppException>.Fail(validationBuilder.Build());
             }
 
             // Validate file size
@@ -89,28 +89,29 @@ public class UploadCategoryImageUseCase
             // Return early if validation errors exist
             if (validationBuilder.HasErrors)
             {
-                return Result<CategoryImageDto, AppException>.Fail(validationBuilder.Build());
+                return Result<TipImageDto, AppException>.Fail(validationBuilder.Build());
             }
 
             // Sanitize filename
             var sanitizedFileName = FileValidationHelper.SanitizeFileName(fileName);
 
             _logger.LogInformation(
-                "Uploading category image. OriginalFileName: {OriginalFileName}, SanitizedFileName: {SanitizedFileName}, ContentType: {ContentType}, Size: {Size} bytes",
+                "Uploading tip image. OriginalFileName: {OriginalFileName}, SanitizedFileName: {SanitizedFileName}, ContentType: {ContentType}, Size: {Size} bytes",
                 fileName,
                 sanitizedFileName,
                 normalizedContentType,
                 fileSizeBytes);
 
-            // Upload to storage (uses default "categories" path prefix)
+            // Upload to storage with "tips" path prefix
             var storageResult = await _imageStorageService.UploadAsync(
                 fileStream,
                 sanitizedFileName,
                 normalizedContentType,
-                cancellationToken: cancellationToken);
+                "tips",
+                cancellationToken);
 
             // Create response DTO
-            var imageDto = new CategoryImageDto(
+            var imageDto = new TipImageDto(
                 ImageUrl: storageResult.PublicUrl,
                 ImageStoragePath: storageResult.StoragePath,
                 OriginalFileName: sanitizedFileName,
@@ -120,22 +121,22 @@ public class UploadCategoryImageUseCase
             );
 
             _logger.LogInformation(
-                "Successfully uploaded category image. StoragePath: {StoragePath}, PublicUrl: {PublicUrl}",
+                "Successfully uploaded tip image. StoragePath: {StoragePath}, PublicUrl: {PublicUrl}",
                 storageResult.StoragePath,
                 storageResult.PublicUrl);
 
-            return Result<CategoryImageDto, AppException>.Ok(imageDto);
+            return Result<TipImageDto, AppException>.Ok(imageDto);
         }
         catch (AppException ex)
         {
-            _logger.LogError(ex, "Application error during category image upload");
-            return Result<CategoryImageDto, AppException>.Fail(ex);
+            _logger.LogError(ex, "Application error during tip image upload");
+            return Result<TipImageDto, AppException>.Fail(ex);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error during category image upload");
-            return Result<CategoryImageDto, AppException>.Fail(
-                new InfraException("An unexpected error occurred while uploading the category image", ex));
+            _logger.LogError(ex, "Unexpected error during tip image upload");
+            return Result<TipImageDto, AppException>.Fail(
+                new InfraException("An unexpected error occurred while uploading the tip image", ex));
         }
     }
 }
