@@ -16,7 +16,7 @@ public class AwsS3Options
     public string BucketName { get; set; } = string.Empty;
 
     /// <summary>
-    /// The AWS region where the S3 bucket is located (e.g., "us-east-1").
+    /// The AWS region where the S3 bucket is located (e.g., "eu-central-1").
     /// </summary>
-    public string Region { get; set; } = "us-east-1";
+    public string Region { get; set; } = "eu-central-1";
 }
