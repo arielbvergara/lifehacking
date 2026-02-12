@@ -115,7 +115,7 @@ public class S3ImageStorageService(
             extension = "jpg"; // Default extension if none provided
         }
 
-        return $"categories/{year}/{month}/{guid}.{extension}";
+        return $"public/categories/{year}/{month}/{guid}.{extension}";
     }
 
     /// <summary>
