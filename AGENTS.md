@@ -10,13 +10,17 @@ This file provides guidance to AI agents (e.g., Warp, Cursor, Claude, GitHub Cop
 - Main code lives under `lifehacking/`:
   - `Domain/`
     - Core domain model: entities (`Entities/`), value objects (`ValueObject/`), and primitives like `Result<T, TE>`.
+    - `Constants/` contains domain constants like `ImageConstants` for image validation rules.
+    - `ValueObject/` includes value objects like `CategoryImage` that encapsulate image metadata with validation.
     - No dependencies on other projects; everything here should be persistence-agnostic.
   - `Application/`
     - Application layer orchestrating use cases and DTOs.
-    - `Dtos/User/` contains request/response DTOs used by the API and use cases.
-    - `Interfaces/` defines ports such as `IUserRepository`, which the infrastructure implements.
+    - `Dtos/User/` and `Dtos/Category/` contain request/response DTOs used by the API and use cases.
+    - `Interfaces/` defines ports such as `IUserRepository`, `ICategoryRepository`, and `IImageStorageService`, which the infrastructure implements.
     - `Exceptions/` defines `AppException` and specific exception types (validation, conflict, not-found, infrastructure, etc.).
-    - `UseCases/` contains use case classes, grouped by feature (e.g., `UseCases/User/`). Each use case typically:
+    - `Validation/` contains validation utilities:
+      - `FileValidationHelper` provides magic byte validation and filename sanitization for image uploads.
+    - `UseCases/` contains use case classes, grouped by feature (e.g., `UseCases/User/`, `UseCases/Category/`). Each use case typically:
       - Validates and creates domain value objects.
       - Interacts with repositories via interfaces.
       - Returns `Domain.Primitives.Result<..., AppException>` to encode success/failure.
@@ -27,6 +31,11 @@ This file provides guidance to AI agents (e.g., Warp, Cursor, Claude, GitHub Cop
       - Document classes (e.g., `UserDocument`, `CategoryDocument`) represent Firestore document structure with `[FirestoreData]` and `[FirestoreProperty]` attributes.
       - Data store classes (e.g., `FirestoreUserDataStore`, `FirestoreCategoryDataStore`) handle mapping between domain entities and Firestore documents.
     - `Repositories/` contains repository implementations (e.g., `UserRepository`, `CategoryRepository`) that implement application interfaces and delegate to Firestore data stores.
+    - `Storage/` contains cloud storage implementations:
+      - `S3ImageStorageService` implements `IImageStorageService` for AWS S3 image uploads with CloudFront CDN URL generation.
+    - `Configuration/` contains configuration option classes:
+      - `AwsS3Options` for S3 bucket and region configuration.
+      - `AwsCloudFrontOptions` for CloudFront CDN domain configuration.
   - `WebAPI/`
     - ASP.NET Core Web API host and composition root.
     - `Program.cs` wires up:
@@ -34,10 +43,13 @@ This file provides guidance to AI agents (e.g., Warp, Cursor, Claude, GitHub Cop
       - Swagger/Swashbuckle for API exploration in development.
       - Dependency injection for repositories and application use cases via `AddUseCases()`.
       - Firebase/Firestore configuration for data persistence.
+      - AWS S3 and CloudFront configuration for image storage.
       - Authentication and authorization using Firebase Authentication.
     - Controllers (e.g., `UserController`, `AdminCategoryController`) expose REST endpoints, consuming application use cases via constructor injection and mapping `Result<..., AppException>` to HTTP status codes.
+    - `AdminCategoryController` includes a multipart/form-data endpoint for image uploads with request size limits.
     - `Filters/GlobalExceptionFilter` provides a last-resort 500 handler for unhandled exceptions.
-    - `appsettings.json` and `appsettings.Development.json` configure logging, Firebase project settings, and other application configuration.
+    - `Configuration/` contains configuration setup classes for AWS services.
+    - `appsettings.json` and `appsettings.Development.json` configure logging, Firebase project settings, AWS S3/CloudFront settings, and other application configuration.
   - `Tests/`
     - `Application.Tests/`, `Infrastructure.Tests/`, and `WebAPI.Tests` test projects target `net10.0` and reference the corresponding layers.
     - All test projects set `<DotNetTestRunner>Microsoft.Testing.Platform</DotNetTestRunner>` and use xUnit (`[Fact]`, etc.) plus supporting packages like `FluentAssertions` and `Moq`.
@@ -142,15 +154,20 @@ Use the standard `--filter` syntax supported by `dotnet test` (and honored by Mi
 - Treat this as a Clean Architecture, domain-driven design repository. Preserve the existing dependency direction and keep domain logic independent of infrastructure concerns.
 - Do not introduce magic numbers or magic strings. Instead:
   - Define meaningful named constants, enums, or configuration values.
-  - Centralize reusable values in a single place when appropriate.
+  - Centralize reusable values in a single place when appropriate (e.g., `ImageConstants` for image validation rules).
   - Use self-describing names that clearly express intent.
-- Keep the `Domain` project free of any references to Firestore, Firebase, ASP.NET, or external infrastructure libraries.
+- Keep the `Domain` project free of any references to Firestore, Firebase, ASP.NET, AWS, or external infrastructure libraries.
 - Use value objects and entities consistently; prefer rich domain models over anemic ones, but keep persistence-specific concerns in `Infrastructure`.
 - Prefer explicit error handling via `Domain.Primitives.Result<..., AppException>` over throwing exceptions in normal control flow.
 - When mapping between domain entities and Firestore documents:
   - Use document classes with `[FirestoreData]` and `[FirestoreProperty]` attributes for Firestore serialization.
   - Keep mapping logic in data store classes, separate from repositories.
   - Use factory methods like `FromPersistence` on domain entities to reconstruct from persistence data.
+- For file uploads and validation:
+  - Use magic byte validation to prevent content type spoofing attacks.
+  - Sanitize filenames to prevent path traversal vulnerabilities.
+  - Validate file sizes against defined constants.
+  - Generate unique storage paths using GUIDs to prevent filename collisions.
 
 ## Testing conventions
 
