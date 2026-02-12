@@ -308,7 +308,7 @@ public sealed class CategoryRepositoryTests : FirestoreTestBase
     {
         // Arrange
         var categoryWithoutImage = Category.Create("No Image Category");
-        
+
         var image = CategoryImage.Create(
             "https://cdn.example.com/image.jpg",
             "categories/image.jpg",
@@ -326,7 +326,7 @@ public sealed class CategoryRepositoryTests : FirestoreTestBase
 
         // Assert
         result.Should().HaveCount(2);
-        
+
         var withoutImage = result.FirstOrDefault(c => c.Name == "No Image Category");
         withoutImage.Should().NotBeNull();
         withoutImage!.Image.Should().BeNull();

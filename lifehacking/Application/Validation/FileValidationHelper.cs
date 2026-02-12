@@ -132,7 +132,7 @@ public static class FileValidationHelper
             // Preserve file extension if possible
             var extension = Path.GetExtension(sanitized);
             var nameWithoutExtension = Path.GetFileNameWithoutExtension(sanitized);
-            
+
             if (!string.IsNullOrEmpty(extension) && extension.Length < 255)
             {
                 var maxNameLength = 255 - extension.Length;
