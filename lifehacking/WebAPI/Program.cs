@@ -33,6 +33,9 @@ public class Program
         // Database configuration
         builder.Services.AddDatabaseConfiguration(builder.Configuration, builder.Environment);
 
+        // AWS configuration (S3, CloudFront)
+        builder.Services.AddAwsConfiguration(builder.Configuration);
+
         // Rate Limiting configuration
         builder.Services.AddRateLimitingConfiguration();
 

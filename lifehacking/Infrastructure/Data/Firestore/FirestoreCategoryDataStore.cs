@@ -151,13 +151,32 @@ public sealed class FirestoreCategoryDataStore(
     {
         var id = CategoryId.Create(Guid.Parse(document.Id));
 
+        // Reconstruct CategoryImage if all required fields are present
+        CategoryImage? image = null;
+        if (!string.IsNullOrEmpty(document.ImageUrl) &&
+            !string.IsNullOrEmpty(document.ImageStoragePath) &&
+            !string.IsNullOrEmpty(document.OriginalFileName) &&
+            !string.IsNullOrEmpty(document.ContentType) &&
+            document.FileSizeBytes.HasValue &&
+            document.UploadedAt.HasValue)
+        {
+            image = CategoryImage.Create(
+                document.ImageUrl,
+                document.ImageStoragePath,
+                document.OriginalFileName,
+                document.ContentType,
+                document.FileSizeBytes.Value,
+                document.UploadedAt.Value);
+        }
+
         return Category.FromPersistence(
             id,
             document.Name,
             document.CreatedAt,
             document.UpdatedAt,
             document.IsDeleted,
-            document.DeletedAt);
+            document.DeletedAt,
+            image);
     }
 
     private static CategoryDocument MapToDocument(Category category)
@@ -170,7 +189,13 @@ public sealed class FirestoreCategoryDataStore(
             CreatedAt = category.CreatedAt,
             UpdatedAt = category.UpdatedAt,
             IsDeleted = category.IsDeleted,
-            DeletedAt = category.DeletedAt
+            DeletedAt = category.DeletedAt,
+            ImageUrl = category.Image?.ImageUrl,
+            ImageStoragePath = category.Image?.ImageStoragePath,
+            OriginalFileName = category.Image?.OriginalFileName,
+            ContentType = category.Image?.ContentType,
+            FileSizeBytes = category.Image?.FileSizeBytes,
+            UploadedAt = category.Image?.UploadedAt
         };
     }
 }

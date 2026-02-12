@@ -32,6 +32,8 @@ public static class SecurityEventNames
     public const string CategoryUpdateFailed = "category.update.failed";
     public const string CategoryDeleted = "category.deleted";
     public const string CategoryDeleteFailed = "category.delete.failed";
+    public const string CategoryImageUploadSuccess = "category.image.upload.success";
+    public const string CategoryImageUploadFailed = "category.image.upload.failed";
 
     public const string TipCreated = "tip.created";
     public const string TipCreateFailed = "tip.create.failed";

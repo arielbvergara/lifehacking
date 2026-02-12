@@ -137,6 +137,210 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
 
     #endregion
 
+    #region CreateCategory with Image Tests
+
+    [Fact]
+    public async Task CreateCategory_ShouldReturn201Created_WhenValidImageMetadataIsProvided()
+    {
+        // Arrange
+        var imageDto = new CategoryImageDto(
+            ImageUrl: "https://cdn.example.com/categories/test-image.jpg",
+            ImageStoragePath: "categories/2024/test-image.jpg",
+            OriginalFileName: "test-image.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 1024 * 500, // 500KB
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new CreateCategoryRequest("Category With Image", imageDto);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/categories", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created,
+            "creating a category with valid image metadata should return 201 Created");
+
+        var categoryResponse = await response.Content.ReadFromJsonAsync<CategoryResponse>();
+        categoryResponse.Should().NotBeNull();
+        categoryResponse!.Name.Should().Be("Category With Image");
+        categoryResponse.Id.Should().NotBeEmpty();
+        categoryResponse.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+
+        // Verify image metadata is returned
+        categoryResponse.Image.Should().NotBeNull("image metadata should be included in the response");
+        categoryResponse.Image!.ImageUrl.Should().Be(imageDto.ImageUrl);
+        categoryResponse.Image.ImageStoragePath.Should().Be(imageDto.ImageStoragePath);
+        categoryResponse.Image.OriginalFileName.Should().Be(imageDto.OriginalFileName);
+        categoryResponse.Image.ContentType.Should().Be(imageDto.ContentType);
+        categoryResponse.Image.FileSizeBytes.Should().Be(imageDto.FileSizeBytes);
+        categoryResponse.Image.UploadedAt.Should().BeCloseTo(imageDto.UploadedAt, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public async Task CreateCategory_ShouldReturn201Created_WhenNoImageMetadataIsProvided()
+    {
+        // Arrange
+        var request = new CreateCategoryRequest("Category Without Image", Image: null);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/categories", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created,
+            "creating a category without image metadata should return 201 Created");
+
+        var categoryResponse = await response.Content.ReadFromJsonAsync<CategoryResponse>();
+        categoryResponse.Should().NotBeNull();
+        categoryResponse!.Name.Should().Be("Category Without Image");
+        categoryResponse.Id.Should().NotBeEmpty();
+        categoryResponse.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+
+        // Verify image is null
+        categoryResponse.Image.Should().BeNull("image should be null when no image metadata is provided");
+    }
+
+    [Fact]
+    public async Task CreateCategory_ShouldReturn400BadRequest_WhenImageContentTypeIsInvalid()
+    {
+        // Arrange
+        var imageDto = new CategoryImageDto(
+            ImageUrl: "https://cdn.example.com/categories/test-image.jpg",
+            ImageStoragePath: "categories/2024/test-image.jpg",
+            OriginalFileName: "test-image.jpg",
+            ContentType: "application/pdf", // Invalid content type
+            FileSizeBytes: 1024 * 500,
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new CreateCategoryRequest("Category With Invalid Image", imageDto);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/categories", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "creating a category with invalid image content type should return 400 Bad Request");
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.Errors.Should().ContainKey("Image.ContentType");
+        errorResponse.Errors["Image.ContentType"].Should().Contain(e => e.Contains("Content type must be one of"));
+    }
+
+    [Fact]
+    public async Task CreateCategory_ShouldReturn400BadRequest_WhenImageFileSizeExceedsMaximum()
+    {
+        // Arrange
+        var imageDto = new CategoryImageDto(
+            ImageUrl: "https://cdn.example.com/categories/test-image.jpg",
+            ImageStoragePath: "categories/2024/test-image.jpg",
+            OriginalFileName: "test-image.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 6 * 1024 * 1024, // 6MB, exceeds 5MB limit
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new CreateCategoryRequest("Category With Oversized Image", imageDto);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/categories", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "creating a category with oversized image should return 400 Bad Request");
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.Errors.Should().ContainKey("Image.FileSizeBytes");
+        errorResponse.Errors["Image.FileSizeBytes"].Should().Contain(e => e.Contains("cannot exceed") && e.Contains("bytes"));
+    }
+
+    [Fact]
+    public async Task CreateCategory_ShouldReturn400BadRequest_WhenImageUrlIsInvalid()
+    {
+        // Arrange
+        var imageDto = new CategoryImageDto(
+            ImageUrl: "not-a-valid-url", // Invalid URL format
+            ImageStoragePath: "categories/2024/test-image.jpg",
+            OriginalFileName: "test-image.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 1024 * 500,
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new CreateCategoryRequest("Category With Invalid URL", imageDto);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/categories", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "creating a category with invalid image URL should return 400 Bad Request");
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.Errors.Should().ContainKey("Image.ImageUrl");
+        errorResponse.Errors["Image.ImageUrl"].Should().Contain(e => e.Contains("valid absolute URL"));
+    }
+
+    [Fact]
+    public async Task GetCategories_ShouldReturnCategoriesWithAndWithoutImages_WhenMixedCategoriesExist()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+
+        // Create category with image
+        var imageDto = new CategoryImageDto(
+            ImageUrl: "https://cdn.example.com/categories/tech-image.jpg",
+            ImageStoragePath: "categories/2024/tech-image.jpg",
+            OriginalFileName: "tech-image.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 1024 * 500,
+            UploadedAt: DateTime.UtcNow
+        );
+        var createWithImageRequest = new CreateCategoryRequest("Tech Category", imageDto);
+        var createWithImageResponse = await _adminClient.PostAsJsonAsync("/api/admin/categories", createWithImageRequest);
+        createWithImageResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // Create category without image
+        var createWithoutImageRequest = new CreateCategoryRequest("Health Category", Image: null);
+        var createWithoutImageResponse = await _adminClient.PostAsJsonAsync("/api/admin/categories", createWithoutImageRequest);
+        createWithoutImageResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // Act - Retrieve all categories using the public endpoint
+        var publicClient = Factory.CreateClient();
+        var response = await publicClient.GetAsync("/api/Category");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var categoryList = await response.Content.ReadFromJsonAsync<CategoryListResponse>();
+        categoryList.Should().NotBeNull();
+        categoryList!.Items.Should().HaveCountGreaterThanOrEqualTo(2);
+
+        // Verify category with image
+        var categoryWithImage = categoryList.Items.FirstOrDefault(c => c.Name == "Tech Category");
+        categoryWithImage.Should().NotBeNull("category with image should be in the list");
+        categoryWithImage!.Image.Should().NotBeNull("image metadata should be present");
+        categoryWithImage.Image!.ImageUrl.Should().Be(imageDto.ImageUrl);
+        categoryWithImage.Image.ContentType.Should().Be(imageDto.ContentType);
+        categoryWithImage.Image.FileSizeBytes.Should().Be(imageDto.FileSizeBytes);
+
+        // Verify category without image
+        var categoryWithoutImage = categoryList.Items.FirstOrDefault(c => c.Name == "Health Category");
+        categoryWithoutImage.Should().NotBeNull("category without image should be in the list");
+        categoryWithoutImage!.Image.Should().BeNull("image should be null for category without image");
+    }
+
+    #endregion
+
     #region CreateCategory Tests
 
     [Fact]
@@ -723,6 +927,309 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
         // which should return empty for soft-deleted tips
         var activeTips = await tipRepository.GetByCategoryAsync(category.Id);
         activeTips.Should().BeEmpty("all tips should be soft-deleted");
+    }
+
+    #endregion
+
+    #region UploadCategoryImage Tests
+
+    [Fact]
+    public async Task UploadCategoryImage_ShouldReturn201Created_WhenValidJpegImageIsUploaded()
+    {
+        // Arrange
+        var jpegBytes = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46 }; // JPEG magic bytes
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new ByteArrayContent(jpegBytes);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        content.Add(fileContent, "file", "test-image.jpg");
+
+        // Act
+        var response = await _adminClient.PostAsync("/api/admin/categories/images", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created,
+            "uploading a valid JPEG image should return 201 Created");
+
+        var imageDto = await response.Content.ReadFromJsonAsync<CategoryImageDto>();
+        imageDto.Should().NotBeNull();
+        imageDto!.ImageUrl.Should().StartWith("https://");
+        imageDto.ImageStoragePath.Should().Contain("categories/");
+        imageDto.OriginalFileName.Should().Be("test-image.jpg");
+        imageDto.ContentType.Should().Be("image/jpeg");
+        imageDto.FileSizeBytes.Should().Be(jpegBytes.Length);
+        imageDto.UploadedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task UploadCategoryImage_ShouldReturn201Created_WhenValidPngImageIsUploaded()
+    {
+        // Arrange
+        var pngBytes = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }; // PNG magic bytes
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new ByteArrayContent(pngBytes);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+        content.Add(fileContent, "file", "test-image.png");
+
+        // Act
+        var response = await _adminClient.PostAsync("/api/admin/categories/images", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created,
+            "uploading a valid PNG image should return 201 Created");
+
+        var imageDto = await response.Content.ReadFromJsonAsync<CategoryImageDto>();
+        imageDto.Should().NotBeNull();
+        imageDto!.ContentType.Should().Be("image/png");
+        imageDto.OriginalFileName.Should().Be("test-image.png");
+    }
+
+    [Fact]
+    public async Task UploadCategoryImage_ShouldReturn201Created_WhenValidGifImageIsUploaded()
+    {
+        // Arrange
+        var gifBytes = new byte[] { 0x47, 0x49, 0x46, 0x38, 0x39, 0x61 }; // GIF89a magic bytes
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new ByteArrayContent(gifBytes);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/gif");
+        content.Add(fileContent, "file", "test-image.gif");
+
+        // Act
+        var response = await _adminClient.PostAsync("/api/admin/categories/images", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created,
+            "uploading a valid GIF image should return 201 Created");
+
+        var imageDto = await response.Content.ReadFromJsonAsync<CategoryImageDto>();
+        imageDto.Should().NotBeNull();
+        imageDto!.ContentType.Should().Be("image/gif");
+        imageDto.OriginalFileName.Should().Be("test-image.gif");
+    }
+
+    [Fact]
+    public async Task UploadCategoryImage_ShouldReturn201Created_WhenValidWebPImageIsUploaded()
+    {
+        // Arrange
+        var webpBytes = new byte[] { 0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50 }; // WebP magic bytes
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new ByteArrayContent(webpBytes);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/webp");
+        content.Add(fileContent, "file", "test-image.webp");
+
+        // Act
+        var response = await _adminClient.PostAsync("/api/admin/categories/images", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created,
+            "uploading a valid WebP image should return 201 Created");
+
+        var imageDto = await response.Content.ReadFromJsonAsync<CategoryImageDto>();
+        imageDto.Should().NotBeNull();
+        imageDto!.ContentType.Should().Be("image/webp");
+        imageDto.OriginalFileName.Should().Be("test-image.webp");
+    }
+
+    [Fact]
+    public async Task UploadCategoryImage_ShouldReturn400BadRequest_WhenNoFileIsProvided()
+    {
+        // Arrange
+        using var content = new MultipartFormDataContent();
+
+        // Act
+        var response = await _adminClient.PostAsync("/api/admin/categories/images", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "uploading without a file should return 400 Bad Request");
+    }
+
+    [Fact]
+    public async Task UploadCategoryImage_ShouldReturn400BadRequest_WhenFileIsEmpty()
+    {
+        // Arrange
+        var emptyBytes = Array.Empty<byte>();
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new ByteArrayContent(emptyBytes);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        content.Add(fileContent, "file", "empty.jpg");
+
+        // Act
+        var response = await _adminClient.PostAsync("/api/admin/categories/images", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "uploading an empty file should return 400 Bad Request");
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Errors.Should().ContainKey("File");
+        errorResponse.Errors["File"].Should().Contain(e => e.Contains("required"));
+    }
+
+    [Fact]
+    public async Task UploadCategoryImage_ShouldReturn400BadRequest_WhenFileSizeExceedsMaximum()
+    {
+        // Arrange - Create a 6MB file (exceeds 5MB limit)
+        var oversizedBytes = new byte[6 * 1024 * 1024];
+        Array.Fill<byte>(oversizedBytes, 0xFF);
+        // Add JPEG magic bytes at the start
+        oversizedBytes[0] = 0xFF;
+        oversizedBytes[1] = 0xD8;
+        oversizedBytes[2] = 0xFF;
+        oversizedBytes[3] = 0xE0;
+
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new ByteArrayContent(oversizedBytes);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        content.Add(fileContent, "file", "oversized.jpg");
+
+        // Act
+        var response = await _adminClient.PostAsync("/api/admin/categories/images", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "uploading a file larger than 5MB should return 400 Bad Request");
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Errors.Should().ContainKey("File");
+        errorResponse.Errors["File"].Should().Contain(e => e.Contains("cannot exceed") || e.Contains("5"));
+    }
+
+    [Fact]
+    public async Task UploadCategoryImage_ShouldReturn400BadRequest_WhenContentTypeIsInvalid()
+    {
+        // Arrange
+        var pdfBytes = new byte[] { 0x25, 0x50, 0x44, 0x46 }; // PDF magic bytes
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new ByteArrayContent(pdfBytes);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/pdf");
+        content.Add(fileContent, "file", "document.pdf");
+
+        // Act
+        var response = await _adminClient.PostAsync("/api/admin/categories/images", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "uploading a non-image file should return 400 Bad Request");
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Errors.Should().ContainKey("File");
+        errorResponse.Errors["File"].Should().Contain(e => e.Contains("Content type") || e.Contains("image"));
+    }
+
+    [Fact]
+    public async Task UploadCategoryImage_ShouldReturn400BadRequest_WhenMagicBytesDoNotMatchContentType()
+    {
+        // Arrange - Declare as JPEG but provide PNG magic bytes
+        var pngBytes = new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new ByteArrayContent(pngBytes);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        content.Add(fileContent, "file", "fake.jpg");
+
+        // Act
+        var response = await _adminClient.PostAsync("/api/admin/categories/images", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "uploading a file with mismatched magic bytes should return 400 Bad Request");
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Errors.Should().ContainKey("File");
+        errorResponse.Errors["File"].Should().Contain(e => e.Contains("does not match") || e.Contains("magic bytes"));
+    }
+
+    [Fact]
+    public async Task UploadCategoryImage_ShouldSanitizeFilename_WhenFilenameContainsUnsafeCharacters()
+    {
+        // Arrange
+        var jpegBytes = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46 };
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new ByteArrayContent(jpegBytes);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        content.Add(fileContent, "file", "../../../etc/passwd.jpg");
+
+        // Act
+        var response = await _adminClient.PostAsync("/api/admin/categories/images", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created,
+            "uploading with unsafe filename should succeed after sanitization");
+
+        var imageDto = await response.Content.ReadFromJsonAsync<CategoryImageDto>();
+        imageDto.Should().NotBeNull();
+        // The use case sanitizes the filename, so the OriginalFileName in the response will be sanitized
+        imageDto!.OriginalFileName.Should().NotContain("..",
+            "filename should be sanitized to remove path traversal sequences");
+        imageDto.ImageStoragePath.Should().NotContain("..",
+            "storage path should not contain path traversal sequences");
+    }
+
+    [Fact]
+    public async Task UploadCategoryImage_ShouldReturnCloudFrontUrl_WhenUploadSucceeds()
+    {
+        // Arrange
+        var jpegBytes = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46 };
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new ByteArrayContent(jpegBytes);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        content.Add(fileContent, "file", "test-image.jpg");
+
+        // Act
+        var response = await _adminClient.PostAsync("/api/admin/categories/images", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var imageDto = await response.Content.ReadFromJsonAsync<CategoryImageDto>();
+        imageDto.Should().NotBeNull();
+        imageDto!.ImageUrl.Should().StartWith("https://",
+            "image URL should be a secure HTTPS URL");
+        imageDto.ImageUrl.Should().Contain("cdn",
+            "image URL should point to CDN for optimal delivery");
+    }
+
+    [Fact]
+    public async Task UploadCategoryImage_ShouldReturn403Forbidden_WhenUserIsNotAdmin()
+    {
+        // Arrange
+        var jpegBytes = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46 };
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new ByteArrayContent(jpegBytes);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        content.Add(fileContent, "file", "test-image.jpg");
+
+        // Act
+        var response = await _nonAdminClient.PostAsync("/api/admin/categories/images", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            "non-admin users should not be able to upload category images");
+    }
+
+    [Fact]
+    public async Task UploadCategoryImage_ShouldReturn401Unauthorized_WhenUserIsNotAuthenticated()
+    {
+        // Arrange
+        var jpegBytes = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46 };
+        using var content = new MultipartFormDataContent();
+        using var fileContent = new ByteArrayContent(jpegBytes);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        content.Add(fileContent, "file", "test-image.jpg");
+
+        // Act
+        var response = await _unauthenticatedClient.PostAsync("/api/admin/categories/images", content);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized,
+            "unauthenticated users should not be able to upload category images");
     }
 
     #endregion

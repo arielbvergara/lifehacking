@@ -111,8 +111,15 @@ For complete request/response schemas, validation rules, and interactive testing
 
 #### Admin Categories API - `/api/admin/categories`
 
+- `POST /api/admin/categories/images` - Upload category image
+  - Accepts multipart/form-data with image file
+  - Validates file size (max 5MB), content type (JPEG, PNG, GIF, WebP), and magic bytes
+  - Uploads to AWS S3 with unique GUID-based filename
+  - Returns image metadata including CloudFront CDN URL
+  - Required for creating categories with images
 - `POST /api/admin/categories` - Create new category
   - Requires: name (2-100 characters, unique case-insensitive)
+  - Optional: image metadata from upload endpoint
 - `PUT /api/admin/categories/{id}` - Update category name
   - Enforces uniqueness
 - `DELETE /api/admin/categories/{id}` - Soft-delete category
@@ -399,6 +406,19 @@ Any configuration value can be overridden with environment variables using the f
 - `Sentry__Environment` - Environment name (Development, Staging, Production)
 - `Sentry__TracesSampleRate` - Performance monitoring sample rate (0.0 to 1.0)
 
+### AWS S3 Configuration (for Image Upload)
+
+- `AWS__S3__BucketName` - S3 bucket name for storing category images
+- `AWS__S3__Region` - AWS region where the bucket is located (e.g., `us-east-1`)
+- `AWS__CloudFront__Domain` - CloudFront distribution domain for CDN delivery
+
+AWS credentials are managed through the AWS SDK's default credential chain:
+- Environment variables: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`
+- AWS credentials file: `~/.aws/credentials`
+- IAM roles (recommended for production)
+
+For detailed AWS setup instructions, see **[docs/AWS-S3-Setup-Guide.md](docs/AWS-S3-Setup-Guide.md)**
+
 ### Production Configuration
 
 For production deployments:
@@ -436,6 +456,13 @@ export Sentry__Enabled=true
 export Sentry__Dsn=https://your-sentry-dsn@sentry.io/project-id
 export Sentry__Environment=Production
 export Sentry__TracesSampleRate=0.1
+
+# AWS S3 (for category image uploads)
+export AWS_ACCESS_KEY_ID=your-access-key-id
+export AWS_SECRET_ACCESS_KEY=your-secret-access-key
+export AWS_REGION=us-east-1
+export AWS__S3__BucketName=lifehacking-category-images-prod
+export AWS__CloudFront__Domain=your-distribution.cloudfront.net
 ```
 
 ## Testing

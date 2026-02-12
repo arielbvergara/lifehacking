@@ -1,5 +1,7 @@
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.OpenApi;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace WebAPI.Configuration;
 
@@ -24,6 +26,16 @@ public static class SwaggerConfiguration
             var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
             options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 
+            // Map IFormFile to a file upload schema for multipart/form-data
+            options.MapType<IFormFile>(() => new OpenApiSchema
+            {
+                Type = JsonSchemaType.String,
+                Format = "binary"
+            });
+
+            // Add operation filter to handle IFormFile parameters with [FromForm]
+            options.OperationFilter<FileUploadOperationFilter>();
+
             // Enable JWT bearer token support in Swagger UI
             options.AddSecurityDefinition(bearerSchemeId, new OpenApiSecurityScheme
             {
@@ -41,5 +53,53 @@ public static class SwaggerConfiguration
         });
 
         return services;
+    }
+
+    /// <summary>
+    /// Operation filter to properly handle IFormFile parameters with [FromForm] attribute.
+    /// This ensures Swagger correctly generates the schema for file upload endpoints.
+    /// </summary>
+    private class FileUploadOperationFilter : IOperationFilter
+    {
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        {
+            var fileParameters = context.ApiDescription.ParameterDescriptions
+                .Where(p => p.ModelMetadata.ModelType == typeof(IFormFile))
+                .ToList();
+
+            if (!fileParameters.Any())
+            {
+                return;
+            }
+
+            // Clear existing parameters for file uploads
+            operation.Parameters?.Clear();
+
+            // Set request body for multipart/form-data
+            operation.RequestBody = new OpenApiRequestBody
+            {
+                Content = new Dictionary<string, OpenApiMediaType>
+                {
+                    ["multipart/form-data"] = new OpenApiMediaType
+                    {
+                        Schema = new OpenApiSchema
+                        {
+                            Type = JsonSchemaType.Object,
+                            Properties = fileParameters.ToDictionary<ApiParameterDescription, string, IOpenApiSchema>(
+                                p => p.Name,
+                                _ => new OpenApiSchema
+                                {
+                                    Type = JsonSchemaType.String,
+                                    Format = "binary"
+                                }),
+                            Required = fileParameters
+                                .Where(p => p.IsRequired)
+                                .Select(p => p.Name)
+                                .ToHashSet()
+                        }
+                    }
+                }
+            };
+        }
     }
 }
