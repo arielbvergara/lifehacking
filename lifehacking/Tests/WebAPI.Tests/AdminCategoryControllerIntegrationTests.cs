@@ -137,6 +137,210 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
 
     #endregion
 
+    #region CreateCategory with Image Tests
+
+    [Fact]
+    public async Task CreateCategory_ShouldReturn201Created_WhenValidImageMetadataIsProvided()
+    {
+        // Arrange
+        var imageDto = new CategoryImageDto(
+            ImageUrl: "https://cdn.example.com/categories/test-image.jpg",
+            ImageStoragePath: "categories/2024/test-image.jpg",
+            OriginalFileName: "test-image.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 1024 * 500, // 500KB
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new CreateCategoryRequest("Category With Image", imageDto);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/categories", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created,
+            "creating a category with valid image metadata should return 201 Created");
+
+        var categoryResponse = await response.Content.ReadFromJsonAsync<CategoryResponse>();
+        categoryResponse.Should().NotBeNull();
+        categoryResponse!.Name.Should().Be("Category With Image");
+        categoryResponse.Id.Should().NotBeEmpty();
+        categoryResponse.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+
+        // Verify image metadata is returned
+        categoryResponse.Image.Should().NotBeNull("image metadata should be included in the response");
+        categoryResponse.Image!.ImageUrl.Should().Be(imageDto.ImageUrl);
+        categoryResponse.Image.ImageStoragePath.Should().Be(imageDto.ImageStoragePath);
+        categoryResponse.Image.OriginalFileName.Should().Be(imageDto.OriginalFileName);
+        categoryResponse.Image.ContentType.Should().Be(imageDto.ContentType);
+        categoryResponse.Image.FileSizeBytes.Should().Be(imageDto.FileSizeBytes);
+        categoryResponse.Image.UploadedAt.Should().BeCloseTo(imageDto.UploadedAt, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public async Task CreateCategory_ShouldReturn201Created_WhenNoImageMetadataIsProvided()
+    {
+        // Arrange
+        var request = new CreateCategoryRequest("Category Without Image", Image: null);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/categories", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created,
+            "creating a category without image metadata should return 201 Created");
+
+        var categoryResponse = await response.Content.ReadFromJsonAsync<CategoryResponse>();
+        categoryResponse.Should().NotBeNull();
+        categoryResponse!.Name.Should().Be("Category Without Image");
+        categoryResponse.Id.Should().NotBeEmpty();
+        categoryResponse.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+
+        // Verify image is null
+        categoryResponse.Image.Should().BeNull("image should be null when no image metadata is provided");
+    }
+
+    [Fact]
+    public async Task CreateCategory_ShouldReturn400BadRequest_WhenImageContentTypeIsInvalid()
+    {
+        // Arrange
+        var imageDto = new CategoryImageDto(
+            ImageUrl: "https://cdn.example.com/categories/test-image.jpg",
+            ImageStoragePath: "categories/2024/test-image.jpg",
+            OriginalFileName: "test-image.jpg",
+            ContentType: "application/pdf", // Invalid content type
+            FileSizeBytes: 1024 * 500,
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new CreateCategoryRequest("Category With Invalid Image", imageDto);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/categories", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "creating a category with invalid image content type should return 400 Bad Request");
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.Errors.Should().ContainKey("Image.ContentType");
+        errorResponse.Errors["Image.ContentType"].Should().Contain(e => e.Contains("Content type must be one of"));
+    }
+
+    [Fact]
+    public async Task CreateCategory_ShouldReturn400BadRequest_WhenImageFileSizeExceedsMaximum()
+    {
+        // Arrange
+        var imageDto = new CategoryImageDto(
+            ImageUrl: "https://cdn.example.com/categories/test-image.jpg",
+            ImageStoragePath: "categories/2024/test-image.jpg",
+            OriginalFileName: "test-image.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 6 * 1024 * 1024, // 6MB, exceeds 5MB limit
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new CreateCategoryRequest("Category With Oversized Image", imageDto);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/categories", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "creating a category with oversized image should return 400 Bad Request");
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.Errors.Should().ContainKey("Image.FileSizeBytes");
+        errorResponse.Errors["Image.FileSizeBytes"].Should().Contain(e => e.Contains("cannot exceed") && e.Contains("bytes"));
+    }
+
+    [Fact]
+    public async Task CreateCategory_ShouldReturn400BadRequest_WhenImageUrlIsInvalid()
+    {
+        // Arrange
+        var imageDto = new CategoryImageDto(
+            ImageUrl: "not-a-valid-url", // Invalid URL format
+            ImageStoragePath: "categories/2024/test-image.jpg",
+            OriginalFileName: "test-image.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 1024 * 500,
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new CreateCategoryRequest("Category With Invalid URL", imageDto);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/categories", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "creating a category with invalid image URL should return 400 Bad Request");
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.Errors.Should().ContainKey("Image.ImageUrl");
+        errorResponse.Errors["Image.ImageUrl"].Should().Contain(e => e.Contains("valid absolute URL"));
+    }
+
+    [Fact]
+    public async Task GetCategories_ShouldReturnCategoriesWithAndWithoutImages_WhenMixedCategoriesExist()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+
+        // Create category with image
+        var imageDto = new CategoryImageDto(
+            ImageUrl: "https://cdn.example.com/categories/tech-image.jpg",
+            ImageStoragePath: "categories/2024/tech-image.jpg",
+            OriginalFileName: "tech-image.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 1024 * 500,
+            UploadedAt: DateTime.UtcNow
+        );
+        var createWithImageRequest = new CreateCategoryRequest("Tech Category", imageDto);
+        var createWithImageResponse = await _adminClient.PostAsJsonAsync("/api/admin/categories", createWithImageRequest);
+        createWithImageResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // Create category without image
+        var createWithoutImageRequest = new CreateCategoryRequest("Health Category", Image: null);
+        var createWithoutImageResponse = await _adminClient.PostAsJsonAsync("/api/admin/categories", createWithoutImageRequest);
+        createWithoutImageResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // Act - Retrieve all categories using the public endpoint
+        var publicClient = Factory.CreateClient();
+        var response = await publicClient.GetAsync("/api/Category");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var categoryList = await response.Content.ReadFromJsonAsync<CategoryListResponse>();
+        categoryList.Should().NotBeNull();
+        categoryList!.Items.Should().HaveCountGreaterThanOrEqualTo(2);
+
+        // Verify category with image
+        var categoryWithImage = categoryList.Items.FirstOrDefault(c => c.Name == "Tech Category");
+        categoryWithImage.Should().NotBeNull("category with image should be in the list");
+        categoryWithImage!.Image.Should().NotBeNull("image metadata should be present");
+        categoryWithImage.Image!.ImageUrl.Should().Be(imageDto.ImageUrl);
+        categoryWithImage.Image.ContentType.Should().Be(imageDto.ContentType);
+        categoryWithImage.Image.FileSizeBytes.Should().Be(imageDto.FileSizeBytes);
+
+        // Verify category without image
+        var categoryWithoutImage = categoryList.Items.FirstOrDefault(c => c.Name == "Health Category");
+        categoryWithoutImage.Should().NotBeNull("category without image should be in the list");
+        categoryWithoutImage!.Image.Should().BeNull("image should be null for category without image");
+    }
+
+    #endregion
+
     #region CreateCategory Tests
 
     [Fact]
