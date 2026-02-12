@@ -1,7 +1,5 @@
 using System.Threading.RateLimiting;
-using Application.Dtos.Category;
 using Application.Interfaces;
-using Domain.Primitives;
 using Google.Cloud.Firestore;
 using Infrastructure.Data.Firestore;
 using Microsoft.AspNetCore.Authentication;

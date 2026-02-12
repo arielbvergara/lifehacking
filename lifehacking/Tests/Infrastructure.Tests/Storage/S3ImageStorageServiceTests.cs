@@ -1,7 +1,6 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using Application.Exceptions;
-using Application.Interfaces;
 using FluentAssertions;
 using Infrastructure.Configuration;
 using Infrastructure.Storage;
@@ -28,7 +27,7 @@ public sealed class S3ImageStorageServiceTests
     {
         _mockS3Client = new Mock<IAmazonS3>();
         _mockLogger = new Mock<ILogger<S3ImageStorageService>>();
-        
+
         _s3Options = Options.Create(new AwsS3Options
         {
             BucketName = "test-lifehacking-images",
