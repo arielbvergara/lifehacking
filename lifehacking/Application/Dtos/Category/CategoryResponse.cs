@@ -4,5 +4,6 @@ public record CategoryResponse(
     Guid Id,
     string Name,
     DateTime CreatedAt,
-    DateTime? UpdatedAt
+    DateTime? UpdatedAt,
+    CategoryImageDto? Image
 );
