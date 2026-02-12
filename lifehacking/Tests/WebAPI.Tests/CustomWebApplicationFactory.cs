@@ -185,11 +185,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             Stream fileStream,
             string originalFileName,
             string contentType,
+            string pathPrefix = "categories",
             CancellationToken cancellationToken = default)
         {
             // Simulate successful upload with predictable test data
             var sanitizedFileName = originalFileName.Replace(" ", "_").Replace("..", "");
-            var storagePath = $"categories/{DateTime.UtcNow.Year}/{DateTime.UtcNow.Month:D2}/{Guid.NewGuid()}{Path.GetExtension(sanitizedFileName)}";
+            var storagePath = $"{pathPrefix}/{DateTime.UtcNow.Year}/{DateTime.UtcNow.Month:D2}/{Guid.NewGuid()}{Path.GetExtension(sanitizedFileName)}";
             var cdnUrl = $"https://test-cdn.example.com/{storagePath}";
 
             var result = new ImageStorageResult(

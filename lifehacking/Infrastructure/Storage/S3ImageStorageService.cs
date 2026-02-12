@@ -29,16 +29,18 @@ public class S3ImageStorageService(
         Stream fileStream,
         string originalFileName,
         string contentType,
-        CancellationToken cancellationToken)
+        string pathPrefix = "categories",
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(fileStream);
         ArgumentException.ThrowIfNullOrWhiteSpace(originalFileName);
         ArgumentException.ThrowIfNullOrWhiteSpace(contentType);
+        ArgumentException.ThrowIfNullOrWhiteSpace(pathPrefix);
 
         try
         {
-            // Generate unique storage path: categories/{year}/{month}/{guid}.{extension}
-            var storagePath = GenerateStoragePath(originalFileName);
+            // Generate unique storage path: {pathPrefix}/{year}/{month}/{guid}.{extension}
+            var storagePath = GenerateStoragePath(originalFileName, pathPrefix);
 
             _logger.LogInformation(
                 "Uploading image to S3. Bucket: {BucketName}, Key: {StoragePath}, ContentType: {ContentType}",
@@ -97,11 +99,12 @@ public class S3ImageStorageService(
 
     /// <summary>
     /// Generates a unique storage path for the image.
-    /// Format: categories/{year}/{month}/{guid}.{extension}
+    /// Format: public/{pathPrefix}/{year}/{month}/{guid}.{extension}
     /// </summary>
     /// <param name="originalFileName">The original filename to extract the extension from.</param>
+    /// <param name="pathPrefix">The path prefix for organizing images (e.g., "categories", "tips").</param>
     /// <returns>The generated storage path.</returns>
-    private static string GenerateStoragePath(string originalFileName)
+    private static string GenerateStoragePath(string originalFileName, string pathPrefix)
     {
         var now = DateTime.UtcNow;
         var year = now.Year;
@@ -115,7 +118,7 @@ public class S3ImageStorageService(
             extension = "jpg"; // Default extension if none provided
         }
 
-        return $"public/categories/{year}/{month}/{guid}.{extension}";
+        return $"public/{pathPrefix}/{year}/{month}/{guid}.{extension}";
     }
 
     /// <summary>

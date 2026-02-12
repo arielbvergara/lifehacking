@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<CreateTipUseCase>();
         services.AddScoped<UpdateTipUseCase>();
         services.AddScoped<DeleteTipUseCase>();
+        services.AddScoped<UploadTipImageUseCase>();
 
         // Favorite use cases
         services.AddScoped<SearchUserFavoritesUseCase>();
