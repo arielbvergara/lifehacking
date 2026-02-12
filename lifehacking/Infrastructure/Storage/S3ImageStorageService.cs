@@ -12,24 +12,17 @@ namespace Infrastructure.Storage;
 /// AWS S3 implementation of the image storage service.
 /// Uploads images to S3 with unique GUID-based filenames and generates CloudFront CDN URLs.
 /// </summary>
-public class S3ImageStorageService : IImageStorageService
+public class S3ImageStorageService(
+    IAmazonS3 s3Client,
+    IOptions<AwsS3Options>? s3Options,
+    IOptions<AwsCloudFrontOptions>? cloudFrontOptions,
+    ILogger<S3ImageStorageService> logger)
+    : IImageStorageService
 {
-    private readonly IAmazonS3 _s3Client;
-    private readonly AwsS3Options _s3Options;
-    private readonly AwsCloudFrontOptions _cloudFrontOptions;
-    private readonly ILogger<S3ImageStorageService> _logger;
-
-    public S3ImageStorageService(
-        IAmazonS3 s3Client,
-        IOptions<AwsS3Options> s3Options,
-        IOptions<AwsCloudFrontOptions> cloudFrontOptions,
-        ILogger<S3ImageStorageService> logger)
-    {
-        _s3Client = s3Client ?? throw new ArgumentNullException(nameof(s3Client));
-        _s3Options = s3Options?.Value ?? throw new ArgumentNullException(nameof(s3Options));
-        _cloudFrontOptions = cloudFrontOptions?.Value ?? throw new ArgumentNullException(nameof(cloudFrontOptions));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly IAmazonS3 _s3Client = s3Client ?? throw new ArgumentNullException(nameof(s3Client));
+    private readonly AwsS3Options _s3Options = s3Options?.Value ?? throw new ArgumentNullException(nameof(s3Options));
+    private readonly AwsCloudFrontOptions _cloudFrontOptions = cloudFrontOptions?.Value ?? throw new ArgumentNullException(nameof(cloudFrontOptions));
+    private readonly ILogger<S3ImageStorageService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     /// <inheritdoc />
     public async Task<ImageStorageResult> UploadAsync(
