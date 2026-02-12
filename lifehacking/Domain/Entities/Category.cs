@@ -23,6 +23,7 @@ public sealed class Category
     public DateTime? UpdatedAt { get; private set; }
     public bool IsDeleted { get; private set; }
     public DateTime? DeletedAt { get; private set; }
+    public CategoryImage? Image { get; private set; }
 
     private Category(
         CategoryId id,
@@ -36,7 +37,7 @@ public sealed class Category
         DeletedAt = null;
     }
 
-    public static Category Create(string name)
+    public static Category Create(string name, CategoryImage? image = null)
     {
         ValidateName(name);
 
@@ -44,6 +45,8 @@ public sealed class Category
             CategoryId.NewId(),
             name.Trim(),
             DateTime.UtcNow);
+
+        category.Image = image;
 
         return category;
     }
@@ -76,7 +79,8 @@ public sealed class Category
         DateTime createdAt,
         DateTime? updatedAt,
         bool isDeleted,
-        DateTime? deletedAt)
+        DateTime? deletedAt,
+        CategoryImage? image = null)
     {
         var category = new Category(
             id,
@@ -86,6 +90,7 @@ public sealed class Category
         category.UpdatedAt = updatedAt;
         category.IsDeleted = isDeleted;
         category.DeletedAt = deletedAt;
+        category.Image = image;
 
         return category;
     }
