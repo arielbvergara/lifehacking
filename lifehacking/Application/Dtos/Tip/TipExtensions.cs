@@ -17,7 +17,8 @@ public static class TipExtensions
                 categoryName,
                 tip.Tags.Select(t => t.Value).ToList(),
                 tip.VideoUrl?.Value,
-                tip.CreatedAt
+                tip.CreatedAt,
+                tip.Image?.ToTipImageDto()
             );
         }
 
