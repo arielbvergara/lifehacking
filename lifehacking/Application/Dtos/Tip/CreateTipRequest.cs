@@ -6,5 +6,6 @@ public record CreateTipRequest(
     IReadOnlyList<TipStepRequest> Steps,
     Guid CategoryId,
     IReadOnlyList<string>? Tags,
-    string? VideoUrl
+    string? VideoUrl,
+    TipImageDto? Image = null
 );

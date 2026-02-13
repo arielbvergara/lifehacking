@@ -190,7 +190,107 @@ public class TipExtensionsTests
         act.Should().Throw<ArgumentNullException>();
     }
 
-    private static Tip CreateValidTip(bool includeVideoUrl = true, bool includeTags = true)
+    [Fact]
+    public void ToTipImage_ShouldConvertDto_WhenValidDtoProvided()
+    {
+        // Arrange
+        var dto = new TipImageDto(
+            ImageUrl: "https://cdn.example.com/tips/test-image.jpg",
+            ImageStoragePath: "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
+            OriginalFileName: "test-image.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 245760,
+            UploadedAt: DateTime.UtcNow
+        );
+
+        // Act
+        var result = dto.ToTipImage();
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.ImageUrl.Should().Be(dto.ImageUrl);
+        result.ImageStoragePath.Should().Be(dto.ImageStoragePath);
+        result.OriginalFileName.Should().Be(dto.OriginalFileName);
+        result.ContentType.Should().Be(dto.ContentType);
+        result.FileSizeBytes.Should().Be(dto.FileSizeBytes);
+        result.UploadedAt.Should().BeCloseTo(dto.UploadedAt, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void ToTipImage_ShouldReturnNull_WhenDtoIsNull()
+    {
+        // Arrange
+        TipImageDto? nullDto = null;
+
+        // Act
+        var result = nullDto.ToTipImage();
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void ToTipImageDto_ShouldConvertValueObject_WhenValidImageProvided()
+    {
+        // Arrange
+        var uploadedAt = DateTime.UtcNow;
+        var image = TipImage.Create(
+            imageUrl: "https://cdn.example.com/tips/test-image.jpg",
+            imageStoragePath: "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
+            originalFileName: "test-image.jpg",
+            contentType: "image/jpeg",
+            fileSizeBytes: 245760,
+            uploadedAt: uploadedAt
+        );
+
+        // Act
+        var result = image.ToTipImageDto();
+
+        // Assert
+        result.Should().NotBeNull();
+        result.ImageUrl.Should().Be(image.ImageUrl);
+        result.ImageStoragePath.Should().Be(image.ImageStoragePath);
+        result.OriginalFileName.Should().Be(image.OriginalFileName);
+        result.ContentType.Should().Be(image.ContentType);
+        result.FileSizeBytes.Should().Be(image.FileSizeBytes);
+        result.UploadedAt.Should().BeCloseTo(uploadedAt, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void ToTipDetailResponse_ShouldIncludeImage_WhenTipHasImage()
+    {
+        // Arrange
+        var tip = CreateValidTip(includeImage: true);
+        var categoryName = "Cooking";
+
+        // Act
+        var result = tip.ToTipDetailResponse(categoryName);
+
+        // Assert
+        result.Image.Should().NotBeNull();
+        result.Image!.ImageUrl.Should().Be(tip.Image!.ImageUrl);
+        result.Image.ImageStoragePath.Should().Be(tip.Image.ImageStoragePath);
+        result.Image.OriginalFileName.Should().Be(tip.Image.OriginalFileName);
+        result.Image.ContentType.Should().Be(tip.Image.ContentType);
+        result.Image.FileSizeBytes.Should().Be(tip.Image.FileSizeBytes);
+        result.Image.UploadedAt.Should().BeCloseTo(tip.Image.UploadedAt, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void ToTipDetailResponse_ShouldHaveNullImage_WhenTipHasNoImage()
+    {
+        // Arrange
+        var tip = CreateValidTip(includeImage: false);
+        var categoryName = "Cooking";
+
+        // Act
+        var result = tip.ToTipDetailResponse(categoryName);
+
+        // Assert
+        result.Image.Should().BeNull();
+    }
+
+    private static Tip CreateValidTip(bool includeVideoUrl = true, bool includeTags = true, bool includeImage = false)
     {
         var title = TipTitle.Create("How to cook pasta");
         var description = TipDescription.Create("A comprehensive guide to cooking perfect pasta every time.");
@@ -207,7 +307,16 @@ public class TipExtensionsTests
         var videoUrl = includeVideoUrl
             ? VideoUrl.Create("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
             : null;
+        var image = includeImage
+            ? TipImage.Create(
+                imageUrl: "https://cdn.example.com/tips/test-image.jpg",
+                imageStoragePath: "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
+                originalFileName: "test-image.jpg",
+                contentType: "image/jpeg",
+                fileSizeBytes: 245760,
+                uploadedAt: DateTime.UtcNow)
+            : null;
 
-        return Tip.Create(title, description, steps, categoryId, tags, videoUrl);
+        return Tip.Create(title, description, steps, categoryId, tags, videoUrl, image);
     }
 }

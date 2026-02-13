@@ -37,8 +37,40 @@ public static class TipExtensions
                 tip.VideoUrl?.Value,
                 tip.VideoUrl?.VideoId,
                 tip.CreatedAt,
-                tip.UpdatedAt
+                tip.UpdatedAt,
+                tip.Image?.ToTipImageDto()
             );
         }
+    }
+
+    public static TipImageDto ToTipImageDto(this Domain.ValueObject.TipImage image)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+
+        return new TipImageDto(
+            image.ImageUrl,
+            image.ImageStoragePath,
+            image.OriginalFileName,
+            image.ContentType,
+            image.FileSizeBytes,
+            image.UploadedAt
+        );
+    }
+
+    public static Domain.ValueObject.TipImage? ToTipImage(this TipImageDto? dto)
+    {
+        if (dto is null)
+        {
+            return null;
+        }
+
+        return Domain.ValueObject.TipImage.Create(
+            dto.ImageUrl,
+            dto.ImageStoragePath,
+            dto.OriginalFileName,
+            dto.ContentType,
+            dto.FileSizeBytes,
+            dto.UploadedAt
+        );
     }
 }
