@@ -22,6 +22,7 @@ public sealed class Tip
     public CategoryId CategoryId { get; private set; }
     public IReadOnlyList<Tag> Tags => _tags.AsReadOnly();
     public VideoUrl? VideoUrl { get; private set; }
+    public TipImage? Image { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public bool IsDeleted { get; private set; }
@@ -55,7 +56,8 @@ public sealed class Tip
         IEnumerable<TipStep> steps,
         CategoryId categoryId,
         IEnumerable<Tag>? tags = null,
-        VideoUrl? videoUrl = null)
+        VideoUrl? videoUrl = null,
+        TipImage? image = null)
     {
         var stepsList = steps.ToList();
         ValidateSteps(stepsList);
@@ -72,6 +74,8 @@ public sealed class Tip
             tagsList,
             videoUrl,
             DateTime.UtcNow);
+
+        tip.Image = image;
 
         return tip;
     }
@@ -146,7 +150,8 @@ public sealed class Tip
         DateTime createdAt,
         DateTime? updatedAt,
         bool isDeleted,
-        DateTime? deletedAt)
+        DateTime? deletedAt,
+        TipImage? image = null)
     {
         var tip = new Tip(
             id,
@@ -160,7 +165,8 @@ public sealed class Tip
         {
             UpdatedAt = updatedAt,
             IsDeleted = isDeleted,
-            DeletedAt = deletedAt
+            DeletedAt = deletedAt,
+            Image = image
         };
 
         return tip;

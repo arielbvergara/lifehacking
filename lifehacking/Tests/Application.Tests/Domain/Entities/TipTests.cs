@@ -301,6 +301,110 @@ public class TipTests
         tip.UpdatedAt.Should().Be(updatedAt);
     }
 
+    [Fact]
+    public void Create_ShouldIncludeImage_WhenImageProvided()
+    {
+        // Arrange
+        var title = TipTitle.Create("How to cook pasta");
+        var description = TipDescription.Create("A comprehensive guide to cooking perfect pasta every time.");
+        var steps = new List<TipStep> { TipStep.Create(1, "Boil water in a large pot.") };
+        var categoryId = CategoryId.NewId();
+        var image = TipImage.Create(
+            "https://cdn.example.com/tips/pasta.jpg",
+            "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
+            "pasta.jpg",
+            "image/jpeg",
+            245760,
+            DateTime.UtcNow);
+
+        // Act
+        var tip = Tip.Create(title, description, steps, categoryId, image: image);
+
+        // Assert
+        tip.Image.Should().NotBeNull();
+        tip.Image.Should().Be(image);
+        tip.Image!.ImageUrl.Should().Be("https://cdn.example.com/tips/pasta.jpg");
+        tip.Image.ImageStoragePath.Should().Be("tips/550e8400-e29b-41d4-a716-446655440000.jpg");
+        tip.Image.OriginalFileName.Should().Be("pasta.jpg");
+        tip.Image.ContentType.Should().Be("image/jpeg");
+        tip.Image.FileSizeBytes.Should().Be(245760);
+    }
+
+    [Fact]
+    public void Create_ShouldHaveNullImage_WhenImageNotProvided()
+    {
+        // Arrange
+        var title = TipTitle.Create("How to cook pasta");
+        var description = TipDescription.Create("A comprehensive guide to cooking perfect pasta every time.");
+        var steps = new List<TipStep> { TipStep.Create(1, "Boil water in a large pot.") };
+        var categoryId = CategoryId.NewId();
+
+        // Act
+        var tip = Tip.Create(title, description, steps, categoryId);
+
+        // Assert
+        tip.Image.Should().BeNull();
+    }
+
+    [Fact]
+    public void FromPersistence_ShouldReconstructImage_WhenImageProvided()
+    {
+        // Arrange
+        var id = TipId.NewId();
+        var title = TipTitle.Create("How to cook pasta");
+        var description = TipDescription.Create("A comprehensive guide to cooking perfect pasta every time.");
+        var steps = new List<TipStep> { TipStep.Create(1, "Boil water in a large pot.") };
+        var categoryId = CategoryId.NewId();
+        var tags = new List<Tag> { Tag.Create("cooking") };
+        var videoUrl = VideoUrl.Create("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        var createdAt = DateTime.UtcNow.AddDays(-5);
+        var updatedAt = DateTime.UtcNow.AddDays(-1);
+        var image = TipImage.Create(
+            "https://cdn.example.com/tips/pasta.jpg",
+            "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
+            "pasta.jpg",
+            "image/jpeg",
+            245760,
+            DateTime.UtcNow);
+
+        // Act
+        var tip = Tip.FromPersistence(
+            id, title, description, steps, categoryId, tags, videoUrl,
+            createdAt, updatedAt, false, null, image);
+
+        // Assert
+        tip.Image.Should().NotBeNull();
+        tip.Image.Should().Be(image);
+        tip.Image!.ImageUrl.Should().Be("https://cdn.example.com/tips/pasta.jpg");
+        tip.Image.ImageStoragePath.Should().Be("tips/550e8400-e29b-41d4-a716-446655440000.jpg");
+        tip.Image.OriginalFileName.Should().Be("pasta.jpg");
+        tip.Image.ContentType.Should().Be("image/jpeg");
+        tip.Image.FileSizeBytes.Should().Be(245760);
+    }
+
+    [Fact]
+    public void FromPersistence_ShouldHaveNullImage_WhenImageNotProvided()
+    {
+        // Arrange
+        var id = TipId.NewId();
+        var title = TipTitle.Create("How to cook pasta");
+        var description = TipDescription.Create("A comprehensive guide to cooking perfect pasta every time.");
+        var steps = new List<TipStep> { TipStep.Create(1, "Boil water in a large pot.") };
+        var categoryId = CategoryId.NewId();
+        var tags = new List<Tag> { Tag.Create("cooking") };
+        var videoUrl = VideoUrl.Create("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+        var createdAt = DateTime.UtcNow.AddDays(-5);
+        var updatedAt = DateTime.UtcNow.AddDays(-1);
+
+        // Act
+        var tip = Tip.FromPersistence(
+            id, title, description, steps, categoryId, tags, videoUrl,
+            createdAt, updatedAt, false, null, image: null);
+
+        // Assert
+        tip.Image.Should().BeNull();
+    }
+
     private static Tip CreateValidTip()
     {
         var title = TipTitle.Create("How to cook pasta");
