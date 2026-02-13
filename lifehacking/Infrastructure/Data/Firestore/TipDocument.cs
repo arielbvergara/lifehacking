@@ -26,6 +26,24 @@ public sealed class TipDocument
     [FirestoreProperty("videoUrl")]
     public string? VideoUrl { get; set; }
 
+    [FirestoreProperty("imageUrl")]
+    public string? ImageUrl { get; set; }
+
+    [FirestoreProperty("imageStoragePath")]
+    public string? ImageStoragePath { get; set; }
+
+    [FirestoreProperty("originalFileName")]
+    public string? OriginalFileName { get; set; }
+
+    [FirestoreProperty("contentType")]
+    public string? ContentType { get; set; }
+
+    [FirestoreProperty("fileSizeBytes")]
+    public long? FileSizeBytes { get; set; }
+
+    [FirestoreProperty("uploadedAt")]
+    public DateTime? UploadedAt { get; set; }
+
     [FirestoreProperty("createdAt")]
     public DateTime CreatedAt { get; set; }
 

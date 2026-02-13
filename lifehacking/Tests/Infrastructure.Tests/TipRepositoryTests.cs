@@ -508,4 +508,79 @@ public sealed class TipRepositoryTests : FirestoreTestBase
 
         return Tip.Create(tipTitle, tipDescription, steps, tipCategoryId, tipTags);
     }
+
+    [Fact]
+    public async Task AddAsync_ShouldPersistImage_WhenTipHasImage()
+    {
+        // Arrange
+        var tipImage = TipImage.Create(
+            "https://cdn.example.com/tips/test-image.jpg",
+            "tips/test-image.jpg",
+            "test-image.jpg",
+            "image/jpeg",
+            245760,
+            DateTime.UtcNow);
+
+        var tip = CreateTestTipWithImage(tipImage);
+
+        // Act
+        var result = await TipRepository.AddAsync(tip);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Image.Should().NotBeNull();
+
+        var persistedTip = await TipRepository.GetByIdAsync(tip.Id);
+        persistedTip.Should().NotBeNull();
+        persistedTip!.Image.Should().NotBeNull();
+        persistedTip.Image!.ImageUrl.Should().Be(tipImage.ImageUrl);
+        persistedTip.Image.ImageStoragePath.Should().Be(tipImage.ImageStoragePath);
+        persistedTip.Image.OriginalFileName.Should().Be(tipImage.OriginalFileName);
+        persistedTip.Image.ContentType.Should().Be(tipImage.ContentType);
+        persistedTip.Image.FileSizeBytes.Should().Be(tipImage.FileSizeBytes);
+        persistedTip.Image.UploadedAt.Should().BeCloseTo(tipImage.UploadedAt, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReconstructImage_WhenTipHasImage()
+    {
+        // Arrange
+        var tipImage = TipImage.Create(
+            "https://cdn.example.com/tips/morning-routine.jpg",
+            "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
+            "morning-routine.jpg",
+            "image/png",
+            512000,
+            DateTime.UtcNow);
+
+        var tip = CreateTestTipWithImage(tipImage);
+        await TipRepository.AddAsync(tip);
+
+        // Act
+        var result = await TipRepository.GetByIdAsync(tip.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Image.Should().NotBeNull();
+        result.Image!.ImageUrl.Should().Be(tipImage.ImageUrl);
+        result.Image.ImageStoragePath.Should().Be(tipImage.ImageStoragePath);
+        result.Image.OriginalFileName.Should().Be(tipImage.OriginalFileName);
+        result.Image.ContentType.Should().Be(tipImage.ContentType);
+        result.Image.FileSizeBytes.Should().Be(tipImage.FileSizeBytes);
+        result.Image.UploadedAt.Should().BeCloseTo(tipImage.UploadedAt, TimeSpan.FromSeconds(1));
+    }
+
+    private Tip CreateTestTipWithImage(TipImage image)
+    {
+        var tipTitle = TipTitle.Create("Test Tip with Image");
+        var tipDescription = TipDescription.Create("This is a test tip with an image for testing purposes.");
+        var steps = new[]
+        {
+            TipStep.Create(1, "First step of the tip"),
+            TipStep.Create(2, "Second step of the tip")
+        };
+        var tipTags = new[] { Tag.Create("test"), Tag.Create("image") };
+
+        return Tip.Create(tipTitle, tipDescription, steps, _testCategory.Id, tipTags, null, image);
+    }
 }
