@@ -188,4 +188,117 @@ public class TipControllerIntegrationTests(CustomWebApplicationFactory factory)
 
         return Tip.Create(tipTitle, tipDescription, steps, categoryId, tipTags, videoUrlObject);
     }
+
+    private static Tip CreateTestTipWithImage(
+        string title,
+        string description,
+        CategoryId categoryId,
+        TipImage image,
+        string[]? tags = null)
+    {
+        var tipTitle = TipTitle.Create(title);
+        var tipDescription = TipDescription.Create(description);
+        var steps = new[]
+        {
+            TipStep.Create(1, "This is the first step of the tip with enough characters"),
+            TipStep.Create(2, "This is the second step of the tip with enough characters")
+        };
+        var tipTags = tags?.Select(Tag.Create).ToArray() ?? new[] { Tag.Create("test") };
+
+        return Tip.Create(tipTitle, tipDescription, steps, categoryId, tipTags, image: image);
+    }
+
+    [Fact]
+    public async Task SearchTips_ShouldReturnTipsWithAndWithoutImages_WhenMixedTipsExist()
+    {
+        // Arrange
+        using var scope = factory.Services.CreateScope();
+        var tipRepository = scope.ServiceProvider.GetRequiredService<ITipRepository>();
+        var categoryRepository = scope.ServiceProvider.GetRequiredService<ICategoryRepository>();
+
+        // Create test category
+        var category = Category.Create("Mixed Tips Category");
+        await categoryRepository.AddAsync(category);
+
+        // Create tip with image
+        var imageWithMetadata = TipImage.Create(
+            imageUrl: "https://cdn.example.com/tips/test-image-1.jpg",
+            imageStoragePath: "tips/2024/12/test-image-1.jpg",
+            originalFileName: "test-image-1.jpg",
+            contentType: "image/jpeg",
+            fileSizeBytes: 1024 * 500, // 500KB
+            uploadedAt: DateTime.UtcNow);
+
+        var tipWithImage = CreateTestTipWithImage(
+            "Tip With Image",
+            "This tip has an associated image for visual guidance",
+            category.Id,
+            imageWithMetadata,
+            new[] { "visual", "test" });
+
+        await tipRepository.AddAsync(tipWithImage);
+
+        // Create tip without image
+        var tipWithoutImage = CreateTestTip(
+            "Tip Without Image",
+            "This tip does not have an associated image",
+            category.Id,
+            new[] { "text-only", "test" });
+
+        await tipRepository.AddAsync(tipWithoutImage);
+
+        // Create another tip with image
+        var anotherImageWithMetadata = TipImage.Create(
+            imageUrl: "https://cdn.example.com/tips/test-image-2.png",
+            imageStoragePath: "tips/2024/12/test-image-2.png",
+            originalFileName: "test-image-2.png",
+            contentType: "image/png",
+            fileSizeBytes: 1024 * 300, // 300KB
+            uploadedAt: DateTime.UtcNow);
+
+        var anotherTipWithImage = CreateTestTipWithImage(
+            "Another Tip With Image",
+            "This is another tip with an image attachment",
+            category.Id,
+            anotherImageWithMetadata,
+            new[] { "visual", "guide" });
+
+        await tipRepository.AddAsync(anotherTipWithImage);
+
+        // Act - Call GET /api/Tip endpoint
+        var publicClient = factory.CreateClient();
+        var response = await publicClient.GetAsync("/api/Tip?pageSize=10");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK,
+            "the GET /api/Tip endpoint should return 200 OK");
+
+        var pagedResponse = await response.Content.ReadFromJsonAsync<PagedTipsResponse>();
+        pagedResponse.Should().NotBeNull();
+        pagedResponse!.Items.Should().HaveCountGreaterThanOrEqualTo(3,
+            "the response should include at least the 3 tips we created");
+
+        // Verify tip with image has populated Image field
+        var tipWithImageResponse = pagedResponse.Items.FirstOrDefault(t => t.Title == "Tip With Image");
+        tipWithImageResponse.Should().NotBeNull("tip with image should be in the response");
+        tipWithImageResponse!.Image.Should().NotBeNull("tip with image should have populated Image field");
+        tipWithImageResponse.Image!.ImageUrl.Should().Be("https://cdn.example.com/tips/test-image-1.jpg");
+        tipWithImageResponse.Image.ImageStoragePath.Should().Be("tips/2024/12/test-image-1.jpg");
+        tipWithImageResponse.Image.OriginalFileName.Should().Be("test-image-1.jpg");
+        tipWithImageResponse.Image.ContentType.Should().Be("image/jpeg");
+        tipWithImageResponse.Image.FileSizeBytes.Should().Be(1024 * 500);
+
+        // Verify another tip with image has populated Image field
+        var anotherTipWithImageResponse = pagedResponse.Items.FirstOrDefault(t => t.Title == "Another Tip With Image");
+        anotherTipWithImageResponse.Should().NotBeNull("another tip with image should be in the response");
+        anotherTipWithImageResponse!.Image.Should().NotBeNull("another tip with image should have populated Image field");
+        anotherTipWithImageResponse.Image!.ImageUrl.Should().Be("https://cdn.example.com/tips/test-image-2.png");
+        anotherTipWithImageResponse.Image.ContentType.Should().Be("image/png");
+        anotherTipWithImageResponse.Image.FileSizeBytes.Should().Be(1024 * 300);
+
+        // Verify tip without image has null Image field
+        var tipWithoutImageResponse = pagedResponse.Items.FirstOrDefault(t => t.Title == "Tip Without Image");
+        tipWithoutImageResponse.Should().NotBeNull("tip without image should be in the response");
+        tipWithoutImageResponse!.Image.Should().BeNull("tip without image should have null Image field");
+    }
 }
