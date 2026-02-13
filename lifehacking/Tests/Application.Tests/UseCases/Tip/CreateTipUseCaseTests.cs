@@ -773,7 +773,7 @@ public class CreateTipUseCaseTests
         result.IsFailure.Should().BeTrue();
         var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
         validationError.Errors.Should().ContainKey("Image.ContentType");
-        validationError.Errors["Image.ContentType"].Should().Contain(e => 
+        validationError.Errors["Image.ContentType"].Should().Contain(e =>
             e.Contains("image/jpeg") || e.Contains("image/png") || e.Contains("image/gif") || e.Contains("image/webp"));
     }
 

@@ -1,8 +1,8 @@
+using System.Reflection;
 using Domain.Entities;
 using Domain.ValueObject;
 using FluentAssertions;
 using Infrastructure.Data.Firestore;
-using System.Reflection;
 using Xunit;
 
 namespace Infrastructure.Tests;
@@ -208,7 +208,7 @@ public sealed class FirestoreTipDataStoreTests
     {
         var dataStoreType = typeof(FirestoreTipDataStore);
         var method = dataStoreType.GetMethod("MapToDocument", BindingFlags.NonPublic | BindingFlags.Static);
-        
+
         if (method == null)
         {
             throw new InvalidOperationException("MapToDocument method not found");
@@ -222,7 +222,7 @@ public sealed class FirestoreTipDataStoreTests
     {
         var dataStoreType = typeof(FirestoreTipDataStore);
         var method = dataStoreType.GetMethod("MapToDomainTip", BindingFlags.NonPublic | BindingFlags.Static);
-        
+
         if (method == null)
         {
             throw new InvalidOperationException("MapToDomainTip method not found");
