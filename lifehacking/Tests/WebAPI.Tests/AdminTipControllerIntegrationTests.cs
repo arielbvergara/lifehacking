@@ -519,6 +519,256 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
         tipCreatedEvent.SubjectId.Should().NotBeNullOrEmpty("the tip ID should be included in the security event");
     }
 
+    [Fact]
+    public async Task CreateTip_ShouldReturn201_WhenValidRequestWithImage()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var tipRepository = GetTipRepository();
+        var category = TestDataFactory.CreateCategory("Test Category");
+        await categoryRepository.AddAsync(category);
+
+        var imageDto = new TipImageDto(
+            ImageUrl: "https://cdn.example.com/tips/test-image.jpg",
+            ImageStoragePath: "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
+            OriginalFileName: "test-image.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 245760,
+            UploadedAt: DateTime.UtcNow);
+
+        var request = new CreateTipRequest(
+            Title: "Tip with Image",
+            Description: "This is a tip with an associated image.",
+            Steps: CreateSteps("Step 1: Follow this instruction", "Step 2: Complete this action"),
+            CategoryId: category.Id.Value,
+            Tags: new[] { "test", "image" },
+            VideoUrl: null,
+            Image: imageDto);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created,
+            "creating a tip with valid image metadata should return 201 Created");
+
+        var tipResponse = await response.Content.ReadFromJsonAsync<TipDetailResponse>();
+        tipResponse.Should().NotBeNull();
+        tipResponse!.Title.Should().Be("Tip with Image");
+        tipResponse.Image.Should().NotBeNull("the response should include the image metadata");
+        tipResponse.Image!.ImageUrl.Should().Be(imageDto.ImageUrl);
+        tipResponse.Image.ImageStoragePath.Should().Be(imageDto.ImageStoragePath);
+        tipResponse.Image.OriginalFileName.Should().Be(imageDto.OriginalFileName);
+        tipResponse.Image.ContentType.Should().Be(imageDto.ContentType);
+        tipResponse.Image.FileSizeBytes.Should().Be(imageDto.FileSizeBytes);
+
+        // Verify persistence
+        var persistedTip = await tipRepository.GetByIdAsync(Domain.ValueObject.TipId.Create(tipResponse.Id));
+        persistedTip.Should().NotBeNull("the tip should be persisted to Firestore");
+        persistedTip!.Image.Should().NotBeNull("the persisted tip should have image metadata");
+        persistedTip.Image!.ImageUrl.Should().Be(imageDto.ImageUrl);
+    }
+
+    [Fact]
+    public async Task CreateTip_ShouldReturn201_WhenValidRequestWithoutImage()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var tipRepository = GetTipRepository();
+        var category = TestDataFactory.CreateCategory("Test Category");
+        await categoryRepository.AddAsync(category);
+
+        var request = new CreateTipRequest(
+            Title: "Tip without Image",
+            Description: "This is a tip without an associated image.",
+            Steps: CreateSteps("Step 1: Follow this instruction", "Step 2: Complete this action"),
+            CategoryId: category.Id.Value,
+            Tags: new[] { "test" },
+            VideoUrl: null,
+            Image: null);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created,
+            "creating a tip without image metadata should return 201 Created");
+
+        var tipResponse = await response.Content.ReadFromJsonAsync<TipDetailResponse>();
+        tipResponse.Should().NotBeNull();
+        tipResponse!.Title.Should().Be("Tip without Image");
+        tipResponse.Image.Should().BeNull("the response should have null image when no image is provided");
+
+        // Verify persistence
+        var persistedTip = await tipRepository.GetByIdAsync(Domain.ValueObject.TipId.Create(tipResponse.Id));
+        persistedTip.Should().NotBeNull("the tip should be persisted to Firestore");
+        persistedTip!.Image.Should().BeNull("the persisted tip should have null image");
+    }
+
+    [Fact]
+    public async Task CreateTip_ShouldReturn400_WhenImageUrlInvalid()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var category = TestDataFactory.CreateCategory("Test Category");
+        await categoryRepository.AddAsync(category);
+
+        var imageDto = new TipImageDto(
+            ImageUrl: "not-a-valid-url",
+            ImageStoragePath: "tips/test.jpg",
+            OriginalFileName: "test.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 100000,
+            UploadedAt: DateTime.UtcNow);
+
+        var request = new CreateTipRequest(
+            Title: "Valid Title",
+            Description: "Valid description with enough characters",
+            Steps: CreateSteps("Step 1 with enough characters"),
+            CategoryId: category.Id.Value,
+            Tags: new[] { "test" },
+            VideoUrl: null,
+            Image: imageDto);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "creating a tip with invalid image URL should return 400 Bad Request");
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.Errors.Should().ContainKey("Image.ImageUrl",
+            "the error should specify the Image.ImageUrl field");
+        errorResponse.Errors["Image.ImageUrl"].Should().Contain(e => e.Contains("URL"),
+            "the error message should mention URL validation");
+    }
+
+    [Fact]
+    public async Task CreateTip_ShouldReturn400_WhenImageContentTypeInvalid()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var category = TestDataFactory.CreateCategory("Test Category");
+        await categoryRepository.AddAsync(category);
+
+        var imageDto = new TipImageDto(
+            ImageUrl: "https://cdn.example.com/tips/test.bmp",
+            ImageStoragePath: "tips/test.bmp",
+            OriginalFileName: "test.bmp",
+            ContentType: "image/bmp",
+            FileSizeBytes: 100000,
+            UploadedAt: DateTime.UtcNow);
+
+        var request = new CreateTipRequest(
+            Title: "Valid Title",
+            Description: "Valid description with enough characters",
+            Steps: CreateSteps("Step 1 with enough characters"),
+            CategoryId: category.Id.Value,
+            Tags: new[] { "test" },
+            VideoUrl: null,
+            Image: imageDto);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "creating a tip with invalid content type should return 400 Bad Request");
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.Errors.Should().ContainKey("Image.ContentType",
+            "the error should specify the Image.ContentType field");
+        errorResponse.Errors["Image.ContentType"].Should().Contain(e => e.Contains("image/jpeg") || e.Contains("image/png") || e.Contains("image/gif") || e.Contains("image/webp"),
+            "the error message should mention allowed content types");
+    }
+
+    [Fact]
+    public async Task CreateTip_ShouldReturn400_WhenMultipleFieldsInvalid()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var category = TestDataFactory.CreateCategory("Test Category");
+        await categoryRepository.AddAsync(category);
+
+        var imageDto = new TipImageDto(
+            ImageUrl: "not-a-url",
+            ImageStoragePath: "tips/test.jpg",
+            OriginalFileName: "test.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 100000,
+            UploadedAt: DateTime.UtcNow);
+
+        var request = new CreateTipRequest(
+            Title: "Tip",
+            Description: "Short",
+            Steps: CreateSteps("Step 1 with enough characters"),
+            CategoryId: category.Id.Value,
+            Tags: new[] { "test" },
+            VideoUrl: null,
+            Image: imageDto);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest,
+            "creating a tip with multiple invalid fields should return 400 Bad Request");
+
+        var errorResponse = await response.Content.ReadFromJsonAsync<ApiValidationErrorResponse>();
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Status.Should().Be(400);
+        errorResponse.Type.Should().Be(ErrorResponseTypes.ValidationErrorType);
+        errorResponse.Errors.Should().ContainKey("Title",
+            "the error should include the Title field");
+        errorResponse.Errors.Should().ContainKey("Description",
+            "the error should include the Description field");
+        errorResponse.Errors.Should().ContainKey("Image.ImageUrl",
+            "the error should include the Image.ImageUrl field");
+    }
+
+    [Fact]
+    public async Task CreateTip_ShouldMaintainBackwardCompatibility_WhenImageFieldOmitted()
+    {
+        // Arrange
+        var categoryRepository = GetCategoryRepository();
+        var tipRepository = GetTipRepository();
+        var category = TestDataFactory.CreateCategory("Test Category");
+        await categoryRepository.AddAsync(category);
+
+        // Create request without Image field (simulating old API clients)
+        var request = new CreateTipRequest(
+            Title: "Backward Compatible Tip",
+            Description: "This tip is created without the Image field to test backward compatibility.",
+            Steps: CreateSteps("Step 1: Follow this instruction", "Step 2: Complete this action"),
+            CategoryId: category.Id.Value,
+            Tags: new[] { "test", "compatibility" },
+            VideoUrl: null);
+
+        // Act
+        var response = await _adminClient.PostAsJsonAsync("/api/admin/tips", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created,
+            "creating a tip without the Image field should return 201 Created for backward compatibility");
+
+        var tipResponse = await response.Content.ReadFromJsonAsync<TipDetailResponse>();
+        tipResponse.Should().NotBeNull();
+        tipResponse!.Title.Should().Be("Backward Compatible Tip");
+        tipResponse.Image.Should().BeNull("the response should have null image when field is omitted");
+
+        // Verify persistence
+        var persistedTip = await tipRepository.GetByIdAsync(Domain.ValueObject.TipId.Create(tipResponse.Id));
+        persistedTip.Should().NotBeNull("the tip should be persisted to Firestore");
+        persistedTip!.Image.Should().BeNull("the persisted tip should have null image");
+    }
+
     #endregion
 
     #region Validation Error Response Structure Tests
