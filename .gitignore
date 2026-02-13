@@ -201,3 +201,4 @@ healthchecksdb
 .env.local
 .env.*.local
 *.env
+koyeb-env-variables.txt

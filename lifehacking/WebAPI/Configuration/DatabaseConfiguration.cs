@@ -29,7 +29,7 @@ public static class DatabaseConfiguration
         if (string.IsNullOrWhiteSpace(projectId))
         {
             throw new InvalidOperationException(
-                "Firestore database provider is configured but Database:FirestoreProjectId is missing.");
+                "Firestore database provider is configured but Firebase:ProjectId is missing.");
         }
 
         // Create FirestoreDb instance - will automatically connect to emulator if FIRESTORE_EMULATOR_HOST is set

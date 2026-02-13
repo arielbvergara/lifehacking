@@ -110,6 +110,19 @@ public class Program
 
     private static void SetGoogleApplicationCredentialsPath()
     {
+        // If GOOGLE_APPLICATION_CREDENTIALS_JSON is provided, write it to a temp file
+        // and set GOOGLE_APPLICATION_CREDENTIALS to point to that file.
+        // This allows passing credentials as an environment variable in cloud deployments.
+        var credentialsJson = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS_JSON");
+        if (!string.IsNullOrEmpty(credentialsJson))
+        {
+            var tempPath = Path.Combine(Path.GetTempPath(), $"firebase-credentials-{Guid.NewGuid()}.json");
+            File.WriteAllText(tempPath, credentialsJson);
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", tempPath);
+            return;
+        }
+
+        // Support `~` in GOOGLE_APPLICATION_CREDENTIALS path for local development
         var googleCredentials = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
         if (string.IsNullOrEmpty(googleCredentials) || !googleCredentials.StartsWith('~'))
         {
