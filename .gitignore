@@ -202,3 +202,7 @@ healthchecksdb
 .env.*.local
 *.env
 koyeb-env-variables.txt
+
+# Firebase credentials
+*firebase-adminsdk*.json
+fake-credentials.json
