@@ -353,7 +353,4 @@ public class TipExtensionsTests
 
         return Tip.Create(title, description, steps, categoryId, tags, videoUrl, image);
     }
-
-    // TODO: Property-based tests (tasks 2.4 and 2.5) will be implemented later
-    // These tests are currently commented out to allow the build to succeed for checkpoint task 3
 }
