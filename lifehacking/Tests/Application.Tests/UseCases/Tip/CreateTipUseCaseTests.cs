@@ -610,4 +610,247 @@ public class CreateTipUseCaseTests
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldCreateTipWithImage_WhenValidImageProvided()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        var category = DomainCategory.Create("Test Category");
+
+        var imageDto = new TipImageDto(
+            ImageUrl: "https://cdn.example.com/tips/test-image.jpg",
+            ImageStoragePath: "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
+            OriginalFileName: "test-image.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 245760,
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new CreateTipRequest(
+            Title: "Valid Tip Title",
+            Description: "This is a valid tip description with enough characters",
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First step with enough characters")
+            },
+            CategoryId: categoryId,
+            Tags: null,
+            VideoUrl: null,
+            Image: imageDto
+        );
+
+        _categoryRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(category);
+
+        _tipRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<DomainTip>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DomainTip t, CancellationToken _) => t);
+
+        // Act
+        var result = await _useCase.ExecuteAsync(request);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Image.Should().NotBeNull();
+        result.Value.Image!.ImageUrl.Should().Be(imageDto.ImageUrl);
+        result.Value.Image.ImageStoragePath.Should().Be(imageDto.ImageStoragePath);
+        result.Value.Image.OriginalFileName.Should().Be(imageDto.OriginalFileName);
+        result.Value.Image.ContentType.Should().Be(imageDto.ContentType);
+        result.Value.Image.FileSizeBytes.Should().Be(imageDto.FileSizeBytes);
+        result.Value.Image.UploadedAt.Should().BeCloseTo(imageDto.UploadedAt, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldCreateTipWithoutImage_WhenImageNotProvided()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        var category = DomainCategory.Create("Test Category");
+
+        var request = new CreateTipRequest(
+            Title: "Valid Tip Title",
+            Description: "This is a valid tip description with enough characters",
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First step with enough characters")
+            },
+            CategoryId: categoryId,
+            Tags: null,
+            VideoUrl: null,
+            Image: null
+        );
+
+        _categoryRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(category);
+
+        _tipRepositoryMock
+            .Setup(x => x.AddAsync(It.IsAny<DomainTip>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DomainTip t, CancellationToken _) => t);
+
+        // Act
+        var result = await _useCase.ExecuteAsync(request);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Image.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldReturnValidationError_WhenImageUrlInvalid()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+
+        var imageDto = new TipImageDto(
+            ImageUrl: "not-a-valid-url",
+            ImageStoragePath: "tips/test.jpg",
+            OriginalFileName: "test.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 1000,
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new CreateTipRequest(
+            Title: "Valid Tip Title",
+            Description: "This is a valid tip description with enough characters",
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First step with enough characters")
+            },
+            CategoryId: categoryId,
+            Tags: null,
+            VideoUrl: null,
+            Image: imageDto
+        );
+
+        // Act
+        var result = await _useCase.ExecuteAsync(request);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey("Image.ImageUrl");
+        validationError.Errors["Image.ImageUrl"].Should().Contain(e => e.Contains("valid absolute URL"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldReturnValidationError_WhenImageContentTypeInvalid()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+
+        var imageDto = new TipImageDto(
+            ImageUrl: "https://cdn.example.com/tips/test.bmp",
+            ImageStoragePath: "tips/test.bmp",
+            OriginalFileName: "test.bmp",
+            ContentType: "image/bmp",
+            FileSizeBytes: 1000,
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new CreateTipRequest(
+            Title: "Valid Tip Title",
+            Description: "This is a valid tip description with enough characters",
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First step with enough characters")
+            },
+            CategoryId: categoryId,
+            Tags: null,
+            VideoUrl: null,
+            Image: imageDto
+        );
+
+        // Act
+        var result = await _useCase.ExecuteAsync(request);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey("Image.ContentType");
+        validationError.Errors["Image.ContentType"].Should().Contain(e => 
+            e.Contains("image/jpeg") || e.Contains("image/png") || e.Contains("image/gif") || e.Contains("image/webp"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldReturnValidationError_WhenImageFileSizeExceedsLimit()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+
+        var imageDto = new TipImageDto(
+            ImageUrl: "https://cdn.example.com/tips/test.jpg",
+            ImageStoragePath: "tips/test.jpg",
+            OriginalFileName: "test.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 10485760, // 10MB, exceeds 5MB limit
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new CreateTipRequest(
+            Title: "Valid Tip Title",
+            Description: "This is a valid tip description with enough characters",
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First step with enough characters")
+            },
+            CategoryId: categoryId,
+            Tags: null,
+            VideoUrl: null,
+            Image: imageDto
+        );
+
+        // Act
+        var result = await _useCase.ExecuteAsync(request);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey("Image.FileSizeBytes");
+        validationError.Errors["Image.FileSizeBytes"].Should().Contain(e => e.Contains("5242880") || e.Contains("5MB"));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldAggregateErrors_WhenMultipleFieldsInvalid()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+
+        var imageDto = new TipImageDto(
+            ImageUrl: "not-a-valid-url",
+            ImageStoragePath: "tips/test.jpg",
+            OriginalFileName: "test.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 1000,
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new CreateTipRequest(
+            Title: "Tip", // Too short
+            Description: "Short", // Too short
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First step with enough characters")
+            },
+            CategoryId: categoryId,
+            Tags: null,
+            VideoUrl: null,
+            Image: imageDto
+        );
+
+        // Act
+        var result = await _useCase.ExecuteAsync(request);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey(nameof(request.Title));
+        validationError.Errors.Should().ContainKey(nameof(request.Description));
+        validationError.Errors.Should().ContainKey("Image.ImageUrl");
+    }
 }
