@@ -8,5 +8,6 @@ public record TipSummaryResponse(
     string CategoryName,
     IReadOnlyList<string> Tags,
     string? VideoUrl,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    TipImageDto? Image
 );
