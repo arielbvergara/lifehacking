@@ -21,11 +21,12 @@ public class CreateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
     /// <remarks>
     /// Error handling:
     /// <list type="bullet">
-    /// <item><description>Returns <see cref="ValidationException"/> with field-level errors if any field fails validation (title, description, steps, tags, video URL).</description></item>
+    /// <item><description>Returns <see cref="ValidationException"/> with field-level errors if any field fails validation (title, description, steps, tags, video URL, image).</description></item>
     /// <item><description>Returns <see cref="NotFoundException"/> if the specified category does not exist or is soft-deleted.</description></item>
     /// <item><description>Returns <see cref="InfraException"/> if an unexpected error occurs during persistence.</description></item>
     /// </list>
     /// Multiple validation failures are aggregated into a single ValidationException with field-level detail.
+    /// Image validation errors are prefixed with "Image." to indicate the nested field path.
     /// </remarks>
     public async Task<Result<TipDetailResponse, AppException>> ExecuteAsync(
         CreateTipRequest request,
@@ -40,6 +41,7 @@ public class CreateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
             var steps = new List<TipStep>();
             var tags = new List<Tag>();
             VideoUrl? videoUrl = null;
+            TipImage? image = null;
 
             // Validate title
             try
@@ -111,6 +113,20 @@ public class CreateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
                 }
             }
 
+            // Validate image (optional)
+            if (request.Image != null)
+            {
+                try
+                {
+                    image = request.Image.ToTipImage();
+                }
+                catch (ArgumentException ex)
+                {
+                    var fieldName = MapImageExceptionToFieldName(ex.ParamName);
+                    validationBuilder.AddError(fieldName, ex.Message);
+                }
+            }
+
             // Return early if validation errors exist
             if (validationBuilder.HasErrors)
             {
@@ -141,7 +157,8 @@ public class CreateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
                 steps,
                 categoryId,
                 tags,
-                videoUrl);
+                videoUrl,
+                image);
 
             // 5. Persist via repository
             await tipRepository.AddAsync(tip, cancellationToken);
@@ -160,4 +177,21 @@ public class CreateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
                 new InfraException("An unexpected error occurred while creating the tip", ex));
         }
     }
+
+    /// <summary>
+    /// Maps TipImage value object parameter names to request field names with "Image." prefix.
+    /// </summary>
+    private static string MapImageExceptionToFieldName(string? paramName)
+    {
+        return paramName switch
+        {
+            "imageUrl" => "Image.ImageUrl",
+            "imageStoragePath" => "Image.ImageStoragePath",
+            "originalFileName" => "Image.OriginalFileName",
+            "contentType" => "Image.ContentType",
+            "fileSizeBytes" => "Image.FileSizeBytes",
+            _ => "Image"
+        };
+    }
 }
+

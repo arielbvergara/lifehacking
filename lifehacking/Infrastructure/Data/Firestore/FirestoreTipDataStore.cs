@@ -253,6 +253,24 @@ public sealed class FirestoreTipDataStore(
             ? null
             : VideoUrl.Create(document.VideoUrl);
 
+        // Reconstruct TipImage if all required fields are present
+        TipImage? image = null;
+        if (!string.IsNullOrEmpty(document.ImageUrl) &&
+            !string.IsNullOrEmpty(document.ImageStoragePath) &&
+            !string.IsNullOrEmpty(document.OriginalFileName) &&
+            !string.IsNullOrEmpty(document.ContentType) &&
+            document.FileSizeBytes.HasValue &&
+            document.UploadedAt.HasValue)
+        {
+            image = TipImage.Create(
+                document.ImageUrl,
+                document.ImageStoragePath,
+                document.OriginalFileName,
+                document.ContentType,
+                document.FileSizeBytes.Value,
+                document.UploadedAt.Value);
+        }
+
         return Tip.FromPersistence(
             id,
             title,
@@ -264,7 +282,8 @@ public sealed class FirestoreTipDataStore(
             document.CreatedAt,
             document.UpdatedAt,
             document.IsDeleted,
-            document.DeletedAt);
+            document.DeletedAt,
+            image);
     }
 
     private static TipDocument MapToDocument(Tip tip)
@@ -282,6 +301,12 @@ public sealed class FirestoreTipDataStore(
             CategoryId = tip.CategoryId.Value.ToString(),
             Tags = tip.Tags.Select(t => t.Value).ToList(),
             VideoUrl = tip.VideoUrl?.Value,
+            ImageUrl = tip.Image?.ImageUrl,
+            ImageStoragePath = tip.Image?.ImageStoragePath,
+            OriginalFileName = tip.Image?.OriginalFileName,
+            ContentType = tip.Image?.ContentType,
+            FileSizeBytes = tip.Image?.FileSizeBytes,
+            UploadedAt = tip.Image?.UploadedAt,
             CreatedAt = tip.CreatedAt,
             UpdatedAt = tip.UpdatedAt,
             IsDeleted = tip.IsDeleted,

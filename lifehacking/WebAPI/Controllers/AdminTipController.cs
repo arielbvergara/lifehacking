@@ -34,7 +34,7 @@ public class AdminTipController(
     /// </summary>
     /// <remarks>
     /// This endpoint is restricted to administrators. Creates a new tip with structured content
-    /// including title, description, steps, category, tags, and optional video URL.
+    /// including title, description, steps, category, tags, optional video URL, and optional image.
     /// 
     /// **Validation Rules:**
     /// - **Title**: Required, 5-200 characters (trimmed)
@@ -49,6 +49,13 @@ public class AdminTipController(
     ///   - YouTube Watch: `https://www.youtube.com/watch?v=*`
     ///   - YouTube Shorts: `https://www.youtube.com/shorts/*`
     ///   - Instagram: `https://www.instagram.com/p/*`
+    /// - **Image**: Optional, pre-uploaded image metadata
+    ///   - ImageUrl: Required if Image provided, valid URL
+    ///   - ImageStoragePath: Required if Image provided
+    ///   - OriginalFileName: Required if Image provided
+    ///   - ContentType: Required if Image provided, must be image/jpeg, image/png, image/gif, or image/webp
+    ///   - FileSizeBytes: Required if Image provided, > 0 and <= 5MB (5,242,880 bytes)
+    ///   - UploadedAt: Required if Image provided
     /// 
     /// **Possible Error Responses:**
     /// 
@@ -67,7 +74,7 @@ public class AdminTipController(
     /// }
     /// ```
     /// 
-    /// **400 Bad Request** - Validation error with multiple fields:
+    /// **400 Bad Request** - Validation error with multiple fields including image:
     /// ```json
     /// {
     ///   "status": 400,
@@ -80,7 +87,10 @@ public class AdminTipController(
     ///     "Title": ["Tip title must be at least 5 characters"],
     ///     "Description": ["Tip description cannot be empty"],
     ///     "Steps": ["At least one step is required"],
-    ///     "VideoUrl": ["Video URL must match a supported format: YouTube (https://www.youtube.com/watch?v=*), YouTube Shorts (https://www.youtube.com/shorts/*), Instagram (https://www.instagram.com/p/*)"]
+    ///     "VideoUrl": ["Video URL must match a supported format: YouTube (https://www.youtube.com/watch?v=*), YouTube Shorts (https://www.youtube.com/shorts/*), Instagram (https://www.instagram.com/p/*)"],
+    ///     "Image.ImageUrl": ["Image URL must be a valid absolute URL"],
+    ///     "Image.ContentType": ["Content type must be one of: image/jpeg, image/png, image/gif, image/webp"],
+    ///     "Image.FileSizeBytes": ["File size cannot exceed 5242880 bytes (5MB)"]
     ///   }
     /// }
     /// ```
@@ -166,6 +176,7 @@ public class AdminTipController(
                 ["RoutePath"] = HttpContext.Request.Path,
                 ["TipTitle"] = tip.Title,
                 ["CategoryId"] = tip.CategoryId.ToString(),
+                ["HasImage"] = (tip.Image != null).ToString(),
                 ["AdminId"] = User.Identity?.Name
             },
             cancellationToken);
