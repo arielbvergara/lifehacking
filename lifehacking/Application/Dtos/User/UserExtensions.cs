@@ -11,6 +11,7 @@ public static class UserExtensions
             user.Email.Value,
             user.Name.Value,
             user.ExternalAuthId.Value,
+            user.Role,
             user.CreatedAt,
             user.UpdatedAt,
             user.IsDeleted
