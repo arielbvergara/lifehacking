@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Firestore;
 using Infrastructure.Configuration;
 using Infrastructure.Data.Firestore;
@@ -32,8 +33,26 @@ public static class DatabaseConfiguration
                 "Firestore database provider is configured but Firebase:ProjectId is missing.");
         }
 
-        // Create FirestoreDb instance - will automatically connect to emulator if FIRESTORE_EMULATOR_HOST is set
-        services.AddSingleton(_ => FirestoreDb.Create(projectId));
+        // Create FirestoreDb instance
+        services.AddSingleton(_ =>
+        {
+            // If FIRESTORE_EMULATOR_HOST is set, use emulator (no credentials needed)
+            var emulatorHost = Environment.GetEnvironmentVariable("FIRESTORE_EMULATOR_HOST");
+            if (!string.IsNullOrEmpty(emulatorHost))
+            {
+                return FirestoreDb.Create(projectId);
+            }
+
+            // For production, use Application Default Credentials
+            // GOOGLE_APPLICATION_CREDENTIALS should be set by Program.Main
+            var credential = GoogleCredential.GetApplicationDefault();
+            var builder = new FirestoreDbBuilder
+            {
+                ProjectId = projectId,
+                Credential = credential
+            };
+            return builder.Build();
+        });
 
         // Register collection name provider for production (returns base collection names unchanged)
         // Only register if not already registered (tests may provide their own)
