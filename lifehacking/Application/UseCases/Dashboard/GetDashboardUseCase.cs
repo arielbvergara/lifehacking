@@ -1,7 +1,7 @@
 using Application.Dtos.Dashboard;
+using Application.Exceptions;
 using Application.Interfaces;
 using Domain.Primitives;
-using Application.Exceptions;
 
 namespace Application.UseCases.Dashboard;
 
