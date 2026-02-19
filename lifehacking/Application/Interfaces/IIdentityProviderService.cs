@@ -19,4 +19,12 @@ public interface IIdentityProviderService
         string password,
         string displayName,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes a user from the identity provider.
+    /// </summary>
+    /// <param name="externalAuthId">The external authentication identifier (e.g. Firebase UID).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task DeleteUserAsync(string externalAuthId, CancellationToken cancellationToken = default);
 }

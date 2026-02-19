@@ -95,4 +95,22 @@ public sealed class FirebaseAdminClient : IFirebaseAdminClient
 
         return userRecord.Uid;
     }
+
+    public async Task DeleteUserAsync(string externalAuthId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(externalAuthId))
+        {
+            throw new ArgumentException("External auth ID cannot be null or whitespace.", nameof(externalAuthId));
+        }
+
+        try
+        {
+            await _auth.DeleteUserAsync(externalAuthId, cancellationToken).ConfigureAwait(false);
+        }
+        catch (FirebaseAuthException ex) when (ex.AuthErrorCode == AuthErrorCode.UserNotFound)
+        {
+            // User already deleted or never existed - this is idempotent
+            return;
+        }
+    }
 }
