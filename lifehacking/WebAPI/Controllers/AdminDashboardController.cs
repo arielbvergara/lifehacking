@@ -14,7 +14,7 @@ public sealed class AdminDashboardController(
     IMemoryCache memoryCache) : ControllerBase
 {
     private const string CacheKey = "AdminDashboard";
-    private static readonly TimeSpan CacheDuration = TimeSpan.FromDays(1);
+    private static readonly TimeSpan _cacheDuration = TimeSpan.FromDays(1);
 
     private readonly GetDashboardUseCase _getDashboardUseCase = getDashboardUseCase ?? throw new ArgumentNullException(nameof(getDashboardUseCase));
     private readonly IMemoryCache _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
@@ -43,7 +43,7 @@ public sealed class AdminDashboardController(
         return result.Match(
             success =>
             {
-                _memoryCache.Set(CacheKey, success, CacheDuration);
+                _memoryCache.Set(CacheKey, success, _cacheDuration);
                 return Ok(success);
             },
             failure => failure switch
