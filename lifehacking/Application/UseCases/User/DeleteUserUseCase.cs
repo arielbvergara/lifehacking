@@ -6,7 +6,11 @@ using Domain.ValueObject;
 
 namespace Application.UseCases.User;
 
-public class DeleteUserUseCase(IUserRepository userRepository, IUserOwnershipService userOwnershipService)
+public class DeleteUserUseCase(
+    IUserRepository userRepository,
+    IUserOwnershipService userOwnershipService,
+    IFavoritesRepository favoritesRepository,
+    IIdentityProviderService identityProviderService)
 {
     public async Task<Result<bool, AppException>> ExecuteAsync(DeleteUserRequest request, CancellationToken cancellationToken = default)
     {
@@ -31,7 +35,14 @@ public class DeleteUserUseCase(IUserRepository userRepository, IUserOwnershipSer
                 return Result<bool, AppException>.Fail(ownershipError);
             }
 
+            // Delete user's favorites to maintain referential integrity
+            await favoritesRepository.RemoveAllByUserAsync(userId, cancellationToken);
+
+            // Soft delete the user in our database
             await userRepository.DeleteAsync(userId, cancellationToken);
+
+            // Delete the user from Firebase Authentication
+            await identityProviderService.DeleteUserAsync(user.ExternalAuthId.Value, cancellationToken);
 
             return Result<bool, AppException>.Ok(true);
         }
