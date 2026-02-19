@@ -89,6 +89,7 @@ public sealed class User
 
         IsDeleted = true;
         DeletedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>

@@ -133,6 +133,7 @@ public sealed class Tip
 
         IsDeleted = true;
         DeletedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
     }
 
     /// <summary>
