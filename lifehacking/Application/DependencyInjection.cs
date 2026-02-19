@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Application.Services;
 using Application.UseCases.Category;
+using Application.UseCases.Dashboard;
 using Application.UseCases.Favorite;
 using Application.UseCases.Tip;
 using Application.UseCases.User;
@@ -46,6 +47,9 @@ public static class DependencyInjection
         services.AddScoped<AddFavoriteUseCase>();
         services.AddScoped<RemoveFavoriteUseCase>();
         services.AddScoped<MergeFavoritesUseCase>();
+
+        // Dashboard use cases
+        services.AddScoped<GetDashboardUseCase>();
 
         return services;
     }

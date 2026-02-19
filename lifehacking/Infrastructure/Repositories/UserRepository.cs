@@ -34,6 +34,11 @@ public sealed class UserRepository(IFirestoreUserDataStore dataStore) : IUserRep
         return _dataStore.GetPagedAsync(criteria, cancellationToken);
     }
 
+    public Task<IReadOnlyCollection<User>> GetAllActiveAsync(CancellationToken cancellationToken = default)
+    {
+        return _dataStore.GetAllActiveAsync(cancellationToken);
+    }
+
     public Task<User> AddAsync(User user, CancellationToken cancellationToken = default)
     {
         return _dataStore.AddAsync(user, cancellationToken);

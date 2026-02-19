@@ -18,6 +18,8 @@ public interface IFirestoreUserDataStore
         UserQueryCriteria criteria,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyCollection<User>> GetAllActiveAsync(CancellationToken cancellationToken = default);
+
     Task<User> AddAsync(User user, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(User user, CancellationToken cancellationToken = default);

@@ -138,6 +138,22 @@ public sealed class FirestoreUserDataStore(
         return (items, totalCount);
     }
 
+    public async Task<IReadOnlyCollection<User>> GetAllActiveAsync(CancellationToken cancellationToken = default)
+    {
+        var snapshot = await GetCollection()
+            .WhereEqualTo(nameof(UserDocument.IsDeleted), false)
+            .GetSnapshotAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var users = snapshot.Documents
+            .Select(d => d.ConvertTo<UserDocument>())
+            .Where(doc => doc is not null)
+            .Select(MapToDomainUser)
+            .ToList();
+
+        return users;
+    }
+
     public async Task<User> AddAsync(User user, CancellationToken cancellationToken = default)
     {
         var document = MapToDocument(user);
