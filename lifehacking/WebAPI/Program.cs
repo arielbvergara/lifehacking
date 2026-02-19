@@ -45,6 +45,9 @@ public class Program
         // Application use cases
         builder.Services.AddUseCases();
 
+        // Memory cache for dashboard and other caching needs
+        builder.Services.AddMemoryCache();
+
         // Security event notifier
         builder.Services.AddScoped<ISecurityEventNotifier, LoggingSecurityEventNotifier>();
 

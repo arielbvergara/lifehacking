@@ -16,6 +16,8 @@ public interface IFirestoreTipDataStore
         CategoryId categoryId,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyCollection<Tip>> GetAllAsync(CancellationToken cancellationToken = default);
+
     Task<Tip> AddAsync(Tip tip, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(Tip tip, CancellationToken cancellationToken = default);

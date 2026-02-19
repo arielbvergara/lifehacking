@@ -158,6 +158,22 @@ public sealed class FirestoreTipDataStore(
         return tips;
     }
 
+    public async Task<IReadOnlyCollection<Tip>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        var snapshot = await GetCollection()
+            .WhereEqualTo(nameof(TipDocument.IsDeleted), false)
+            .GetSnapshotAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var tips = snapshot.Documents
+            .Select(d => d.ConvertTo<TipDocument>())
+            .Where(doc => doc is not null)
+            .Select(MapToDomainTip)
+            .ToList();
+
+        return tips;
+    }
+
     public async Task<IReadOnlyDictionary<TipId, Tip>> GetByIdsAsync(
         IReadOnlyCollection<TipId> tipIds,
         CancellationToken cancellationToken = default)
