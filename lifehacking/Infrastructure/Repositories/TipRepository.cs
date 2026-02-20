@@ -29,6 +29,13 @@ public sealed class TipRepository(IFirestoreTipDataStore dataStore) : ITipReposi
         return _dataStore.GetByCategoryAsync(categoryId, cancellationToken);
     }
 
+    public Task<int> CountByCategoryAsync(
+        CategoryId categoryId,
+        CancellationToken cancellationToken = default)
+    {
+        return _dataStore.CountByCategoryAsync(categoryId, cancellationToken);
+    }
+
     public Task<IReadOnlyCollection<Tip>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return _dataStore.GetAllAsync(cancellationToken);
