@@ -58,6 +58,12 @@ public sealed class Category
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void UpdateImage(CategoryImage? image)
+    {
+        Image = image;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void MarkDeleted()
     {
         if (IsDeleted)
