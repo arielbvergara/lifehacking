@@ -4,6 +4,7 @@ using Application.UseCases.Category;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.Memory;
 using WebAPI.Authorization;
 using WebAPI.ErrorHandling;
 using WebAPI.RateLimiting;
@@ -25,6 +26,7 @@ public class AdminCategoryController(
     UpdateCategoryUseCase updateCategoryUseCase,
     DeleteCategoryUseCase deleteCategoryUseCase,
     UploadCategoryImageUseCase uploadCategoryImageUseCase,
+    IMemoryCache memoryCache,
     ISecurityEventNotifier securityEventNotifier,
     ILogger<AdminCategoryController> logger)
     : ControllerBase
@@ -250,6 +252,10 @@ public class AdminCategoryController(
 
         var category = result.Value!;
 
+        // Invalidate cache for this category
+        var cacheKey = $"Category_{category.Id}";
+        memoryCache.Remove(cacheKey);
+
         logger.LogInformation(
             "Admin {AdminId} updated category {CategoryId} to name '{CategoryName}'",
             User.Identity?.Name,
@@ -342,6 +348,10 @@ public class AdminCategoryController(
 
             return this.ToActionResult(error, HttpContext.TraceIdentifier);
         }
+
+        // Invalidate cache for this category
+        var cacheKey = $"Category_{id}";
+        memoryCache.Remove(cacheKey);
 
         logger.LogInformation(
             "Admin {AdminId} deleted category {CategoryId}",
