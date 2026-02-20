@@ -161,7 +161,7 @@ public sealed class FirestoreTipDataStore(
     public async Task<IReadOnlyCollection<Tip>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var snapshot = await GetCollection()
-            .WhereEqualTo(nameof(TipDocument.IsDeleted), false)
+            .WhereEqualTo("isDeleted", false)
             .GetSnapshotAsync(cancellationToken)
             .ConfigureAwait(false);
 
