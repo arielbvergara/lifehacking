@@ -13,10 +13,10 @@ namespace Application.UseCases.Category;
 public class UpdateCategoryUseCase(ICategoryRepository categoryRepository)
 {
     /// <summary>
-    /// Executes the use case to update a category's name.
+    /// Executes the use case to update a category's name and optional image.
     /// </summary>
     /// <param name="id">The ID of the category to update.</param>
-    /// <param name="request">The update category request containing the new name.</param>
+    /// <param name="request">The update category request containing the new name and optional image metadata.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A result containing the updated category response or an application exception.</returns>
     /// <remarks>
@@ -24,6 +24,7 @@ public class UpdateCategoryUseCase(ICategoryRepository categoryRepository)
     /// <list type="bullet">
     /// <item><description>Returns <see cref="NotFoundException"/> if the category does not exist or is soft-deleted.</description></item>
     /// <item><description>Returns <see cref="ValidationException"/> with field-level errors if the name fails validation (empty, too short, too long).</description></item>
+    /// <item><description>Returns <see cref="ValidationException"/> with field-level errors if image metadata is provided and fails validation (invalid content type, file size exceeds maximum, invalid URL format, empty required fields).</description></item>
     /// <item><description>Returns <see cref="ConflictException"/> if another category with the same name already exists (case-insensitive, including soft-deleted).</description></item>
     /// <item><description>Returns <see cref="InfraException"/> if an unexpected error occurs during persistence.</description></item>
     /// </list>
@@ -54,8 +55,24 @@ public class UpdateCategoryUseCase(ICategoryRepository categoryRepository)
                     new ConflictException($"Category with name '{request.Name}' already exists"));
             }
 
-            // Validate new name using ValidationErrorBuilder
+            // Validate new name and image using ValidationErrorBuilder
             var validationBuilder = new ValidationErrorBuilder();
+            Domain.ValueObject.CategoryImage? image = null;
+
+            // Validate and create image if provided
+            if (request.Image is not null)
+            {
+                try
+                {
+                    image = request.Image.ToCategoryImage();
+                }
+                catch (ArgumentException ex)
+                {
+                    // Map exception parameter name to DTO field name
+                    var fieldName = MapImageExceptionToFieldName(ex);
+                    validationBuilder.AddError($"Image.{fieldName}", ex.Message);
+                }
+            }
 
             try
             {
@@ -72,6 +89,9 @@ public class UpdateCategoryUseCase(ICategoryRepository categoryRepository)
                 return Result<CategoryResponse, AppException>.Fail(validationBuilder.Build());
             }
 
+            // Update image (can be null to remove image)
+            category.UpdateImage(image);
+
             // Save to repository
             await categoryRepository.UpdateAsync(category, cancellationToken);
 
@@ -87,5 +107,19 @@ public class UpdateCategoryUseCase(ICategoryRepository categoryRepository)
             return Result<CategoryResponse, AppException>.Fail(
                 new InfraException("An unexpected error occurred while updating the category", ex));
         }
+    }
+
+    private static string MapImageExceptionToFieldName(ArgumentException ex)
+    {
+        // Map parameter name from exception to DTO field name
+        return ex.ParamName switch
+        {
+            "imageUrl" => "ImageUrl",
+            "imageStoragePath" => "ImageStoragePath",
+            "originalFileName" => "OriginalFileName",
+            "contentType" => "ContentType",
+            "fileSizeBytes" => "FileSizeBytes",
+            _ => "Image"
+        };
     }
 }
