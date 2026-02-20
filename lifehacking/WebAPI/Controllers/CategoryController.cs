@@ -92,7 +92,7 @@ public class CategoryController(
         if (!Guid.TryParse(id, out var categoryGuid))
         {
             logger.LogWarning("Invalid category ID format provided: '{CategoryId}'", id);
-            
+
             var errorResponse = new ApiErrorResponse
             {
                 Status = StatusCodes.Status400BadRequest,
@@ -102,7 +102,7 @@ public class CategoryController(
                 Instance = HttpContext.Request.Path.Value,
                 CorrelationId = HttpContext.TraceIdentifier
             };
-            
+
             return BadRequest(errorResponse);
         }
 

@@ -1,7 +1,6 @@
 using Application.Dtos.Dashboard;
 using Application.Interfaces;
 using Application.UseCases.Dashboard;
-using Domain.Entities;
 using Domain.ValueObject;
 using FluentAssertions;
 using Moq;
