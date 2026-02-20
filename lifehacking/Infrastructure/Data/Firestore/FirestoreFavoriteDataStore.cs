@@ -211,4 +211,39 @@ public sealed class FirestoreFavoriteDataStore(
 
         return addedFavorites;
     }
+
+    public async Task<int> RemoveAllByUserAsync(UserId userId, CancellationToken cancellationToken = default)
+    {
+        // Query all favorites for the user
+        var snapshot = await GetCollection()
+            .WhereEqualTo("userId", userId.Value.ToString())
+            .GetSnapshotAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        if (snapshot.Count == 0)
+        {
+            return 0;
+        }
+
+        // Firestore batch delete supports max 500 operations
+        const int batchSize = 500;
+        var documents = snapshot.Documents.ToList();
+        var totalDeleted = 0;
+
+        for (var i = 0; i < documents.Count; i += batchSize)
+        {
+            var batch = documents.Skip(i).Take(batchSize).ToList();
+            var writeBatch = _database.StartBatch();
+
+            foreach (var document in batch)
+            {
+                writeBatch.Delete(document.Reference);
+                totalDeleted++;
+            }
+
+            await writeBatch.CommitAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        return totalDeleted;
+    }
 }

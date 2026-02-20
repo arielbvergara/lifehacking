@@ -54,4 +54,9 @@ public interface IFirestoreFavoriteDataStore
         UserId userId,
         IReadOnlyCollection<TipId> tipIds,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes all favorites for a specific user.
+    /// </summary>
+    Task<int> RemoveAllByUserAsync(UserId userId, CancellationToken cancellationToken = default);
 }

@@ -19,7 +19,13 @@ public class DeleteUserUseCaseTests
         // Arrange
         var repositoryMock = new Mock<IUserRepository>();
         var ownershipServiceMock = new Mock<IUserOwnershipService>();
-        var useCase = new DeleteUserUseCase(repositoryMock.Object, ownershipServiceMock.Object);
+        var favoritesRepositoryMock = new Mock<IFavoritesRepository>();
+        var identityProviderServiceMock = new Mock<IIdentityProviderService>();
+        var useCase = new DeleteUserUseCase(
+            repositoryMock.Object,
+            ownershipServiceMock.Object,
+            favoritesRepositoryMock.Object,
+            identityProviderServiceMock.Object);
 
         var targetUserId = Guid.NewGuid();
         var externalAuthId = ExternalAuthIdentifier.Create("provider|owner-123");
@@ -58,7 +64,13 @@ public class DeleteUserUseCaseTests
         // Arrange
         var repositoryMock = new Mock<IUserRepository>();
         var ownershipServiceMock = new Mock<IUserOwnershipService>();
-        var useCase = new DeleteUserUseCase(repositoryMock.Object, ownershipServiceMock.Object);
+        var favoritesRepositoryMock = new Mock<IFavoritesRepository>();
+        var identityProviderServiceMock = new Mock<IIdentityProviderService>();
+        var useCase = new DeleteUserUseCase(
+            repositoryMock.Object,
+            ownershipServiceMock.Object,
+            favoritesRepositoryMock.Object,
+            identityProviderServiceMock.Object);
 
         var targetUserId = Guid.NewGuid();
         var externalAuthId = ExternalAuthIdentifier.Create("provider|user-123");
@@ -97,7 +109,13 @@ public class DeleteUserUseCaseTests
         // Arrange
         var repositoryMock = new Mock<IUserRepository>();
         var ownershipServiceMock = new Mock<IUserOwnershipService>();
-        var useCase = new DeleteUserUseCase(repositoryMock.Object, ownershipServiceMock.Object);
+        var favoritesRepositoryMock = new Mock<IFavoritesRepository>();
+        var identityProviderServiceMock = new Mock<IIdentityProviderService>();
+        var useCase = new DeleteUserUseCase(
+            repositoryMock.Object,
+            ownershipServiceMock.Object,
+            favoritesRepositoryMock.Object,
+            identityProviderServiceMock.Object);
 
         var targetUserId = Guid.NewGuid();
         var targetExternalAuthId = ExternalAuthIdentifier.Create("provider|target-123");
@@ -137,7 +155,13 @@ public class DeleteUserUseCaseTests
         // Arrange
         var repositoryMock = new Mock<IUserRepository>();
         var ownershipServiceMock = new Mock<IUserOwnershipService>();
-        var useCase = new DeleteUserUseCase(repositoryMock.Object, ownershipServiceMock.Object);
+        var favoritesRepositoryMock = new Mock<IFavoritesRepository>();
+        var identityProviderServiceMock = new Mock<IIdentityProviderService>();
+        var useCase = new DeleteUserUseCase(
+            repositoryMock.Object,
+            ownershipServiceMock.Object,
+            favoritesRepositoryMock.Object,
+            identityProviderServiceMock.Object);
 
         var targetUserId = Guid.NewGuid();
 

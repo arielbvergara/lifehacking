@@ -125,6 +125,11 @@ public sealed class FavoritesRepository(
         return await _favoriteDataStore.AddBatchAsync(userId, tipIds, cancellationToken);
     }
 
+    public async Task<int> RemoveAllByUserAsync(UserId userId, CancellationToken cancellationToken = default)
+    {
+        return await _favoriteDataStore.RemoveAllByUserAsync(userId, cancellationToken);
+    }
+
     private static IReadOnlyList<Tip> ApplySorting(List<Tip> tips, TipQueryCriteria criteria)
     {
         return (criteria.SortField, criteria.SortDirection) switch

@@ -177,6 +177,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             var normalizedEmail = email.Trim().ToLowerInvariant();
             return Task.FromResult($"test-{normalizedEmail}");
         }
+
+        public Task DeleteUserAsync(string externalAuthId, CancellationToken cancellationToken = default)
+        {
+            // In tests, we don't actually delete from Firebase
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class TestImageStorageService : IImageStorageService

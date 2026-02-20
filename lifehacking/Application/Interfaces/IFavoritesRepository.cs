@@ -84,4 +84,13 @@ public interface IFavoritesRepository
         UserId userId,
         IReadOnlyCollection<TipId> tipIds,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes all favorites for a specific user.
+    /// Used during user deletion to maintain referential integrity.
+    /// </summary>
+    /// <param name="userId">The ID of the user whose favorites should be removed.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The number of favorites removed.</returns>
+    Task<int> RemoveAllByUserAsync(UserId userId, CancellationToken cancellationToken = default);
 }

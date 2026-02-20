@@ -35,91 +35,6 @@ public class AdminTipController(
     /// <remarks>
     /// This endpoint is restricted to administrators. Creates a new tip with structured content
     /// including title, description, steps, category, tags, optional video URL, and optional image.
-    /// 
-    /// **Validation Rules:**
-    /// - **Title**: Required, 5-200 characters (trimmed)
-    /// - **Description**: Required, 10-2000 characters (trimmed)
-    /// - **Steps**: Required, at least one step
-    ///   - Step Number: Must be >= 1
-    ///   - Step Description: Required, 10-500 characters (trimmed)
-    /// - **CategoryId**: Required, must exist and not be soft-deleted
-    /// - **Tags**: Optional, maximum 10 tags
-    ///   - Each tag: 1-50 characters (trimmed)
-    /// - **VideoUrl**: Optional, must be valid URL from supported platforms
-    ///   - YouTube Watch: `https://www.youtube.com/watch?v=*`
-    ///   - YouTube Shorts: `https://www.youtube.com/shorts/*`
-    ///   - Instagram: `https://www.instagram.com/p/*`
-    /// - **Image**: Optional, pre-uploaded image metadata
-    ///   - ImageUrl: Required if Image provided, valid URL
-    ///   - ImageStoragePath: Required if Image provided
-    ///   - OriginalFileName: Required if Image provided
-    ///   - ContentType: Required if Image provided, must be image/jpeg, image/png, image/gif, or image/webp
-    ///   - FileSizeBytes: Required if Image provided, > 0 and <= 5MB (5,242,880 bytes)
-    ///   - UploadedAt: Required if Image provided
-    /// 
-    /// **Possible Error Responses:**
-    /// 
-    /// **400 Bad Request** - Validation error with field-level details (single field):
-    /// ```json
-    /// {
-    ///   "status": 400,
-    ///   "type": "https://httpstatuses.io/400/validation-error",
-    ///   "title": "Validation error",
-    ///   "detail": "One or more validation errors occurred.",
-    ///   "instance": "/api/admin/tips",
-    ///   "correlationId": "abc123",
-    ///   "errors": {
-    ///     "Title": ["Tip title must be at least 5 characters"]
-    ///   }
-    /// }
-    /// ```
-    /// 
-    /// **400 Bad Request** - Validation error with multiple fields including image:
-    /// ```json
-    /// {
-    ///   "status": 400,
-    ///   "type": "https://httpstatuses.io/400/validation-error",
-    ///   "title": "Validation error",
-    ///   "detail": "One or more validation errors occurred.",
-    ///   "instance": "/api/admin/tips",
-    ///   "correlationId": "def456",
-    ///   "errors": {
-    ///     "Title": ["Tip title must be at least 5 characters"],
-    ///     "Description": ["Tip description cannot be empty"],
-    ///     "Steps": ["At least one step is required"],
-    ///     "VideoUrl": ["Video URL must match a supported format: YouTube (https://www.youtube.com/watch?v=*), YouTube Shorts (https://www.youtube.com/shorts/*), Instagram (https://www.instagram.com/p/*)"],
-    ///     "Image.ImageUrl": ["Image URL must be a valid absolute URL"],
-    ///     "Image.ContentType": ["Content type must be one of: image/jpeg, image/png, image/gif, image/webp"],
-    ///     "Image.FileSizeBytes": ["File size cannot exceed 5242880 bytes (5MB)"]
-    ///   }
-    /// }
-    /// ```
-    /// 
-    /// **404 Not Found** - Category does not exist or is soft-deleted:
-    /// ```json
-    /// {
-    ///   "status": 404,
-    ///   "type": "https://httpstatuses.io/404/resource-not-found",
-    ///   "title": "Resource not found",
-    ///   "detail": "Category with id '123e4567-e89b-12d3-a456-426614174000' was not found.",
-    ///   "instance": "/api/admin/tips",
-    ///   "correlationId": "ghi789"
-    /// }
-    /// ```
-    /// 
-    /// **500 Internal Server Error** - Unexpected server error:
-    /// ```json
-    /// {
-    ///   "status": 500,
-    ///   "type": "https://httpstatuses.io/500/infrastructure-error",
-    ///   "title": "Infrastructure error",
-    ///   "detail": "An unexpected error occurred while processing your request.",
-    ///   "instance": "/api/admin/tips",
-    ///   "correlationId": "jkl012"
-    /// }
-    /// ```
-    /// 
-    /// All error responses include a `correlationId` for tracing and follow RFC 7807 Problem Details format.
     /// </remarks>
     /// <param name="request">The create tip request containing tip details.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
@@ -193,7 +108,7 @@ public class AdminTipController(
     /// <remarks>
     /// This endpoint is restricted to administrators. Updates the tip with the specified ID.
     /// All fields (title, description, steps, category, tags, video URL) can be updated.
-    /// 
+    ///
     /// **Validation Rules:**
     /// - **Title**: Required, 5-200 characters (trimmed)
     /// - **Description**: Required, 10-2000 characters (trimmed)
@@ -207,9 +122,9 @@ public class AdminTipController(
     ///   - YouTube Watch: `https://www.youtube.com/watch?v=*`
     ///   - YouTube Shorts: `https://www.youtube.com/shorts/*`
     ///   - Instagram: `https://www.instagram.com/p/*`
-    /// 
+    ///
     /// **Possible Error Responses:**
-    /// 
+    ///
     /// **400 Bad Request** - Validation error with field-level details:
     /// ```json
     /// {
@@ -224,7 +139,7 @@ public class AdminTipController(
     ///   }
     /// }
     /// ```
-    /// 
+    ///
     /// **404 Not Found** - Tip does not exist:
     /// ```json
     /// {
@@ -236,7 +151,7 @@ public class AdminTipController(
     ///   "correlationId": "def456"
     /// }
     /// ```
-    /// 
+    ///
     /// **404 Not Found** - Category does not exist or is soft-deleted:
     /// ```json
     /// {
@@ -248,7 +163,7 @@ public class AdminTipController(
     ///   "correlationId": "ghi789"
     /// }
     /// ```
-    /// 
+    ///
     /// **500 Internal Server Error** - Unexpected server error:
     /// ```json
     /// {
@@ -260,7 +175,7 @@ public class AdminTipController(
     ///   "correlationId": "jkl012"
     /// }
     /// ```
-    /// 
+    ///
     /// All error responses include a `correlationId` for tracing and follow RFC 7807 Problem Details format.
     /// </remarks>
     /// <param name="id">The ID of the tip to update.</param>
@@ -335,9 +250,9 @@ public class AdminTipController(
     /// <remarks>
     /// This endpoint is restricted to administrators. Soft-deletes the tip with the specified ID.
     /// The tip is marked as deleted but not physically removed from storage.
-    /// 
+    ///
     /// **Possible Error Responses:**
-    /// 
+    ///
     /// **404 Not Found** - Tip does not exist or is already soft-deleted:
     /// ```json
     /// {
@@ -349,7 +264,7 @@ public class AdminTipController(
     ///   "correlationId": "abc123"
     /// }
     /// ```
-    /// 
+    ///
     /// **500 Internal Server Error** - Unexpected server error:
     /// ```json
     /// {
@@ -361,7 +276,7 @@ public class AdminTipController(
     ///   "correlationId": "def456"
     /// }
     /// ```
-    /// 
+    ///
     /// All error responses include a `correlationId` for tracing and follow RFC 7807 Problem Details format.
     /// </remarks>
     /// <param name="id">The ID of the tip to delete.</param>
