@@ -13,12 +13,16 @@ namespace Application.Tests.UseCases.Category;
 public class UpdateCategoryUseCaseTests
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<ICacheInvalidationService> _cacheInvalidationServiceMock;
     private readonly UpdateCategoryUseCase _useCase;
 
     public UpdateCategoryUseCaseTests()
     {
         _categoryRepositoryMock = new Mock<ICategoryRepository>();
-        _useCase = new UpdateCategoryUseCase(_categoryRepositoryMock.Object);
+        _cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
+        _useCase = new UpdateCategoryUseCase(
+            _categoryRepositoryMock.Object,
+            _cacheInvalidationServiceMock.Object);
     }
 
     [Fact]

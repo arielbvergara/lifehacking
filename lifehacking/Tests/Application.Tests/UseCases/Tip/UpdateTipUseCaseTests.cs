@@ -15,13 +15,18 @@ public class UpdateTipUseCaseTests
 {
     private readonly Mock<ITipRepository> _tipRepositoryMock;
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<ICacheInvalidationService> _cacheInvalidationServiceMock;
     private readonly UpdateTipUseCase _useCase;
 
     public UpdateTipUseCaseTests()
     {
         _tipRepositoryMock = new Mock<ITipRepository>();
         _categoryRepositoryMock = new Mock<ICategoryRepository>();
-        _useCase = new UpdateTipUseCase(_tipRepositoryMock.Object, _categoryRepositoryMock.Object);
+        _cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
+        _useCase = new UpdateTipUseCase(
+            _tipRepositoryMock.Object,
+            _categoryRepositoryMock.Object,
+            _cacheInvalidationServiceMock.Object);
     }
 
     [Fact]
