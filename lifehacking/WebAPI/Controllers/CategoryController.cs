@@ -5,6 +5,7 @@ using Application.UseCases.Category;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.Memory;
 using WebAPI.ErrorHandling;
 using WebAPI.RateLimiting;
 
@@ -21,9 +22,12 @@ namespace WebAPI.Controllers;
 [AllowAnonymous]
 public class CategoryController(
     GetCategoriesUseCase getCategoriesUseCase,
+    GetCategoryByIdUseCase getCategoryByIdUseCase,
     GetTipsByCategoryUseCase getTipsByCategoryUseCase,
+    IMemoryCache memoryCache,
     ILogger<CategoryController> logger) : ControllerBase
 {
+    private static readonly TimeSpan _cacheDuration = TimeSpan.FromDays(1);
     /// <summary>
     /// Retrieves all available categories.
     /// </summary>
@@ -57,6 +61,77 @@ public class CategoryController(
         logger.LogInformation("Successfully retrieved {Count} categories", categories.Items.Count);
 
         return Ok(categories);
+    }
+
+    /// <summary>
+    /// Retrieves a specific category by its unique identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier of the category.</param>
+    /// <param name="cancellationToken">Cancellation token for the request.</param>
+    /// <returns>
+    /// Returns the category details including name, timestamps, and image metadata.
+    /// </returns>
+    /// <remarks>
+    /// This endpoint is publicly accessible and does not require authentication.
+    /// Returns 404 Not Found if the category does not exist or has been deleted.
+    /// Returns 400 Bad Request if the provided ID is not a valid GUID format.
+    /// </remarks>
+    [HttpGet("{id}")]
+    [EnableRateLimiting(RateLimitingPolicies.Fixed)]
+    [ProducesResponseType<CategoryResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetCategoryById(
+        string id,
+        CancellationToken cancellationToken = default)
+    {
+        logger.LogInformation("Retrieving category with ID '{CategoryId}'", id);
+
+        // Validate GUID format
+        if (!Guid.TryParse(id, out var categoryGuid))
+        {
+            logger.LogWarning("Invalid category ID format provided: '{CategoryId}'", id);
+
+            var errorResponse = new ApiErrorResponse
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Type = ErrorResponseTypes.ValidationErrorType,
+                Title = ErrorResponseTitles.ValidationErrorTitle,
+                Detail = $"Invalid category ID format: '{id}'. Expected a valid GUID.",
+                Instance = HttpContext.Request.Path.Value,
+                CorrelationId = HttpContext.TraceIdentifier
+            };
+
+            return BadRequest(errorResponse);
+        }
+
+        // Check cache first
+        var cacheKey = $"Category_{id}";
+        if (memoryCache.TryGetValue(cacheKey, out CategoryResponse? cachedResponse) && cachedResponse is not null)
+        {
+            logger.LogInformation("Returning cached category with ID '{CategoryId}'", id);
+            return Ok(cachedResponse);
+        }
+
+        // Call use case
+        var result = await getCategoryByIdUseCase.ExecuteAsync(categoryGuid, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            var error = result.Error!;
+            logger.LogError(error.InnerException, "Failed to retrieve category with ID '{CategoryId}': {Message}", id, error.Message);
+
+            return this.ToActionResult(error, HttpContext.TraceIdentifier);
+        }
+
+        var category = result.Value!;
+        logger.LogInformation("Successfully retrieved category with ID '{CategoryId}' - Name: '{Name}', TipCount: {TipCount}", id, category.Name, category.TipCount);
+
+        // Cache the response
+        memoryCache.Set(cacheKey, category, _cacheDuration);
+
+        return Ok(category);
     }
 
     /// <summary>
