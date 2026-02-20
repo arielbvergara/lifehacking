@@ -2,7 +2,7 @@ namespace Application.Dtos.Category;
 
 public static class CategoryExtensions
 {
-    public static CategoryResponse ToCategoryResponse(this Domain.Entities.Category category)
+    public static CategoryResponse ToCategoryResponse(this Domain.Entities.Category category, int tipCount = 0)
     {
         ArgumentNullException.ThrowIfNull(category);
 
@@ -11,7 +11,8 @@ public static class CategoryExtensions
             category.Name,
             category.CreatedAt,
             category.UpdatedAt,
-            category.Image?.ToCategoryImageDto()
+            category.Image?.ToCategoryImageDto(),
+            tipCount
         );
     }
 
