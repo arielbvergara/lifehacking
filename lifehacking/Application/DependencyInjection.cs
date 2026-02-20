@@ -28,6 +28,7 @@ public static class DependencyInjection
 
         // Category use cases
         services.AddScoped<GetCategoriesUseCase>();
+        services.AddScoped<GetCategoryByIdUseCase>();
         services.AddScoped<GetTipsByCategoryUseCase>();
         services.AddScoped<CreateCategoryUseCase>();
         services.AddScoped<UpdateCategoryUseCase>();
