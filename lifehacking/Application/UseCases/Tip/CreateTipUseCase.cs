@@ -10,7 +10,10 @@ namespace Application.UseCases.Tip;
 /// <summary>
 /// Use case for creating a new tip.
 /// </summary>
-public class CreateTipUseCase(ITipRepository tipRepository, ICategoryRepository categoryRepository)
+public class CreateTipUseCase(
+    ITipRepository tipRepository,
+    ICategoryRepository categoryRepository,
+    ICacheInvalidationService cacheInvalidationService)
 {
     /// <summary>
     /// Executes the use case to create a new tip.
@@ -163,7 +166,10 @@ public class CreateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
             // 5. Persist via repository
             await tipRepository.AddAsync(tip, cancellationToken);
 
-            // 6. Map to response DTO and return success result
+            // 6. Invalidate category list and individual category cache
+            cacheInvalidationService.InvalidateCategoryAndList(categoryId);
+
+            // 7. Map to response DTO and return success result
             var response = tip.ToTipDetailResponse(category.Name);
             return Result<TipDetailResponse, AppException>.Ok(response);
         }
