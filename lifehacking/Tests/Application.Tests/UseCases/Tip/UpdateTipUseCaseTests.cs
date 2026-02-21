@@ -535,4 +535,203 @@ public class UpdateTipUseCaseTests
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldInvalidateCache_WhenUpdateSucceeds()
+    {
+        // Arrange
+        var tipId = Guid.NewGuid();
+        var oldCategoryId = Guid.NewGuid();
+        var newCategoryId = Guid.NewGuid();
+        var category = DomainCategory.Create("New Category");
+
+        var existingTip = DomainTip.Create(
+            TipTitle.Create("Original Title"),
+            TipDescription.Create("Original description with enough characters"),
+            new List<TipStep> { TipStep.Create(1, "Original step with enough characters") },
+            CategoryId.Create(oldCategoryId),
+            new List<Tag>()
+        );
+
+        var request = new UpdateTipRequest(
+            Id: tipId,
+            Title: "Updated Tip Title",
+            Description: "This is an updated tip description with enough characters",
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First updated step with enough characters")
+            },
+            CategoryId: newCategoryId,
+            Tags: null,
+            VideoUrl: null
+        );
+
+        _tipRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<TipId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingTip);
+
+        _categoryRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(category);
+
+        _tipRepositoryMock
+            .Setup(x => x.UpdateAsync(It.IsAny<DomainTip>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _useCase.ExecuteAsync(tipId, request);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        _cacheInvalidationServiceMock.Verify(
+            x => x.InvalidateCategoryAndList(
+                It.Is<CategoryId>(c => c.Value == newCategoryId)),
+            Times.Once,
+            "New category cache and list should be invalidated when tip update succeeds");
+        _cacheInvalidationServiceMock.Verify(
+            x => x.InvalidateCategory(
+                It.Is<CategoryId>(c => c.Value == oldCategoryId)),
+            Times.Once,
+            "Old category cache should be invalidated when tip category changes");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldNotInvalidateCache_WhenValidationFails()
+    {
+        // Arrange
+        var tipId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+
+        var existingTip = DomainTip.Create(
+            TipTitle.Create("Original Title"),
+            TipDescription.Create("Original description with enough characters"),
+            new List<TipStep> { TipStep.Create(1, "Original step with enough characters") },
+            CategoryId.Create(categoryId),
+            new List<Tag>()
+        );
+
+        var request = new UpdateTipRequest(
+            Id: tipId,
+            Title: "", // Invalid: empty title
+            Description: "This is an updated tip description with enough characters",
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First updated step with enough characters")
+            },
+            CategoryId: categoryId,
+            Tags: null,
+            VideoUrl: null
+        );
+
+        _tipRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<TipId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingTip);
+
+        // Act
+        var result = await _useCase.ExecuteAsync(tipId, request);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<ValidationException>();
+        _cacheInvalidationServiceMock.Verify(
+            x => x.InvalidateCategoryAndList(It.IsAny<CategoryId>()),
+            Times.Never,
+            "Cache should not be invalidated when validation fails");
+        _cacheInvalidationServiceMock.Verify(
+            x => x.InvalidateCategory(It.IsAny<CategoryId>()),
+            Times.Never,
+            "Category cache should not be invalidated when validation fails");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldNotInvalidateCache_WhenTipNotFound()
+    {
+        // Arrange
+        var tipId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+
+        var request = new UpdateTipRequest(
+            Id: tipId,
+            Title: "Updated Tip Title",
+            Description: "This is an updated tip description with enough characters",
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First updated step with enough characters")
+            },
+            CategoryId: categoryId,
+            Tags: null,
+            VideoUrl: null
+        );
+
+        _tipRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<TipId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DomainTip?)null);
+
+        // Act
+        var result = await _useCase.ExecuteAsync(tipId, request);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<NotFoundException>();
+        _cacheInvalidationServiceMock.Verify(
+            x => x.InvalidateCategoryAndList(It.IsAny<CategoryId>()),
+            Times.Never,
+            "Cache should not be invalidated when tip is not found");
+        _cacheInvalidationServiceMock.Verify(
+            x => x.InvalidateCategory(It.IsAny<CategoryId>()),
+            Times.Never,
+            "Category cache should not be invalidated when tip is not found");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldNotInvalidateCache_WhenCategoryNotFound()
+    {
+        // Arrange
+        var tipId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+
+        var existingTip = DomainTip.Create(
+            TipTitle.Create("Original Title"),
+            TipDescription.Create("Original description with enough characters"),
+            new List<TipStep> { TipStep.Create(1, "Original step with enough characters") },
+            CategoryId.Create(categoryId),
+            new List<Tag>()
+        );
+
+        var request = new UpdateTipRequest(
+            Id: tipId,
+            Title: "Updated Tip Title",
+            Description: "This is an updated tip description with enough characters",
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First updated step with enough characters")
+            },
+            CategoryId: categoryId,
+            Tags: null,
+            VideoUrl: null
+        );
+
+        _tipRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<TipId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingTip);
+
+        _categoryRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DomainCategory?)null);
+
+        // Act
+        var result = await _useCase.ExecuteAsync(tipId, request);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().BeOfType<NotFoundException>();
+        _cacheInvalidationServiceMock.Verify(
+            x => x.InvalidateCategoryAndList(It.IsAny<CategoryId>()),
+            Times.Never,
+            "Cache should not be invalidated when category is not found");
+        _cacheInvalidationServiceMock.Verify(
+            x => x.InvalidateCategory(It.IsAny<CategoryId>()),
+            Times.Never,
+            "Category cache should not be invalidated when category is not found");
+    }
 }
