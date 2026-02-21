@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Domain.ValueObject;
 using Microsoft.Extensions.Caching.Memory;
+
 namespace Infrastructure.Services;
 
 /// <summary>
