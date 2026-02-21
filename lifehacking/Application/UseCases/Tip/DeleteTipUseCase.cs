@@ -8,7 +8,9 @@ namespace Application.UseCases.Tip;
 /// <summary>
 /// Use case for soft-deleting a tip.
 /// </summary>
-public class DeleteTipUseCase(ITipRepository tipRepository)
+public class DeleteTipUseCase(
+    ITipRepository tipRepository,
+    ICacheInvalidationService cacheInvalidationService)
 {
     /// <summary>
     /// Executes the use case to soft-delete a tip.
@@ -45,7 +47,10 @@ public class DeleteTipUseCase(ITipRepository tipRepository)
             // 3. Persist via ITipRepository.UpdateAsync()
             await tipRepository.UpdateAsync(tip, cancellationToken);
 
-            // 4. Return success result
+            // 4. Invalidate category list and individual category cache
+            cacheInvalidationService.InvalidateCategoryAndList(tip.CategoryId);
+
+            // 5. Return success result
             return Result<bool, AppException>.Ok(true);
         }
         catch (AppException ex)

@@ -13,12 +13,19 @@ namespace Application.Tests.UseCases.Category;
 public class UpdateCategoryUseCaseTests
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<ITipRepository> _tipRepositoryMock;
+    private readonly Mock<ICacheInvalidationService> _cacheInvalidationServiceMock;
     private readonly UpdateCategoryUseCase _useCase;
 
     public UpdateCategoryUseCaseTests()
     {
         _categoryRepositoryMock = new Mock<ICategoryRepository>();
-        _useCase = new UpdateCategoryUseCase(_categoryRepositoryMock.Object);
+        _tipRepositoryMock = new Mock<ITipRepository>();
+        _cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
+        _useCase = new UpdateCategoryUseCase(
+            _categoryRepositoryMock.Object,
+            _tipRepositoryMock.Object,
+            _cacheInvalidationServiceMock.Object);
     }
 
     [Fact]
@@ -40,6 +47,10 @@ public class UpdateCategoryUseCaseTests
         _categoryRepositoryMock
             .Setup(x => x.UpdateAsync(It.IsAny<DomainCategory>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+
+        _tipRepositoryMock
+            .Setup(x => x.CountByCategoryAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
 
         // Act
         var result = await _useCase.ExecuteAsync(categoryId, request);
@@ -212,6 +223,10 @@ public class UpdateCategoryUseCaseTests
             .Setup(x => x.UpdateAsync(It.IsAny<DomainCategory>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
+        _tipRepositoryMock
+            .Setup(x => x.CountByCategoryAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
+
         // Act
         await _useCase.ExecuteAsync(categoryId, request);
 
@@ -240,6 +255,10 @@ public class UpdateCategoryUseCaseTests
         _categoryRepositoryMock
             .Setup(x => x.UpdateAsync(It.IsAny<DomainCategory>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+
+        _tipRepositoryMock
+            .Setup(x => x.CountByCategoryAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
 
         // Act
         await _useCase.ExecuteAsync(categoryId, request);
@@ -271,6 +290,10 @@ public class UpdateCategoryUseCaseTests
         _categoryRepositoryMock
             .Setup(x => x.UpdateAsync(It.IsAny<DomainCategory>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+
+        _tipRepositoryMock
+            .Setup(x => x.CountByCategoryAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
 
         // Act
         var result = await _useCase.ExecuteAsync(categoryId, request);
@@ -346,6 +369,10 @@ public class UpdateCategoryUseCaseTests
             .Setup(x => x.UpdateAsync(It.IsAny<DomainCategory>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
+        _tipRepositoryMock
+            .Setup(x => x.CountByCategoryAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
+
         // Act
         var result = await _useCase.ExecuteAsync(categoryId, request);
 
@@ -374,6 +401,10 @@ public class UpdateCategoryUseCaseTests
         _categoryRepositoryMock
             .Setup(x => x.UpdateAsync(It.IsAny<DomainCategory>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+
+        _tipRepositoryMock
+            .Setup(x => x.CountByCategoryAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
 
         // Act
         var result = await _useCase.ExecuteAsync(categoryId, request);
@@ -413,6 +444,10 @@ public class UpdateCategoryUseCaseTests
         _categoryRepositoryMock
             .Setup(x => x.UpdateAsync(It.IsAny<DomainCategory>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+
+        _tipRepositoryMock
+            .Setup(x => x.CountByCategoryAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
 
         // Act
         var result = await _useCase.ExecuteAsync(categoryId, request);
@@ -469,6 +504,10 @@ public class UpdateCategoryUseCaseTests
         _categoryRepositoryMock
             .Setup(x => x.UpdateAsync(It.IsAny<DomainCategory>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
+
+        _tipRepositoryMock
+            .Setup(x => x.CountByCategoryAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
 
         // Act
         await _useCase.ExecuteAsync(categoryId, request);

@@ -10,7 +10,10 @@ namespace Application.UseCases.Category;
 /// <summary>
 /// Use case for updating an existing category.
 /// </summary>
-public class UpdateCategoryUseCase(ICategoryRepository categoryRepository)
+public class UpdateCategoryUseCase(
+    ICategoryRepository categoryRepository,
+    ITipRepository tipRepository,
+    ICacheInvalidationService cacheInvalidationService)
 {
     /// <summary>
     /// Executes the use case to update a category's name and optional image.
@@ -95,8 +98,14 @@ public class UpdateCategoryUseCase(ICategoryRepository categoryRepository)
             // Save to repository
             await categoryRepository.UpdateAsync(category, cancellationToken);
 
+            // Invalidate category list and individual category cache
+            cacheInvalidationService.InvalidateCategoryAndList(categoryId);
+
+            // Get tip count for response
+            var tipCount = await tipRepository.CountByCategoryAsync(categoryId, cancellationToken);
+
             // Return response
-            return Result<CategoryResponse, AppException>.Ok(category.ToCategoryResponse());
+            return Result<CategoryResponse, AppException>.Ok(category.ToCategoryResponse(tipCount));
         }
         catch (AppException ex)
         {

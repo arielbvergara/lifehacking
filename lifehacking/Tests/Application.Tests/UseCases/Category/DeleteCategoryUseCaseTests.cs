@@ -14,15 +14,18 @@ public class DeleteCategoryUseCaseTests
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<ITipRepository> _tipRepositoryMock;
+    private readonly Mock<ICacheInvalidationService> _cacheInvalidationServiceMock;
     private readonly DeleteCategoryUseCase _useCase;
 
     public DeleteCategoryUseCaseTests()
     {
         _categoryRepositoryMock = new Mock<ICategoryRepository>();
         _tipRepositoryMock = new Mock<ITipRepository>();
+        _cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
         _useCase = new DeleteCategoryUseCase(
             _categoryRepositoryMock.Object,
-            _tipRepositoryMock.Object);
+            _tipRepositoryMock.Object,
+            _cacheInvalidationServiceMock.Object);
     }
 
     [Fact]

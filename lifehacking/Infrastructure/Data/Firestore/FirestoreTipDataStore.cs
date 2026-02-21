@@ -110,6 +110,22 @@ public sealed class FirestoreTipDataStore(
         return tips;
     }
 
+    public async Task<int> CountByCategoryAsync(
+        CategoryId categoryId,
+        CancellationToken cancellationToken = default)
+    {
+        var aggregateQuery = GetCollection()
+            .WhereEqualTo("isDeleted", false)
+            .WhereEqualTo("categoryId", categoryId.Value.ToString())
+            .Count();
+
+        var snapshot = await aggregateQuery
+            .GetSnapshotAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return (int)(snapshot.Count ?? 0);
+    }
+
     public async Task<Tip> AddAsync(Tip tip, CancellationToken cancellationToken = default)
     {
         var document = MapToDocument(tip);
@@ -161,7 +177,7 @@ public sealed class FirestoreTipDataStore(
     public async Task<IReadOnlyCollection<Tip>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var snapshot = await GetCollection()
-            .WhereEqualTo(nameof(TipDocument.IsDeleted), false)
+            .WhereEqualTo("isDeleted", false)
             .GetSnapshotAsync(cancellationToken)
             .ConfigureAwait(false);
 

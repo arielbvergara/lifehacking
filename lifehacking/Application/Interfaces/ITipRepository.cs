@@ -16,6 +16,10 @@ public interface ITipRepository
         CategoryId categoryId,
         CancellationToken cancellationToken = default);
 
+    Task<int> CountByCategoryAsync(
+        CategoryId categoryId,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyCollection<Tip>> GetAllAsync(CancellationToken cancellationToken = default);
 
     Task<Tip> AddAsync(Tip tip, CancellationToken cancellationToken = default);

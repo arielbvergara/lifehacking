@@ -10,7 +10,8 @@ namespace Application.UseCases.Category;
 /// </summary>
 public class DeleteCategoryUseCase(
     ICategoryRepository categoryRepository,
-    ITipRepository tipRepository)
+    ITipRepository tipRepository,
+    ICacheInvalidationService cacheInvalidationService)
 {
     /// <summary>
     /// Executes the use case to soft-delete a category and all associated tips.
@@ -55,6 +56,9 @@ public class DeleteCategoryUseCase(
                 tip.MarkDeleted();
                 await tipRepository.UpdateAsync(tip, cancellationToken);
             }
+
+            // Invalidate category list and individual category cache
+            cacheInvalidationService.InvalidateCategoryAndList(categoryId);
 
             return Result<bool, AppException>.Ok(true);
         }

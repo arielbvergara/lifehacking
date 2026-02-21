@@ -881,7 +881,8 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
     {
         // Arrange
         var categoryRepository = GetCategoryRepository();
-        var category = TestDataFactory.CreateCategory("Test Category");
+        var uniqueName = $"Test Category {Guid.NewGuid()}";
+        var category = TestDataFactory.CreateCategory(uniqueName);
         await categoryRepository.AddAsync(category);
 
         // Act
@@ -893,7 +894,7 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
         // Verify IsDeleted and DeletedAt are set by querying with includeDeleted
         using var scope = Factory.Services.CreateScope();
         var repo = scope.ServiceProvider.GetRequiredService<ICategoryRepository>();
-        var deletedCategory = await repo.GetByNameAsync(category.Name, includeDeleted: true);
+        var deletedCategory = await repo.GetByNameAsync(uniqueName, includeDeleted: true);
 
         deletedCategory.Should().NotBeNull("the category should still exist in the database");
         deletedCategory!.IsDeleted.Should().BeTrue("IsDeleted should be set to true");

@@ -9,7 +9,9 @@ namespace Application.UseCases.Category;
 /// <summary>
 /// Use case for creating a new category.
 /// </summary>
-public class CreateCategoryUseCase(ICategoryRepository categoryRepository)
+public class CreateCategoryUseCase(
+    ICategoryRepository categoryRepository,
+    ICacheInvalidationService cacheInvalidationService)
 {
     /// <summary>
     /// Executes the use case to create a new category.
@@ -78,8 +80,11 @@ public class CreateCategoryUseCase(ICategoryRepository categoryRepository)
             // Save to repository
             await categoryRepository.AddAsync(category!, cancellationToken);
 
+            // Invalidate category list cache
+            cacheInvalidationService.InvalidateCategoryList();
+
             // Return response
-            return Result<CategoryResponse, AppException>.Ok(category!.ToCategoryResponse());
+            return Result<CategoryResponse, AppException>.Ok(category!.ToCategoryResponse(0));
         }
         catch (AppException ex)
         {

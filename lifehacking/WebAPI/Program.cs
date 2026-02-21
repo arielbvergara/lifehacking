@@ -48,6 +48,9 @@ public class Program
         // Memory cache for dashboard and other caching needs
         builder.Services.AddMemoryCache();
 
+        // Cache invalidation service
+        builder.Services.AddScoped<ICacheInvalidationService, Infrastructure.Services.CacheInvalidationService>();
+
         // Security event notifier
         builder.Services.AddScoped<ISecurityEventNotifier, LoggingSecurityEventNotifier>();
 

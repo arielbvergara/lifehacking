@@ -3,6 +3,7 @@ using Application.Interfaces;
 using Application.UseCases.Category;
 using Domain.ValueObject;
 using FluentAssertions;
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using Xunit;
 using DomainCategory = Domain.Entities.Category;
@@ -12,12 +13,19 @@ namespace Application.Tests.UseCases.Category;
 public class GetCategoriesUseCaseTests
 {
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
+    private readonly Mock<ITipRepository> _tipRepositoryMock;
+    private readonly IMemoryCache _memoryCache;
     private readonly GetCategoriesUseCase _useCase;
 
     public GetCategoriesUseCaseTests()
     {
         _categoryRepositoryMock = new Mock<ICategoryRepository>();
-        _useCase = new GetCategoriesUseCase(_categoryRepositoryMock.Object);
+        _tipRepositoryMock = new Mock<ITipRepository>();
+        _memoryCache = new MemoryCache(new MemoryCacheOptions());
+        _useCase = new GetCategoriesUseCase(
+            _categoryRepositoryMock.Object,
+            _tipRepositoryMock.Object,
+            _memoryCache);
     }
 
     [Fact]
@@ -39,6 +47,9 @@ public class GetCategoriesUseCaseTests
         _categoryRepositoryMock.Verify(
             r => r.GetAllAsync(It.IsAny<CancellationToken>()),
             Times.Once);
+        _tipRepositoryMock.Verify(
+            r => r.CountByCategoryAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]
@@ -75,6 +86,16 @@ public class GetCategoriesUseCaseTests
             .Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(categories);
 
+        _tipRepositoryMock
+            .Setup(r => r.CountByCategoryAsync(category1.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(5);
+        _tipRepositoryMock
+            .Setup(r => r.CountByCategoryAsync(category2.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(3);
+        _tipRepositoryMock
+            .Setup(r => r.CountByCategoryAsync(category3.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(0);
+
         // Act
         var result = await _useCase.ExecuteAsync(CancellationToken.None);
 
@@ -84,16 +105,22 @@ public class GetCategoriesUseCaseTests
         result.Value!.Items.Should().HaveCount(3);
         result.Value.Items[0].Id.Should().Be(category1.Id.Value);
         result.Value.Items[0].Name.Should().Be("Technology");
+        result.Value.Items[0].TipCount.Should().Be(5);
         result.Value.Items[0].UpdatedAt.Should().BeNull();
         result.Value.Items[1].Id.Should().Be(category2.Id.Value);
         result.Value.Items[1].Name.Should().Be("Health");
+        result.Value.Items[1].TipCount.Should().Be(3);
         result.Value.Items[1].UpdatedAt.Should().NotBeNull();
         result.Value.Items[2].Id.Should().Be(category3.Id.Value);
         result.Value.Items[2].Name.Should().Be("Finance");
+        result.Value.Items[2].TipCount.Should().Be(0);
 
         _categoryRepositoryMock.Verify(
             r => r.GetAllAsync(It.IsAny<CancellationToken>()),
             Times.Once);
+        _tipRepositoryMock.Verify(
+            r => r.CountByCategoryAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()),
+            Times.Exactly(3));
     }
 
     [Fact]

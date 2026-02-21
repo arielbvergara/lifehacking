@@ -10,7 +10,10 @@ namespace Application.UseCases.Tip;
 /// <summary>
 /// Use case for updating an existing tip.
 /// </summary>
-public class UpdateTipUseCase(ITipRepository tipRepository, ICategoryRepository categoryRepository)
+public class UpdateTipUseCase(
+    ITipRepository tipRepository,
+    ICategoryRepository categoryRepository,
+    ICacheInvalidationService cacheInvalidationService)
 {
     /// <summary>
     /// Executes the use case to update an existing tip.
@@ -148,6 +151,7 @@ public class UpdateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
             }
 
             // 5. Update tip entity via Update*() methods
+            var oldCategoryId = tip.CategoryId;
             tip.UpdateTitle(title!);
             tip.UpdateDescription(description!);
             tip.UpdateSteps(steps);
@@ -158,7 +162,15 @@ public class UpdateTipUseCase(ITipRepository tipRepository, ICategoryRepository 
             // 6. Persist via repository
             await tipRepository.UpdateAsync(tip, cancellationToken);
 
-            // 7. Map to response DTO and return success result
+            // 7. Invalidate caches for affected categories
+            cacheInvalidationService.InvalidateCategoryAndList(categoryId);
+            if (oldCategoryId != categoryId)
+            {
+                // If category changed, also invalidate the old category
+                cacheInvalidationService.InvalidateCategory(oldCategoryId);
+            }
+
+            // 8. Map to response DTO and return success result
             var response = tip.ToTipDetailResponse(category.Name);
             return Result<TipDetailResponse, AppException>.Ok(response);
         }

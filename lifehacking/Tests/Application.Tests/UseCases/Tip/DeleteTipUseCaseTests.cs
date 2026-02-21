@@ -12,12 +12,16 @@ namespace Application.Tests.UseCases.Tip;
 public class DeleteTipUseCaseTests
 {
     private readonly Mock<ITipRepository> _tipRepositoryMock;
+    private readonly Mock<ICacheInvalidationService> _cacheInvalidationServiceMock;
     private readonly DeleteTipUseCase _useCase;
 
     public DeleteTipUseCaseTests()
     {
         _tipRepositoryMock = new Mock<ITipRepository>();
-        _useCase = new DeleteTipUseCase(_tipRepositoryMock.Object);
+        _cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
+        _useCase = new DeleteTipUseCase(
+            _tipRepositoryMock.Object,
+            _cacheInvalidationServiceMock.Object);
     }
 
     [Fact]
