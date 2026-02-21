@@ -1,3 +1,4 @@
+using Application.Caching;
 using Application.Interfaces;
 using Domain.ValueObject;
 using Microsoft.Extensions.Caching.Memory;
@@ -6,13 +7,10 @@ namespace Infrastructure.Services;
 
 /// <summary>
 /// Service for invalidating cached data related to categories and tips.
-/// Centralizes cache key management to ensure consistency across the application.
+/// Centralizes cache invalidation logic to ensure consistency across the application.
 /// </summary>
 public sealed class CacheInvalidationService(IMemoryCache memoryCache) : ICacheInvalidationService
 {
-    private const string CategoryListCacheKey = "CategoryList";
-    private const string CategoryCacheKeyPrefix = "Category_";
-
     private readonly IMemoryCache _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
 
     /// <summary>
@@ -20,7 +18,7 @@ public sealed class CacheInvalidationService(IMemoryCache memoryCache) : ICacheI
     /// </summary>
     public void InvalidateCategoryList()
     {
-        _memoryCache.Remove(CategoryListCacheKey);
+        _memoryCache.Remove(CacheKeys.CategoryList);
     }
 
     /// <summary>
@@ -30,7 +28,7 @@ public sealed class CacheInvalidationService(IMemoryCache memoryCache) : ICacheI
     public void InvalidateCategory(CategoryId categoryId)
     {
         ArgumentNullException.ThrowIfNull(categoryId);
-        var cacheKey = $"{CategoryCacheKeyPrefix}{categoryId.Value}";
+        var cacheKey = CacheKeys.Category(categoryId);
         _memoryCache.Remove(cacheKey);
     }
 

@@ -1,3 +1,4 @@
+using Application.Caching;
 using Application.Dtos.Category;
 using Application.Interfaces;
 using Application.UseCases.Category;
@@ -253,7 +254,7 @@ public class AdminCategoryController(
         var category = result.Value!;
 
         // Invalidate cache for this category
-        var cacheKey = $"Category_{category.Id}";
+        var cacheKey = CacheKeys.Category(category.Id);
         memoryCache.Remove(cacheKey);
 
         logger.LogInformation(
@@ -350,7 +351,7 @@ public class AdminCategoryController(
         }
 
         // Invalidate cache for this category
-        var cacheKey = $"Category_{id}";
+        var cacheKey = CacheKeys.Category(id);
         memoryCache.Remove(cacheKey);
 
         logger.LogInformation(

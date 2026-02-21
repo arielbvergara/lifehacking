@@ -1,3 +1,4 @@
+using Application.Caching;
 using Application.Dtos;
 using Application.Dtos.Category;
 using Application.Dtos.Tip;
@@ -107,7 +108,7 @@ public class CategoryController(
         }
 
         // Check cache first
-        var cacheKey = $"Category_{id}";
+        var cacheKey = CacheKeys.Category(categoryGuid);
         if (memoryCache.TryGetValue(cacheKey, out CategoryResponse? cachedResponse) && cachedResponse is not null)
         {
             logger.LogInformation("Returning cached category with ID '{CategoryId}'", id);

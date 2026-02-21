@@ -1,3 +1,4 @@
+using Application.Caching;
 using Application.Dtos.Category;
 using Application.Exceptions;
 using Application.Interfaces;
@@ -14,7 +15,6 @@ public class GetCategoriesUseCase(
     ITipRepository tipRepository,
     IMemoryCache memoryCache)
 {
-    private const string CacheKey = "CategoryList";
     private static readonly TimeSpan CacheDuration = TimeSpan.FromDays(7);
 
     private readonly ICategoryRepository _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
@@ -30,7 +30,7 @@ public class GetCategoriesUseCase(
         CancellationToken cancellationToken = default)
     {
         // Check cache first
-        if (_memoryCache.TryGetValue(CacheKey, out CategoryListResponse? cachedResponse) && cachedResponse is not null)
+        if (_memoryCache.TryGetValue(CacheKeys.CategoryList, out CategoryListResponse? cachedResponse) && cachedResponse is not null)
         {
             return Result<CategoryListResponse, AppException>.Ok(cachedResponse);
         }
@@ -50,7 +50,7 @@ public class GetCategoriesUseCase(
             var response = new CategoryListResponse(categoryResponses);
 
             // Cache the response
-            _memoryCache.Set(CacheKey, response, CacheDuration);
+            _memoryCache.Set(CacheKeys.CategoryList, response, CacheDuration);
 
             return Result<CategoryListResponse, AppException>.Ok(response);
         }
