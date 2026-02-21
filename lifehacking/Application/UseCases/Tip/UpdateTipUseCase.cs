@@ -209,12 +209,12 @@ public class UpdateTipUseCase(
     {
         return paramName switch
         {
-            "imageUrl" => "Image.ImageUrl",
-            "imageStoragePath" => "Image.ImageStoragePath",
-            "originalFileName" => "Image.OriginalFileName",
-            "contentType" => "Image.ContentType",
-            "fileSizeBytes" => "Image.FileSizeBytes",
-            _ => "Image"
+            "imageUrl" => $"{nameof(UpdateTipRequest.Image)}.{nameof(TipImageDto.ImageUrl)}",
+            "imageStoragePath" => $"{nameof(UpdateTipRequest.Image)}.{nameof(TipImageDto.ImageStoragePath)}",
+            "originalFileName" => $"{nameof(UpdateTipRequest.Image)}.{nameof(TipImageDto.OriginalFileName)}",
+            "contentType" => $"{nameof(UpdateTipRequest.Image)}.{nameof(TipImageDto.ContentType)}",
+            "fileSizeBytes" => $"{nameof(UpdateTipRequest.Image)}.{nameof(TipImageDto.FileSizeBytes)}",
+            _ => nameof(UpdateTipRequest.Image)
         };
     }
 }
