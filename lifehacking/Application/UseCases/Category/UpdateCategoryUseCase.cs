@@ -12,6 +12,7 @@ namespace Application.UseCases.Category;
 /// </summary>
 public class UpdateCategoryUseCase(
     ICategoryRepository categoryRepository,
+    ITipRepository tipRepository,
     ICacheInvalidationService cacheInvalidationService)
 {
     /// <summary>
@@ -100,8 +101,11 @@ public class UpdateCategoryUseCase(
             // Invalidate category list and individual category cache
             cacheInvalidationService.InvalidateCategoryAndList(categoryId);
 
+            // Get tip count for response
+            var tipCount = await tipRepository.CountByCategoryAsync(categoryId, cancellationToken);
+
             // Return response
-            return Result<CategoryResponse, AppException>.Ok(category.ToCategoryResponse());
+            return Result<CategoryResponse, AppException>.Ok(category.ToCategoryResponse(tipCount));
         }
         catch (AppException ex)
         {

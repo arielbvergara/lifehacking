@@ -84,7 +84,7 @@ public class CreateCategoryUseCase(
             cacheInvalidationService.InvalidateCategoryList();
 
             // Return response
-            return Result<CategoryResponse, AppException>.Ok(category!.ToCategoryResponse());
+            return Result<CategoryResponse, AppException>.Ok(category!.ToCategoryResponse(0));
         }
         catch (AppException ex)
         {
