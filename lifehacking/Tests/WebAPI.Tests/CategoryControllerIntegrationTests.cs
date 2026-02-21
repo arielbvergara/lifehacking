@@ -22,6 +22,13 @@ public class CategoryControllerIntegrationTests(CustomWebApplicationFactory fact
         // Arrange
         using var scope = factory.Services.CreateScope();
         var categoryRepository = scope.ServiceProvider.GetRequiredService<ICategoryRepository>();
+        var memoryCache = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>();
+
+        // Clear cache to ensure fresh data
+        if (memoryCache is Microsoft.Extensions.Caching.Memory.MemoryCache cache)
+        {
+            cache.Compact(1.0);
+        }
 
         var category1 = Category.Create("Technology");
         var category2 = Category.Create("Health");
@@ -52,6 +59,13 @@ public class CategoryControllerIntegrationTests(CustomWebApplicationFactory fact
         // Use a fresh factory instance to ensure no categories exist
         using var scope = factory.Services.CreateScope();
         var categoryRepository = scope.ServiceProvider.GetRequiredService<ICategoryRepository>();
+        var memoryCache = scope.ServiceProvider.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>();
+
+        // Clear cache to ensure fresh data
+        if (memoryCache is Microsoft.Extensions.Caching.Memory.MemoryCache cache)
+        {
+            cache.Compact(1.0);
+        }
 
         // Clean up any existing categories
         var existingCategories = await categoryRepository.GetAllAsync();
