@@ -114,13 +114,16 @@ public sealed class FirestoreTipDataStore(
         CategoryId categoryId,
         CancellationToken cancellationToken = default)
     {
-        var snapshot = await GetCollection()
+        var aggregateQuery = GetCollection()
             .WhereEqualTo("isDeleted", false)
             .WhereEqualTo("categoryId", categoryId.Value.ToString())
+            .Count();
+
+        var snapshot = await aggregateQuery
             .GetSnapshotAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return snapshot.Count;
+        return (int)(snapshot.Count ?? 0);
     }
 
     public async Task<Tip> AddAsync(Tip tip, CancellationToken cancellationToken = default)
