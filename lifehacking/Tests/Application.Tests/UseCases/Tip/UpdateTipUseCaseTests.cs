@@ -734,4 +734,223 @@ public class UpdateTipUseCaseTests
             Times.Never,
             "Category cache should not be invalidated when category is not found");
     }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldReturnSuccess_WhenValidImageProvided()
+    {
+        // Arrange
+        var tipId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var category = DomainCategory.Create("Test Category");
+
+        var existingTip = DomainTip.Create(
+            TipTitle.Create("Original Title"),
+            TipDescription.Create("Original description with enough characters"),
+            new List<TipStep> { TipStep.Create(1, "Original step with enough characters") },
+            CategoryId.Create(categoryId),
+            new List<Tag>()
+        );
+
+        var imageDto = new TipImageDto(
+            ImageUrl: "https://cdn.example.com/images/test.jpg",
+            ImageStoragePath: "tips/test-guid/test.jpg",
+            OriginalFileName: "test.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 102400,
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new UpdateTipRequest(
+            Id: tipId,
+            Title: "Updated Tip Title",
+            Description: "This is an updated tip description with enough characters",
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First updated step with enough characters")
+            },
+            CategoryId: categoryId,
+            Tags: null,
+            VideoUrl: null,
+            Image: imageDto
+        );
+
+        _tipRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<TipId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingTip);
+
+        _categoryRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(category);
+
+        _tipRepositoryMock
+            .Setup(x => x.UpdateAsync(It.IsAny<DomainTip>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _useCase.ExecuteAsync(tipId, request);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Image.Should().NotBeNull();
+        result.Value.Image!.ImageUrl.Should().Be("https://cdn.example.com/images/test.jpg");
+        result.Value.Image.ImageStoragePath.Should().Be("tips/test-guid/test.jpg");
+        result.Value.Image.OriginalFileName.Should().Be("test.jpg");
+        result.Value.Image.ContentType.Should().Be("image/jpeg");
+        result.Value.Image.FileSizeBytes.Should().Be(102400);
+        result.Value.Image.UploadedAt.Should().Be(imageDto.UploadedAt);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldReturnSuccess_WhenImageIsNull()
+    {
+        // Arrange
+        var tipId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var category = DomainCategory.Create("Test Category");
+
+        var existingTip = DomainTip.Create(
+            TipTitle.Create("Original Title"),
+            TipDescription.Create("Original description with enough characters"),
+            new List<TipStep> { TipStep.Create(1, "Original step with enough characters") },
+            CategoryId.Create(categoryId),
+            new List<Tag>()
+        );
+
+        var request = new UpdateTipRequest(
+            Id: tipId,
+            Title: "Updated Tip Title",
+            Description: "This is an updated tip description with enough characters",
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First updated step with enough characters")
+            },
+            CategoryId: categoryId,
+            Tags: null,
+            VideoUrl: null,
+            Image: null
+        );
+
+        _tipRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<TipId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingTip);
+
+        _categoryRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(category);
+
+        _tipRepositoryMock
+            .Setup(x => x.UpdateAsync(It.IsAny<DomainTip>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _useCase.ExecuteAsync(tipId, request);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Image.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldReturnValidationError_WhenImageUrlIsInvalid()
+    {
+        // Arrange
+        var tipId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+
+        var existingTip = DomainTip.Create(
+            TipTitle.Create("Original Title"),
+            TipDescription.Create("Original description with enough characters"),
+            new List<TipStep> { TipStep.Create(1, "Original step with enough characters") },
+            CategoryId.Create(categoryId),
+            new List<Tag>()
+        );
+
+        var imageDto = new TipImageDto(
+            ImageUrl: "", // Invalid: empty URL
+            ImageStoragePath: "tips/test-guid/test.jpg",
+            OriginalFileName: "test.jpg",
+            ContentType: "image/jpeg",
+            FileSizeBytes: 102400,
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new UpdateTipRequest(
+            Id: tipId,
+            Title: "Updated Tip Title",
+            Description: "This is an updated tip description with enough characters",
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First updated step with enough characters")
+            },
+            CategoryId: categoryId,
+            Tags: null,
+            VideoUrl: null,
+            Image: imageDto
+        );
+
+        _tipRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<TipId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingTip);
+
+        // Act
+        var result = await _useCase.ExecuteAsync(tipId, request);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey("Image.ImageUrl");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldReturnValidationError_WhenImageContentTypeIsInvalid()
+    {
+        // Arrange
+        var tipId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+
+        var existingTip = DomainTip.Create(
+            TipTitle.Create("Original Title"),
+            TipDescription.Create("Original description with enough characters"),
+            new List<TipStep> { TipStep.Create(1, "Original step with enough characters") },
+            CategoryId.Create(categoryId),
+            new List<Tag>()
+        );
+
+        var imageDto = new TipImageDto(
+            ImageUrl: "https://cdn.example.com/images/test.jpg",
+            ImageStoragePath: "tips/test-guid/test.jpg",
+            OriginalFileName: "test.jpg",
+            ContentType: "", // Invalid: empty content type
+            FileSizeBytes: 102400,
+            UploadedAt: DateTime.UtcNow
+        );
+
+        var request = new UpdateTipRequest(
+            Id: tipId,
+            Title: "Updated Tip Title",
+            Description: "This is an updated tip description with enough characters",
+            Steps: new List<TipStepRequest>
+            {
+                new(1, "First updated step with enough characters")
+            },
+            CategoryId: categoryId,
+            Tags: null,
+            VideoUrl: null,
+            Image: imageDto
+        );
+
+        _tipRepositoryMock
+            .Setup(x => x.GetByIdAsync(It.IsAny<TipId>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existingTip);
+
+        // Act
+        var result = await _useCase.ExecuteAsync(tipId, request);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+        var validationError = result.Error.Should().BeOfType<ValidationException>().Subject;
+        validationError.Errors.Should().ContainKey("Image.ContentType");
+    }
 }

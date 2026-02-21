@@ -191,12 +191,12 @@ public class CreateTipUseCase(
     {
         return paramName switch
         {
-            "imageUrl" => "Image.ImageUrl",
-            "imageStoragePath" => "Image.ImageStoragePath",
-            "originalFileName" => "Image.OriginalFileName",
-            "contentType" => "Image.ContentType",
-            "fileSizeBytes" => "Image.FileSizeBytes",
-            _ => "Image"
+            "imageUrl" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.ImageUrl)}",
+            "imageStoragePath" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.ImageStoragePath)}",
+            "originalFileName" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.OriginalFileName)}",
+            "contentType" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.ContentType)}",
+            "fileSizeBytes" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.FileSizeBytes)}",
+            _ => nameof(CreateTipRequest.Image)
         };
     }
 }

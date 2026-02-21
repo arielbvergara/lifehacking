@@ -124,6 +124,12 @@ public sealed class Tip
         UpdatedAt = DateTime.UtcNow;
     }
 
+    public void UpdateImage(TipImage? image)
+    {
+        Image = image;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
     public void MarkDeleted()
     {
         if (IsDeleted)

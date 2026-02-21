@@ -7,5 +7,6 @@ public record UpdateTipRequest(
     IReadOnlyList<TipStepRequest> Steps,
     Guid CategoryId,
     IReadOnlyList<string>? Tags,
-    string? VideoUrl
+    string? VideoUrl,
+    TipImageDto? Image = null
 );
