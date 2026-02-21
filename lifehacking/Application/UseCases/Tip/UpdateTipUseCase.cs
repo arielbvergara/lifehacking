@@ -26,11 +26,12 @@ public class UpdateTipUseCase(
     /// Error handling:
     /// <list type="bullet">
     /// <item><description>Returns <see cref="NotFoundException"/> if the tip does not exist or is soft-deleted.</description></item>
-    /// <item><description>Returns <see cref="ValidationException"/> with field-level errors if any field fails validation (title, description, steps, tags, video URL).</description></item>
+    /// <item><description>Returns <see cref="ValidationException"/> with field-level errors if any field fails validation (title, description, steps, tags, video URL, image).</description></item>
     /// <item><description>Returns <see cref="NotFoundException"/> if the specified category does not exist or is soft-deleted.</description></item>
     /// <item><description>Returns <see cref="InfraException"/> if an unexpected error occurs during persistence.</description></item>
     /// </list>
     /// Multiple validation failures are aggregated into a single ValidationException with field-level detail.
+    /// Image validation errors are prefixed with "Image." to indicate the nested field path.
     /// </remarks>
     public async Task<Result<TipDetailResponse, AppException>> ExecuteAsync(
         Guid tipId,
@@ -56,6 +57,7 @@ public class UpdateTipUseCase(
             var steps = new List<TipStep>();
             var tags = new List<Tag>();
             VideoUrl? videoUrl = null;
+            TipImage? image = null;
 
             // Validate title
             try
@@ -127,6 +129,20 @@ public class UpdateTipUseCase(
                 }
             }
 
+            // Validate image (optional)
+            if (request.Image != null)
+            {
+                try
+                {
+                    image = request.Image.ToTipImage();
+                }
+                catch (ArgumentException ex)
+                {
+                    var fieldName = MapImageExceptionToFieldName(ex.ParamName);
+                    validationBuilder.AddError(fieldName, ex.Message);
+                }
+            }
+
             // Return early if validation errors exist
             if (validationBuilder.HasErrors)
             {
@@ -158,6 +174,7 @@ public class UpdateTipUseCase(
             tip.UpdateCategory(categoryId);
             tip.UpdateTags(tags);
             tip.UpdateVideoUrl(videoUrl);
+            tip.UpdateImage(image);
 
             // 6. Persist via repository
             await tipRepository.UpdateAsync(tip, cancellationToken);
@@ -183,5 +200,21 @@ public class UpdateTipUseCase(
             return Result<TipDetailResponse, AppException>.Fail(
                 new InfraException("An unexpected error occurred while updating the tip", ex));
         }
+    }
+
+    /// <summary>
+    /// Maps TipImage value object parameter names to request field names with "Image." prefix.
+    /// </summary>
+    private static string MapImageExceptionToFieldName(string? paramName)
+    {
+        return paramName switch
+        {
+            "imageUrl" => "Image.ImageUrl",
+            "imageStoragePath" => "Image.ImageStoragePath",
+            "originalFileName" => "Image.OriginalFileName",
+            "contentType" => "Image.ContentType",
+            "fileSizeBytes" => "Image.FileSizeBytes",
+            _ => "Image"
+        };
     }
 }
