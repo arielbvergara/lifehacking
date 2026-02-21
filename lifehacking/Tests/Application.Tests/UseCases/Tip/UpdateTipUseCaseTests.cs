@@ -794,9 +794,11 @@ public class UpdateTipUseCaseTests
         result.Value.Should().NotBeNull();
         result.Value!.Image.Should().NotBeNull();
         result.Value.Image!.ImageUrl.Should().Be("https://cdn.example.com/images/test.jpg");
+        result.Value.Image.ImageStoragePath.Should().Be("tips/test-guid/test.jpg");
         result.Value.Image.OriginalFileName.Should().Be("test.jpg");
         result.Value.Image.ContentType.Should().Be("image/jpeg");
         result.Value.Image.FileSizeBytes.Should().Be(102400);
+        result.Value.Image.UploadedAt.Should().Be(imageDto.UploadedAt);
     }
 
     [Fact]
