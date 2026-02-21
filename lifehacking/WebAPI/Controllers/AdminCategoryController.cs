@@ -1,11 +1,9 @@
-using Application.Caching;
 using Application.Dtos.Category;
 using Application.Interfaces;
 using Application.UseCases.Category;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Caching.Memory;
 using WebAPI.Authorization;
 using WebAPI.ErrorHandling;
 using WebAPI.RateLimiting;
