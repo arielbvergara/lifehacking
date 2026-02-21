@@ -39,15 +39,16 @@ public class GetCategoriesUseCase(
         {
             var categories = await _categoryRepository.GetAllAsync(cancellationToken);
 
-            var categoryResponses = new List<CategoryResponse>();
-
-            foreach (var category in categories)
+            // Execute tip count queries concurrently for better performance
+            var categoryResponseTasks = categories.Select(async category =>
             {
                 var tipCount = await _tipRepository.CountByCategoryAsync(category.Id, cancellationToken);
-                categoryResponses.Add(category.ToCategoryResponse(tipCount));
-            }
+                return category.ToCategoryResponse(tipCount);
+            });
 
-            var response = new CategoryListResponse(categoryResponses);
+            var categoryResponses = await Task.WhenAll(categoryResponseTasks);
+
+            var response = new CategoryListResponse(categoryResponses.ToList());
 
             // Cache the response
             _memoryCache.Set(CacheKeys.CategoryList, response, CacheDuration);
