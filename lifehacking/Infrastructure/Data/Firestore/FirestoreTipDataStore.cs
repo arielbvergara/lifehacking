@@ -285,8 +285,8 @@ public sealed class FirestoreTipDataStore(
             ? null
             : VideoUrl.Create(document.VideoUrl);
 
-        // Reconstruct TipImage if all required fields are present
-        TipImage? image = null;
+        // Reconstruct ImageMetadata if all required fields are present
+        ImageMetadata? image = null;
         if (!string.IsNullOrEmpty(document.ImageUrl) &&
             !string.IsNullOrEmpty(document.ImageStoragePath) &&
             !string.IsNullOrEmpty(document.OriginalFileName) &&
@@ -294,7 +294,7 @@ public sealed class FirestoreTipDataStore(
             document.FileSizeBytes.HasValue &&
             document.UploadedAt.HasValue)
         {
-            image = TipImage.Create(
+            image = ImageMetadata.Create(
                 document.ImageUrl,
                 document.ImageStoragePath,
                 document.OriginalFileName,

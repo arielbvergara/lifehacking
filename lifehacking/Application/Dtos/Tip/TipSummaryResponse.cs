@@ -9,5 +9,5 @@ public record TipSummaryResponse(
     IReadOnlyList<string> Tags,
     string? VideoUrl,
     DateTime CreatedAt,
-    TipImageDto? Image
+    ImageDto? Image
 );

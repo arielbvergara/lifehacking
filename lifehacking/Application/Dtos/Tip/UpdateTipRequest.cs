@@ -8,5 +8,5 @@ public record UpdateTipRequest(
     Guid CategoryId,
     IReadOnlyList<string>? Tags,
     string? VideoUrl,
-    TipImageDto? Image = null
+    ImageDto? Image = null
 );

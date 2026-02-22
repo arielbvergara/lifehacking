@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Application.Services;
+using Application.UseCases;
 using Application.UseCases.Category;
 using Application.UseCases.Dashboard;
 using Application.UseCases.Favorite;
@@ -33,7 +34,6 @@ public static class DependencyInjection
         services.AddScoped<CreateCategoryUseCase>();
         services.AddScoped<UpdateCategoryUseCase>();
         services.AddScoped<DeleteCategoryUseCase>();
-        services.AddScoped<UploadCategoryImageUseCase>();
 
         // Tip use cases
         services.AddScoped<GetTipByIdUseCase>();
@@ -41,7 +41,9 @@ public static class DependencyInjection
         services.AddScoped<CreateTipUseCase>();
         services.AddScoped<UpdateTipUseCase>();
         services.AddScoped<DeleteTipUseCase>();
-        services.AddScoped<UploadTipImageUseCase>();
+
+        // Shared use cases
+        services.AddScoped<UploadImageUseCase>();
 
         // Favorite use cases
         services.AddScoped<SearchUserFavoritesUseCase>();

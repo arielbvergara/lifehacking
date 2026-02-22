@@ -5,6 +5,6 @@ public record CategoryResponse(
     string Name,
     DateTime CreatedAt,
     DateTime? UpdatedAt,
-    CategoryImageDto? Image,
+    ImageDto? Image,
     int TipCount
 );

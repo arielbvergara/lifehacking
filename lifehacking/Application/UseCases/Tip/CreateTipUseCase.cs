@@ -1,3 +1,5 @@
+using Application.Dtos;
+using Application.Dtos.Category;
 using Application.Dtos.Tip;
 using Application.Exceptions;
 using Application.Interfaces;
@@ -44,7 +46,7 @@ public class CreateTipUseCase(
             var steps = new List<TipStep>();
             var tags = new List<Tag>();
             VideoUrl? videoUrl = null;
-            TipImage? image = null;
+            ImageMetadata? image = null;
 
             // Validate title
             try
@@ -121,7 +123,7 @@ public class CreateTipUseCase(
             {
                 try
                 {
-                    image = request.Image.ToTipImage();
+                    image = request.Image.ToImageMetadata();
                 }
                 catch (ArgumentException ex)
                 {
@@ -185,17 +187,17 @@ public class CreateTipUseCase(
     }
 
     /// <summary>
-    /// Maps TipImage value object parameter names to request field names with "Image." prefix.
+    /// Maps ImageMetadata value object parameter names to request field names with "Image." prefix.
     /// </summary>
     private static string MapImageExceptionToFieldName(string? paramName)
     {
         return paramName switch
         {
-            "imageUrl" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.ImageUrl)}",
-            "imageStoragePath" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.ImageStoragePath)}",
-            "originalFileName" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.OriginalFileName)}",
-            "contentType" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.ContentType)}",
-            "fileSizeBytes" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.FileSizeBytes)}",
+            "imageUrl" => $"{nameof(CreateTipRequest.Image)}.{nameof(ImageDto.ImageUrl)}",
+            "imageStoragePath" => $"{nameof(CreateTipRequest.Image)}.{nameof(ImageDto.ImageStoragePath)}",
+            "originalFileName" => $"{nameof(CreateTipRequest.Image)}.{nameof(ImageDto.OriginalFileName)}",
+            "contentType" => $"{nameof(CreateTipRequest.Image)}.{nameof(ImageDto.ContentType)}",
+            "fileSizeBytes" => $"{nameof(CreateTipRequest.Image)}.{nameof(ImageDto.FileSizeBytes)}",
             _ => nameof(CreateTipRequest.Image)
         };
     }

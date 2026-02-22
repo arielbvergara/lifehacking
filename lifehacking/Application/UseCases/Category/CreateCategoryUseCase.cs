@@ -36,14 +36,14 @@ public class CreateCategoryUseCase(
         {
             var validationBuilder = new ValidationErrorBuilder();
             Domain.Entities.Category? category = null;
-            Domain.ValueObject.CategoryImage? image = null;
+            Domain.ValueObject.ImageMetadata? image = null;
 
             // Validate and create image if provided
             if (request.Image is not null)
             {
                 try
                 {
-                    image = request.Image.ToCategoryImage();
+                    image = request.Image.ToImageMetadata();
                 }
                 catch (ArgumentException ex)
                 {

@@ -226,7 +226,7 @@ public sealed class CategoryRepositoryTests : FirestoreTestBase
     {
         // Arrange
         var uploadedAt = DateTime.UtcNow;
-        var image = CategoryImage.Create(
+        var image = ImageMetadata.Create(
             "https://cdn.example.com/test-image.jpg",
             "categories/test-image.jpg",
             "test-image.jpg",
@@ -281,7 +281,7 @@ public sealed class CategoryRepositoryTests : FirestoreTestBase
     {
         // Arrange
         var uploadedAt = DateTime.UtcNow;
-        var image = CategoryImage.Create(
+        var image = ImageMetadata.Create(
             "https://cdn.example.com/another-image.png",
             "categories/another-image.png",
             "another-image.png",
@@ -309,7 +309,7 @@ public sealed class CategoryRepositoryTests : FirestoreTestBase
         // Arrange
         var categoryWithoutImage = Category.Create("No Image Category");
 
-        var image = CategoryImage.Create(
+        var image = ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "categories/image.jpg",
             "image.jpg",
@@ -341,7 +341,7 @@ public sealed class CategoryRepositoryTests : FirestoreTestBase
     public async Task UpdateAsync_ShouldPreserveImage_WhenCategoryUpdated()
     {
         // Arrange
-        var image = CategoryImage.Create(
+        var image = ImageMetadata.Create(
             "https://cdn.example.com/original.jpg",
             "categories/original.jpg",
             "original.jpg",

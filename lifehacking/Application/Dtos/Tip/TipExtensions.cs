@@ -1,3 +1,5 @@
+using Application.Dtos.Category;
+
 namespace Application.Dtos.Tip;
 
 public static class TipExtensions
@@ -18,7 +20,7 @@ public static class TipExtensions
                 tip.Tags.Select(t => t.Value).ToList(),
                 tip.VideoUrl?.Value,
                 tip.CreatedAt,
-                tip.Image?.ToTipImageDto()
+                tip.Image?.ToImageDto()
             );
         }
 
@@ -39,39 +41,8 @@ public static class TipExtensions
                 tip.VideoUrl?.VideoId,
                 tip.CreatedAt,
                 tip.UpdatedAt,
-                tip.Image?.ToTipImageDto()
+                tip.Image?.ToImageDto()
             );
         }
-    }
-
-    public static TipImageDto ToTipImageDto(this Domain.ValueObject.TipImage image)
-    {
-        ArgumentNullException.ThrowIfNull(image);
-
-        return new TipImageDto(
-            image.ImageUrl,
-            image.ImageStoragePath,
-            image.OriginalFileName,
-            image.ContentType,
-            image.FileSizeBytes,
-            image.UploadedAt
-        );
-    }
-
-    public static Domain.ValueObject.TipImage? ToTipImage(this TipImageDto? dto)
-    {
-        if (dto is null)
-        {
-            return null;
-        }
-
-        return Domain.ValueObject.TipImage.Create(
-            dto.ImageUrl,
-            dto.ImageStoragePath,
-            dto.OriginalFileName,
-            dto.ContentType,
-            dto.FileSizeBytes,
-            dto.UploadedAt
-        );
     }
 }

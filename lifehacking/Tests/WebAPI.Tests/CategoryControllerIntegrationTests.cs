@@ -368,7 +368,7 @@ public class CategoryControllerIntegrationTests(CustomWebApplicationFactory fact
         await categoryRepository.AddAsync(category);
 
         // Create tip with image
-        var imageWithMetadata = TipImage.Create(
+        var imageWithMetadata = ImageMetadata.Create(
             imageUrl: "https://cdn.example.com/tips/category-test-image-1.jpg",
             imageStoragePath: "tips/2024/12/category-test-image-1.jpg",
             originalFileName: "category-test-image-1.jpg",
@@ -395,7 +395,7 @@ public class CategoryControllerIntegrationTests(CustomWebApplicationFactory fact
         await tipRepository.AddAsync(tipWithoutImage);
 
         // Create another tip with image
-        var anotherImageWithMetadata = TipImage.Create(
+        var anotherImageWithMetadata = ImageMetadata.Create(
             imageUrl: "https://cdn.example.com/tips/category-test-image-2.png",
             imageStoragePath: "tips/2024/12/category-test-image-2.png",
             originalFileName: "category-test-image-2.png",
@@ -471,7 +471,7 @@ public class CategoryControllerIntegrationTests(CustomWebApplicationFactory fact
         string title,
         string description,
         CategoryId categoryId,
-        TipImage image,
+        ImageMetadata image,
         string[]? tags = null)
     {
         var tipTitle = TipTitle.Create(title);

@@ -11,16 +11,16 @@ public static class CategoryExtensions
             category.Name,
             category.CreatedAt,
             category.UpdatedAt,
-            category.Image?.ToCategoryImageDto(),
+            category.Image?.ToImageDto(),
             tipCount
         );
     }
 
-    public static CategoryImageDto ToCategoryImageDto(this Domain.ValueObject.CategoryImage image)
+    public static ImageDto ToImageDto(this Domain.ValueObject.ImageMetadata image)
     {
         ArgumentNullException.ThrowIfNull(image);
 
-        return new CategoryImageDto(
+        return new ImageDto(
             image.ImageUrl,
             image.ImageStoragePath,
             image.OriginalFileName,
@@ -30,14 +30,14 @@ public static class CategoryExtensions
         );
     }
 
-    public static Domain.ValueObject.CategoryImage? ToCategoryImage(this CategoryImageDto? dto)
+    public static Domain.ValueObject.ImageMetadata? ToImageMetadata(this ImageDto? dto)
     {
         if (dto is null)
         {
             return null;
         }
 
-        return Domain.ValueObject.CategoryImage.Create(
+        return Domain.ValueObject.ImageMetadata.Create(
             dto.ImageUrl,
             dto.ImageStoragePath,
             dto.OriginalFileName,

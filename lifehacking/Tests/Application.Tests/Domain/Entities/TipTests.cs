@@ -309,7 +309,7 @@ public class TipTests
         var description = TipDescription.Create("A comprehensive guide to cooking perfect pasta every time.");
         var steps = new List<TipStep> { TipStep.Create(1, "Boil water in a large pot.") };
         var categoryId = CategoryId.NewId();
-        var image = TipImage.Create(
+        var image = ImageMetadata.Create(
             "https://cdn.example.com/tips/pasta.jpg",
             "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
             "pasta.jpg",
@@ -359,7 +359,7 @@ public class TipTests
         var videoUrl = VideoUrl.Create("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         var createdAt = DateTime.UtcNow.AddDays(-5);
         var updatedAt = DateTime.UtcNow.AddDays(-1);
-        var image = TipImage.Create(
+        var image = ImageMetadata.Create(
             "https://cdn.example.com/tips/pasta.jpg",
             "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
             "pasta.jpg",

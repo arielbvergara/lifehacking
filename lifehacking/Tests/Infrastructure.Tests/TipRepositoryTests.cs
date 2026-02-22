@@ -513,7 +513,7 @@ public sealed class TipRepositoryTests : FirestoreTestBase
     public async Task AddAsync_ShouldPersistImage_WhenTipHasImage()
     {
         // Arrange
-        var tipImage = TipImage.Create(
+        var tipImage = ImageMetadata.Create(
             "https://cdn.example.com/tips/test-image.jpg",
             "tips/test-image.jpg",
             "test-image.jpg",
@@ -545,7 +545,7 @@ public sealed class TipRepositoryTests : FirestoreTestBase
     public async Task GetByIdAsync_ShouldReconstructImage_WhenTipHasImage()
     {
         // Arrange
-        var tipImage = TipImage.Create(
+        var tipImage = ImageMetadata.Create(
             "https://cdn.example.com/tips/morning-routine.jpg",
             "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
             "morning-routine.jpg",
@@ -570,7 +570,7 @@ public sealed class TipRepositoryTests : FirestoreTestBase
         result.Image.UploadedAt.Should().BeCloseTo(tipImage.UploadedAt, TimeSpan.FromSeconds(1));
     }
 
-    private Tip CreateTestTipWithImage(TipImage image)
+    private Tip CreateTestTipWithImage(ImageMetadata image)
     {
         var tipTitle = TipTitle.Create("Test Tip with Image");
         var tipDescription = TipDescription.Create("This is a test tip with an image for testing purposes.");

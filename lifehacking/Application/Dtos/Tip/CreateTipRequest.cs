@@ -7,5 +7,5 @@ public record CreateTipRequest(
     Guid CategoryId,
     IReadOnlyList<string>? Tags,
     string? VideoUrl,
-    TipImageDto? Image = null
+    ImageDto? Image = null
 );

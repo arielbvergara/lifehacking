@@ -1,5 +1,7 @@
+using Application.Dtos;
 using Application.Dtos.Tip;
 using Application.Interfaces;
+using Application.UseCases;
 using Application.UseCases.Tip;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +26,7 @@ public class AdminTipController(
     CreateTipUseCase createTipUseCase,
     UpdateTipUseCase updateTipUseCase,
     DeleteTipUseCase deleteTipUseCase,
-    UploadTipImageUseCase uploadTipImageUseCase,
+    UploadImageUseCase uploadImageUseCase,
     ISecurityEventNotifier securityEventNotifier,
     ILogger<AdminTipController> logger)
     : ControllerBase
@@ -383,7 +385,7 @@ public class AdminTipController(
     /// <returns>The uploaded image metadata with HTTP 201 Created status.</returns>
     [HttpPost("images")]
     [Consumes("multipart/form-data")]
-    [ProducesResponseType<TipImageDto>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ImageDto>(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -427,11 +429,12 @@ public class AdminTipController(
 
         // Call use case with file stream
         await using var fileStream = file.OpenReadStream();
-        var result = await uploadTipImageUseCase.ExecuteAsync(
+        var result = await uploadImageUseCase.ExecuteAsync(
             fileStream,
             file.FileName,
             file.ContentType,
             file.Length,
+            "tips",
             cancellationToken);
 
         if (result.IsFailure)
