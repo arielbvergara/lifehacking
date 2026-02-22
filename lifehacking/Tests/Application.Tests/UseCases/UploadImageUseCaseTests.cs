@@ -47,7 +47,7 @@ public sealed class UploadImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize);
+        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize, "categories");
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -83,7 +83,7 @@ public sealed class UploadImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize);
+        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize, "categories");
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -109,7 +109,7 @@ public sealed class UploadImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize);
+        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize, "categories");
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -135,7 +135,7 @@ public sealed class UploadImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize);
+        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize, "categories");
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -150,7 +150,7 @@ public sealed class UploadImageUseCaseTests
     public async Task ExecuteAsync_ShouldReturnValidationError_WhenFileStreamIsNull()
     {
         // Act
-        var result = await _useCase.ExecuteAsync(null!, "test.jpg", "image/jpeg", 1024);
+        var result = await _useCase.ExecuteAsync(null!, "test.jpg", "image/jpeg", 1024, "categories");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -173,7 +173,7 @@ public sealed class UploadImageUseCaseTests
         var oversizedFile = ImageConstants.MaxFileSizeBytes + 1;
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", oversizedFile);
+        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", oversizedFile, "categories");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -195,7 +195,7 @@ public sealed class UploadImageUseCaseTests
         using var stream = new MemoryStream(jpegMagicBytes);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.pdf", "application/pdf", 1024);
+        var result = await _useCase.ExecuteAsync(stream, "test.pdf", "application/pdf", 1024, "categories");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -217,7 +217,7 @@ public sealed class UploadImageUseCaseTests
         using var stream = new MemoryStream(pngMagicBytes);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "fake.jpg", "image/jpeg", 1024);
+        var result = await _useCase.ExecuteAsync(stream, "fake.jpg", "image/jpeg", 1024, "categories");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -239,7 +239,7 @@ public sealed class UploadImageUseCaseTests
         using var stream = new MemoryStream(jpegMagicBytes);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.jpg", null!, 1024);
+        var result = await _useCase.ExecuteAsync(stream, "test.jpg", null!, 1024, "categories");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -274,7 +274,7 @@ public sealed class UploadImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, maliciousFileName, "image/jpeg", 1024);
+        var result = await _useCase.ExecuteAsync(stream, maliciousFileName, "image/jpeg", 1024, "categories");
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -301,7 +301,7 @@ public sealed class UploadImageUseCaseTests
             .ThrowsAsync(new InfraException("S3", "S3 upload failed"));
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024);
+        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024, "categories");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -321,7 +321,7 @@ public sealed class UploadImageUseCaseTests
             .ThrowsAsync(new InvalidOperationException("Unexpected error"));
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024);
+        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024, "categories");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -350,7 +350,7 @@ public sealed class UploadImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        await _useCase.ExecuteAsync(stream, fileName, "image/jpeg", 1024);
+        await _useCase.ExecuteAsync(stream, fileName, "image/jpeg", 1024, "categories");
 
         // Assert
         _mockLogger.Verify(
@@ -384,7 +384,7 @@ public sealed class UploadImageUseCaseTests
             .ThrowsAsync(new InfraException("S3", "Upload failed"));
 
         // Act
-        await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024);
+        await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024, "categories");
 
         // Assert
         _mockLogger.Verify(
@@ -418,7 +418,7 @@ public sealed class UploadImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024);
+        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024, "categories");
         var afterUpload = DateTime.UtcNow;
 
         // Assert
@@ -443,7 +443,7 @@ public sealed class UploadImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024);
+        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024, "categories");
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -468,7 +468,7 @@ public sealed class UploadImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.jpg", mixedCaseContentType, 1024);
+        var result = await _useCase.ExecuteAsync(stream, "test.jpg", mixedCaseContentType, 1024, "categories");
 
         // Assert
         result.IsSuccess.Should().BeTrue();

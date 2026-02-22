@@ -1,5 +1,3 @@
-using Application.Dtos.Category;
-
 namespace Application.Dtos.Tip;
 
 public static class TipExtensions

@@ -50,7 +50,7 @@ public class UploadImageUseCase
         string fileName,
         string contentType,
         long fileSizeBytes,
-        string pathPrefix = "categories",
+        string pathPrefix,
         CancellationToken cancellationToken = default)
     {
         try
