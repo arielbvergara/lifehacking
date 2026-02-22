@@ -140,8 +140,7 @@ public class UpdateTipUseCase(
                 }
                 catch (ArgumentException ex)
                 {
-                    var fieldName = MapImageExceptionToFieldName(ex.ParamName);
-                    validationBuilder.AddError(fieldName, ex.Message);
+                    validationBuilder.AddError(ImageDto.MapExceptionToFieldName(ex.ParamName), ex.Message);
                 }
             }
 
@@ -202,21 +201,5 @@ public class UpdateTipUseCase(
             return Result<TipDetailResponse, AppException>.Fail(
                 new InfraException("An unexpected error occurred while updating the tip", ex));
         }
-    }
-
-    /// <summary>
-    /// Maps ImageMetadata value object parameter names to request field names with "Image." prefix.
-    /// </summary>
-    private static string MapImageExceptionToFieldName(string? paramName)
-    {
-        return paramName switch
-        {
-            "imageUrl" => $"{nameof(UpdateTipRequest.Image)}.{nameof(ImageDto.ImageUrl)}",
-            "imageStoragePath" => $"{nameof(UpdateTipRequest.Image)}.{nameof(ImageDto.ImageStoragePath)}",
-            "originalFileName" => $"{nameof(UpdateTipRequest.Image)}.{nameof(ImageDto.OriginalFileName)}",
-            "contentType" => $"{nameof(UpdateTipRequest.Image)}.{nameof(ImageDto.ContentType)}",
-            "fileSizeBytes" => $"{nameof(UpdateTipRequest.Image)}.{nameof(ImageDto.FileSizeBytes)}",
-            _ => nameof(UpdateTipRequest.Image)
-        };
     }
 }
