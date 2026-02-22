@@ -21,7 +21,7 @@ public class GetDashboardUseCase(
         try
         {
             var now = DateTime.UtcNow;
-            
+
             // Calculate all time ranges
             var (thisDayStart, thisDayEnd) = GetCurrentDayRange(now);
             var (lastDayStart, lastDayEnd) = GetPreviousDayRange(now);
@@ -177,7 +177,7 @@ public class GetDashboardUseCase(
         var thisMonday = now.AddDays(-daysFromMonday);
         var lastMonday = thisMonday.AddDays(-7);
         var lastSunday = lastMonday.AddDays(6);
-        
+
         var start = new DateTime(lastMonday.Year, lastMonday.Month, lastMonday.Day, 0, 0, 0, DateTimeKind.Utc);
         var end = new DateTime(lastSunday.Year, lastSunday.Month, lastSunday.Day, 23, 59, 59, DateTimeKind.Utc);
         return (start, end);

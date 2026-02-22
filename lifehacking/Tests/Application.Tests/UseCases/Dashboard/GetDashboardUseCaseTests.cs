@@ -89,7 +89,7 @@ public sealed class GetDashboardUseCaseTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
-        
+
         // Users assertions - verify totals and that new properties exist
         result.Value!.Users.Total.Should().Be(8);
         result.Value.Users.ThisDay.Should().BeGreaterOrEqualTo(1);
@@ -100,11 +100,11 @@ public sealed class GetDashboardUseCaseTests
         result.Value.Users.LastMonth.Should().BeGreaterOrEqualTo(0);
         result.Value.Users.ThisYear.Should().BeGreaterOrEqualTo(1);
         result.Value.Users.LastYear.Should().Be(1);
-        
+
         // Categories assertions
         result.Value.Categories.Total.Should().Be(3);
         result.Value.Categories.ThisMonth.Should().BeGreaterOrEqualTo(1);
-        
+
         // Tips assertions
         result.Value.Tips.Total.Should().Be(5);
         result.Value.Tips.ThisDay.Should().BeGreaterOrEqualTo(1);
@@ -135,7 +135,7 @@ public sealed class GetDashboardUseCaseTests
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
-        
+
         // Users assertions
         result.Value!.Users.Total.Should().Be(0);
         result.Value.Users.ThisDay.Should().Be(0);
@@ -146,7 +146,7 @@ public sealed class GetDashboardUseCaseTests
         result.Value.Users.LastMonth.Should().Be(0);
         result.Value.Users.ThisYear.Should().Be(0);
         result.Value.Users.LastYear.Should().Be(0);
-        
+
         // Categories assertions
         result.Value.Categories.Total.Should().Be(0);
         result.Value.Categories.ThisDay.Should().Be(0);
@@ -157,7 +157,7 @@ public sealed class GetDashboardUseCaseTests
         result.Value.Categories.LastMonth.Should().Be(0);
         result.Value.Categories.ThisYear.Should().Be(0);
         result.Value.Categories.LastYear.Should().Be(0);
-        
+
         // Tips assertions
         result.Value.Tips.Total.Should().Be(0);
         result.Value.Tips.ThisDay.Should().Be(0);
