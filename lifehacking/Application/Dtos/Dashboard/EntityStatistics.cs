@@ -3,9 +3,6 @@ namespace Application.Dtos.Dashboard;
 /// <summary>
 /// Represents statistics for a specific entity type (users, categories, or tips).
 /// </summary>
-/// <summary>
-/// Represents statistics for a specific entity type (users, categories, or tips).
-/// </summary>
 public sealed record EntityStatistics
 {
     /// <summary>
