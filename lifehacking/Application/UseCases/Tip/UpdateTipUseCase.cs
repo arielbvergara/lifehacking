@@ -1,5 +1,4 @@
 using Application.Dtos;
-using Application.Dtos.Category;
 using Application.Dtos.Tip;
 using Application.Exceptions;
 using Application.Interfaces;

@@ -292,7 +292,7 @@ public sealed class GetDashboardUseCaseTests
         // Assert - Verify all properties exist and are calculated (not just checking they're not null)
         result.IsSuccess.Should().BeTrue();
         result.Value!.Users.Total.Should().Be(3);
-        
+
         // Verify all time period properties are present and have valid values (>= 0)
         result.Value.Users.ThisDay.Should().BeGreaterOrEqualTo(0);
         result.Value.Users.LastDay.Should().BeGreaterOrEqualTo(0);
@@ -302,9 +302,9 @@ public sealed class GetDashboardUseCaseTests
         result.Value.Users.LastMonth.Should().BeGreaterOrEqualTo(0);
         result.Value.Users.ThisYear.Should().BeGreaterOrEqualTo(0);
         result.Value.Users.LastYear.Should().BeGreaterOrEqualTo(0);
-        
+
         // Verify the sum of all periods doesn't exceed total
-        var allPeriods = result.Value.Users.ThisDay + result.Value.Users.LastDay + 
+        var allPeriods = result.Value.Users.ThisDay + result.Value.Users.LastDay +
                         result.Value.Users.ThisWeek + result.Value.Users.LastWeek +
                         result.Value.Users.ThisMonth + result.Value.Users.LastMonth +
                         result.Value.Users.ThisYear + result.Value.Users.LastYear;
