@@ -6,7 +6,7 @@ using Microsoft.Extensions.Caching.Memory;
 namespace Infrastructure.Services;
 
 /// <summary>
-/// Service for invalidating cached data related to categories and tips.
+/// Service for invalidating cached data related to categories, tips, and dashboard statistics.
 /// Centralizes cache invalidation logic to ensure consistency across the application.
 /// </summary>
 public sealed class CacheInvalidationService(IMemoryCache memoryCache) : ICacheInvalidationService
