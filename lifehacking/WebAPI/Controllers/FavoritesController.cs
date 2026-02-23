@@ -55,10 +55,12 @@ public class FavoritesController(
     /// <returns>A paginated list of favorites with tip details and pagination metadata.</returns>
     [HttpGet]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<PagedFavoritesResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ApiValidationErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetMyFavorites(
         [FromQuery] string? q = null,
         [FromQuery] Guid? categoryId = null,
@@ -131,12 +133,13 @@ public class FavoritesController(
     /// <returns>The created favorite with tip details.</returns>
     [HttpPost("{tipId}")]
     [EnableRateLimiting(RateLimitingPolicies.Strict)]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<FavoriteResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType<ApiValidationErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> AddFavorite(
         [FromRoute] Guid tipId,
         CancellationToken cancellationToken = default)
@@ -221,9 +224,10 @@ public class FavoritesController(
     [HttpDelete("{tipId}")]
     [EnableRateLimiting(RateLimitingPolicies.Strict)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> RemoveFavorite(
         [FromRoute] Guid tipId,
         CancellationToken cancellationToken = default)
@@ -309,13 +313,13 @@ public class FavoritesController(
     /// <returns>A merge summary with counts of added, skipped, and failed tips.</returns>
     [HttpPost("merge")]
     [EnableRateLimiting(RateLimitingPolicies.Strict)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType<MergeFavoritesResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ApiValidationErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> MergeFavorites(
         [FromBody] MergeFavoritesRequestDto requestDto,
         CancellationToken cancellationToken = default)

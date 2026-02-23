@@ -43,7 +43,8 @@ public class CategoryController(
     [HttpGet]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
     [ProducesResponseType<CategoryListResponse>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetCategories(CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Retrieving all categories");
@@ -80,9 +81,10 @@ public class CategoryController(
     [HttpGet("{id}")]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
     [ProducesResponseType<CategoryResponse>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType<ApiValidationErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetCategoryById(
         string id,
         CancellationToken cancellationToken = default)
@@ -157,9 +159,10 @@ public class CategoryController(
     [HttpGet("{id}/tips")]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
     [ProducesResponseType<PagedTipsResponse>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType<ApiValidationErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetTipsByCategory(
         string id,
         [FromQuery] TipSortField? orderBy,
