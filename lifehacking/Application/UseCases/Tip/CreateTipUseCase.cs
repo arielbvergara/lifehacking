@@ -1,3 +1,4 @@
+using Application.Dtos;
 using Application.Dtos.Tip;
 using Application.Exceptions;
 using Application.Interfaces;
@@ -44,7 +45,7 @@ public class CreateTipUseCase(
             var steps = new List<TipStep>();
             var tags = new List<Tag>();
             VideoUrl? videoUrl = null;
-            TipImage? image = null;
+            ImageMetadata? image = null;
 
             // Validate title
             try
@@ -121,12 +122,11 @@ public class CreateTipUseCase(
             {
                 try
                 {
-                    image = request.Image.ToTipImage();
+                    image = request.Image.ToImageMetadata();
                 }
                 catch (ArgumentException ex)
                 {
-                    var fieldName = MapImageExceptionToFieldName(ex.ParamName);
-                    validationBuilder.AddError(fieldName, ex.Message);
+                    validationBuilder.AddError(ImageDto.MapExceptionToFieldName(ex.ParamName), ex.Message);
                 }
             }
 
@@ -182,22 +182,6 @@ public class CreateTipUseCase(
             return Result<TipDetailResponse, AppException>.Fail(
                 new InfraException("An unexpected error occurred while creating the tip", ex));
         }
-    }
-
-    /// <summary>
-    /// Maps TipImage value object parameter names to request field names with "Image." prefix.
-    /// </summary>
-    private static string MapImageExceptionToFieldName(string? paramName)
-    {
-        return paramName switch
-        {
-            "imageUrl" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.ImageUrl)}",
-            "imageStoragePath" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.ImageStoragePath)}",
-            "originalFileName" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.OriginalFileName)}",
-            "contentType" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.ContentType)}",
-            "fileSizeBytes" => $"{nameof(CreateTipRequest.Image)}.{nameof(TipImageDto.FileSizeBytes)}",
-            _ => nameof(CreateTipRequest.Image)
-        };
     }
 }
 

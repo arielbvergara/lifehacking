@@ -6,15 +6,15 @@ using Xunit;
 namespace Domain.Tests.ValueObject;
 
 /// <summary>
-/// Unit tests for CategoryImage value object.
+/// Unit tests for ImageMetadata value object.
 /// Tests domain validation rules and value object behavior.
 /// </summary>
-public sealed class CategoryImageTests
+public sealed class ImageMetadataTests
 {
     #region Create - Success Cases
 
     [Fact]
-    public void Create_ShouldReturnCategoryImage_WhenAllPropertiesAreValid()
+    public void Create_ShouldReturnImageMetadata_WhenAllPropertiesAreValid()
     {
         // Arrange
         var imageUrl = "https://cdn.example.com/categories/image.jpg";
@@ -25,7 +25,7 @@ public sealed class CategoryImageTests
         var uploadedAt = DateTime.UtcNow;
 
         // Act
-        var result = CategoryImage.Create(imageUrl, storagePath, fileName, contentType, fileSize, uploadedAt);
+        var result = ImageMetadata.Create(imageUrl, storagePath, fileName, contentType, fileSize, uploadedAt);
 
         // Assert
         result.Should().NotBeNull();
@@ -47,7 +47,7 @@ public sealed class CategoryImageTests
         foreach (var contentType in allowedTypes)
         {
             // Act
-            var result = CategoryImage.Create(
+            var result = ImageMetadata.Create(
                 "https://cdn.example.com/image.jpg",
                 "public/categories/2024/01/guid.jpg",
                 "image.jpg",
@@ -68,7 +68,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldThrowArgumentException_WhenImageUrlIsEmpty()
     {
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             string.Empty,
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -86,7 +86,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldThrowArgumentException_WhenImageUrlIsWhitespace()
     {
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "   ",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -107,7 +107,7 @@ public sealed class CategoryImageTests
         var tooLongUrl = "https://cdn.example.com/" + new string('a', ImageConstants.MaxUrlLength);
 
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             tooLongUrl,
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -125,7 +125,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldThrowArgumentException_WhenImageUrlIsNotAbsolute()
     {
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "relative/path/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -143,7 +143,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldThrowArgumentException_WhenImageUrlIsInvalidFormat()
     {
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "not-a-valid-url",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -165,7 +165,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldThrowArgumentException_WhenImageStoragePathIsEmpty()
     {
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             string.Empty,
             "image.jpg",
@@ -183,7 +183,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldThrowArgumentException_WhenImageStoragePathIsWhitespace()
     {
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "   ",
             "image.jpg",
@@ -204,7 +204,7 @@ public sealed class CategoryImageTests
         var tooLongPath = new string('a', ImageConstants.MaxStoragePathLength + 1);
 
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             tooLongPath,
             "image.jpg",
@@ -226,7 +226,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldThrowArgumentException_WhenOriginalFileNameIsEmpty()
     {
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             string.Empty,
@@ -244,7 +244,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldThrowArgumentException_WhenOriginalFileNameIsWhitespace()
     {
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "   ",
@@ -265,7 +265,7 @@ public sealed class CategoryImageTests
         var tooLongFileName = new string('a', ImageConstants.MaxFileNameLength + 1) + ".jpg";
 
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             tooLongFileName,
@@ -287,7 +287,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldThrowArgumentException_WhenContentTypeIsEmpty()
     {
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -305,7 +305,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldThrowArgumentException_WhenContentTypeIsWhitespace()
     {
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -323,7 +323,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldThrowArgumentException_WhenContentTypeIsInvalid()
     {
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -341,7 +341,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldBeCaseInsensitive_WhenValidatingContentType()
     {
         // Act
-        var result = CategoryImage.Create(
+        var result = ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -362,7 +362,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldThrowArgumentException_WhenFileSizeBytesIsZero()
     {
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -380,7 +380,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldThrowArgumentException_WhenFileSizeBytesIsNegative()
     {
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -401,7 +401,7 @@ public sealed class CategoryImageTests
         var oversizedFile = ImageConstants.MaxFileSizeBytes + 1;
 
         // Act
-        var act = () => CategoryImage.Create(
+        var act = () => ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -419,7 +419,7 @@ public sealed class CategoryImageTests
     public void Create_ShouldAcceptMaximumFileSize_WhenFileSizeIsAtLimit()
     {
         // Act
-        var result = CategoryImage.Create(
+        var result = ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -441,7 +441,7 @@ public sealed class CategoryImageTests
     {
         // Arrange
         var uploadedAt = DateTime.UtcNow;
-        var image1 = CategoryImage.Create(
+        var image1 = ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -449,7 +449,7 @@ public sealed class CategoryImageTests
             1024,
             uploadedAt);
 
-        var image2 = CategoryImage.Create(
+        var image2 = ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -467,7 +467,7 @@ public sealed class CategoryImageTests
     {
         // Arrange
         var uploadedAt = DateTime.UtcNow;
-        var image1 = CategoryImage.Create(
+        var image1 = ImageMetadata.Create(
             "https://cdn.example.com/image1.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -475,7 +475,7 @@ public sealed class CategoryImageTests
             1024,
             uploadedAt);
 
-        var image2 = CategoryImage.Create(
+        var image2 = ImageMetadata.Create(
             "https://cdn.example.com/image2.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -493,7 +493,7 @@ public sealed class CategoryImageTests
     {
         // Arrange
         var uploadedAt = DateTime.UtcNow;
-        var image1 = CategoryImage.Create(
+        var image1 = ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -501,7 +501,7 @@ public sealed class CategoryImageTests
             1024,
             uploadedAt);
 
-        var image2 = CategoryImage.Create(
+        var image2 = ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -518,7 +518,7 @@ public sealed class CategoryImageTests
     {
         // Arrange
         var uploadedAt = DateTime.UtcNow;
-        var image1 = CategoryImage.Create(
+        var image1 = ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",
@@ -526,7 +526,7 @@ public sealed class CategoryImageTests
             1024,
             uploadedAt);
 
-        var image2 = CategoryImage.Create(
+        var image2 = ImageMetadata.Create(
             "https://cdn.example.com/image.jpg",
             "public/categories/2024/01/guid.jpg",
             "image.jpg",

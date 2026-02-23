@@ -1,3 +1,4 @@
+using Application.Dtos;
 using Application.Dtos.Category;
 using Application.Exceptions;
 using Application.Interfaces;
@@ -60,20 +61,18 @@ public class UpdateCategoryUseCase(
 
             // Validate new name and image using ValidationErrorBuilder
             var validationBuilder = new ValidationErrorBuilder();
-            Domain.ValueObject.CategoryImage? image = null;
+            Domain.ValueObject.ImageMetadata? image = null;
 
             // Validate and create image if provided
             if (request.Image is not null)
             {
                 try
                 {
-                    image = request.Image.ToCategoryImage();
+                    image = request.Image.ToImageMetadata();
                 }
                 catch (ArgumentException ex)
                 {
-                    // Map exception parameter name to DTO field name
-                    var fieldName = MapImageExceptionToFieldName(ex);
-                    validationBuilder.AddError($"Image.{fieldName}", ex.Message);
+                    validationBuilder.AddError(ImageDto.MapExceptionToFieldName(ex.ParamName), ex.Message);
                 }
             }
 
@@ -116,19 +115,5 @@ public class UpdateCategoryUseCase(
             return Result<CategoryResponse, AppException>.Fail(
                 new InfraException("An unexpected error occurred while updating the category", ex));
         }
-    }
-
-    private static string MapImageExceptionToFieldName(ArgumentException ex)
-    {
-        // Map parameter name from exception to DTO field name
-        return ex.ParamName switch
-        {
-            "imageUrl" => "ImageUrl",
-            "imageStoragePath" => "ImageStoragePath",
-            "originalFileName" => "OriginalFileName",
-            "contentType" => "ContentType",
-            "fileSizeBytes" => "FileSizeBytes",
-            _ => "Image"
-        };
     }
 }

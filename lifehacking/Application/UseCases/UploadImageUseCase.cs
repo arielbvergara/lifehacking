@@ -1,4 +1,4 @@
-using Application.Dtos.Category;
+using Application.Dtos;
 using Application.Exceptions;
 using Application.Interfaces;
 using Application.Validation;
@@ -6,32 +6,33 @@ using Domain.Constants;
 using Domain.Primitives;
 using Microsoft.Extensions.Logging;
 
-namespace Application.UseCases.Category;
+namespace Application.UseCases;
 
 /// <summary>
-/// Use case for uploading category images to cloud storage.
+/// Use case for uploading images to cloud storage.
 /// Validates image files and uploads them to AWS S3 with CloudFront CDN URLs.
 /// </summary>
-public class UploadCategoryImageUseCase
+public class UploadImageUseCase
 {
     private readonly IImageStorageService _imageStorageService;
-    private readonly ILogger<UploadCategoryImageUseCase> _logger;
+    private readonly ILogger<UploadImageUseCase> _logger;
 
-    public UploadCategoryImageUseCase(
+    public UploadImageUseCase(
         IImageStorageService imageStorageService,
-        ILogger<UploadCategoryImageUseCase> logger)
+        ILogger<UploadImageUseCase> logger)
     {
         _imageStorageService = imageStorageService ?? throw new ArgumentNullException(nameof(imageStorageService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
-    /// Executes the use case to upload a category image.
+    /// Executes the use case to upload an image.
     /// </summary>
     /// <param name="fileStream">The stream containing the image file data.</param>
     /// <param name="fileName">The original filename of the uploaded image.</param>
     /// <param name="contentType">The declared content type of the image.</param>
     /// <param name="fileSizeBytes">The size of the file in bytes.</param>
+    /// <param name="pathPrefix">The storage path prefix (e.g., "categories", "tips").</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A result containing the image metadata or an application exception.</returns>
     /// <remarks>
@@ -44,11 +45,12 @@ public class UploadCategoryImageUseCase
     /// <item><description>Returns <see cref="InfraException"/> if the S3 upload fails.</description></item>
     /// </list>
     /// </remarks>
-    public async Task<Result<CategoryImageDto, AppException>> ExecuteAsync(
+    public async Task<Result<ImageDto, AppException>> ExecuteAsync(
         Stream fileStream,
         string fileName,
         string contentType,
         long fileSizeBytes,
+        string pathPrefix,
         CancellationToken cancellationToken = default)
     {
         try
@@ -59,7 +61,7 @@ public class UploadCategoryImageUseCase
             if (fileStream == null)
             {
                 validationBuilder.AddError("File", "File is required");
-                return Result<CategoryImageDto, AppException>.Fail(validationBuilder.Build());
+                return Result<ImageDto, AppException>.Fail(validationBuilder.Build());
             }
 
             // Validate file size
@@ -89,28 +91,30 @@ public class UploadCategoryImageUseCase
             // Return early if validation errors exist
             if (validationBuilder.HasErrors)
             {
-                return Result<CategoryImageDto, AppException>.Fail(validationBuilder.Build());
+                return Result<ImageDto, AppException>.Fail(validationBuilder.Build());
             }
 
             // Sanitize filename
             var sanitizedFileName = FileValidationHelper.SanitizeFileName(fileName);
 
             _logger.LogInformation(
-                "Uploading category image. OriginalFileName: {OriginalFileName}, SanitizedFileName: {SanitizedFileName}, ContentType: {ContentType}, Size: {Size} bytes",
+                "Uploading {PathPrefix} image. OriginalFileName: {OriginalFileName}, SanitizedFileName: {SanitizedFileName}, ContentType: {ContentType}, Size: {Size} bytes",
+                pathPrefix,
                 fileName,
                 sanitizedFileName,
                 normalizedContentType,
                 fileSizeBytes);
 
-            // Upload to storage (uses default "categories" path prefix)
+            // Upload to storage
             var storageResult = await _imageStorageService.UploadAsync(
                 fileStream,
                 sanitizedFileName,
                 normalizedContentType,
-                cancellationToken: cancellationToken);
+                pathPrefix,
+                cancellationToken);
 
             // Create response DTO
-            var imageDto = new CategoryImageDto(
+            var imageDto = new ImageDto(
                 ImageUrl: storageResult.PublicUrl,
                 ImageStoragePath: storageResult.StoragePath,
                 OriginalFileName: sanitizedFileName,
@@ -120,22 +124,23 @@ public class UploadCategoryImageUseCase
             );
 
             _logger.LogInformation(
-                "Successfully uploaded category image. StoragePath: {StoragePath}, PublicUrl: {PublicUrl}",
+                "Successfully uploaded {PathPrefix} image. StoragePath: {StoragePath}, PublicUrl: {PublicUrl}",
+                pathPrefix,
                 storageResult.StoragePath,
                 storageResult.PublicUrl);
 
-            return Result<CategoryImageDto, AppException>.Ok(imageDto);
+            return Result<ImageDto, AppException>.Ok(imageDto);
         }
         catch (AppException ex)
         {
-            _logger.LogError(ex, "Application error during category image upload");
-            return Result<CategoryImageDto, AppException>.Fail(ex);
+            _logger.LogError(ex, "Application error during {PathPrefix} image upload", pathPrefix);
+            return Result<ImageDto, AppException>.Fail(ex);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error during category image upload");
-            return Result<CategoryImageDto, AppException>.Fail(
-                new InfraException("An unexpected error occurred while uploading the category image", ex));
+            _logger.LogError(ex, "Unexpected error during {PathPrefix} image upload", pathPrefix);
+            return Result<ImageDto, AppException>.Fail(
+                new InfraException($"An unexpected error occurred while uploading the {pathPrefix} image", ex));
         }
     }
 }

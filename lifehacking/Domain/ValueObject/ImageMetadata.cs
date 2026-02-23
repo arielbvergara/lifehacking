@@ -3,10 +3,11 @@ using Domain.Constants;
 namespace Domain.ValueObject;
 
 /// <summary>
-/// Value object representing image metadata for a category.
-/// Encapsulates all image-related properties and validation logic.
+/// Value object representing image metadata.
+/// Encapsulates all image-related properties and validation logic
+/// for any entity that supports image attachments (categories, tips, etc.).
 /// </summary>
-public sealed record CategoryImage
+public sealed record ImageMetadata
 {
     /// <summary>
     /// The public-facing URL for accessing the image (CloudFront/S3).
@@ -38,7 +39,7 @@ public sealed record CategoryImage
     /// </summary>
     public DateTime UploadedAt { get; }
 
-    private CategoryImage(
+    private ImageMetadata(
         string imageUrl,
         string imageStoragePath,
         string originalFileName,
@@ -55,10 +56,10 @@ public sealed record CategoryImage
     }
 
     /// <summary>
-    /// Creates a new CategoryImage with validation.
+    /// Creates a new ImageMetadata with validation.
     /// </summary>
     /// <exception cref="ArgumentException">Thrown when any validation rule fails.</exception>
-    public static CategoryImage Create(
+    public static ImageMetadata Create(
         string imageUrl,
         string imageStoragePath,
         string originalFileName,
@@ -72,7 +73,7 @@ public sealed record CategoryImage
         ValidateContentType(contentType);
         ValidateFileSizeBytes(fileSizeBytes);
 
-        return new CategoryImage(
+        return new ImageMetadata(
             imageUrl,
             imageStoragePath,
             originalFileName,

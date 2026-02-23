@@ -1,3 +1,4 @@
+using Application.Dtos;
 using Application.Dtos.Tip;
 using Application.Exceptions;
 using Application.Interfaces;
@@ -623,7 +624,7 @@ public class CreateTipUseCaseTests
         var categoryId = Guid.NewGuid();
         var category = DomainCategory.Create("Test Category");
 
-        var imageDto = new TipImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "https://cdn.example.com/tips/test-image.jpg",
             ImageStoragePath: "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
             OriginalFileName: "test-image.jpg",
@@ -711,7 +712,7 @@ public class CreateTipUseCaseTests
         // Arrange
         var categoryId = Guid.NewGuid();
 
-        var imageDto = new TipImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "not-a-valid-url",
             ImageStoragePath: "tips/test.jpg",
             OriginalFileName: "test.jpg",
@@ -749,7 +750,7 @@ public class CreateTipUseCaseTests
         // Arrange
         var categoryId = Guid.NewGuid();
 
-        var imageDto = new TipImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "https://cdn.example.com/tips/test.bmp",
             ImageStoragePath: "tips/test.bmp",
             OriginalFileName: "test.bmp",
@@ -788,7 +789,7 @@ public class CreateTipUseCaseTests
         // Arrange
         var categoryId = Guid.NewGuid();
 
-        var imageDto = new TipImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "https://cdn.example.com/tips/test.jpg",
             ImageStoragePath: "tips/test.jpg",
             OriginalFileName: "test.jpg",
@@ -826,7 +827,7 @@ public class CreateTipUseCaseTests
         // Arrange
         var categoryId = Guid.NewGuid();
 
-        var imageDto = new TipImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "not-a-valid-url",
             ImageStoragePath: "tips/test.jpg",
             OriginalFileName: "test.jpg",

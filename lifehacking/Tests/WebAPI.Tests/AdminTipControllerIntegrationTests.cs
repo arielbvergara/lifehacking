@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Application.Dtos;
 using Application.Dtos.Tip;
 using Application.Interfaces;
 using FluentAssertions;
@@ -528,7 +529,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
         var category = TestDataFactory.CreateCategory("Test Category");
         await categoryRepository.AddAsync(category);
 
-        var imageDto = new TipImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "https://cdn.example.com/tips/test-image.jpg",
             ImageStoragePath: "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
             OriginalFileName: "test-image.jpg",
@@ -613,7 +614,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
         var category = TestDataFactory.CreateCategory("Test Category");
         await categoryRepository.AddAsync(category);
 
-        var imageDto = new TipImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "not-a-valid-url",
             ImageStoragePath: "tips/test.jpg",
             OriginalFileName: "test.jpg",
@@ -655,7 +656,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
         var category = TestDataFactory.CreateCategory("Test Category");
         await categoryRepository.AddAsync(category);
 
-        var imageDto = new TipImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "https://cdn.example.com/tips/test.bmp",
             ImageStoragePath: "tips/test.bmp",
             OriginalFileName: "test.bmp",
@@ -697,7 +698,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
         var category = TestDataFactory.CreateCategory("Test Category");
         await categoryRepository.AddAsync(category);
 
-        var imageDto = new TipImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "not-a-url",
             ImageStoragePath: "tips/test.jpg",
             OriginalFileName: "test.jpg",

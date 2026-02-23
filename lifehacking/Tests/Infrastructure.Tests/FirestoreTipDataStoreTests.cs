@@ -14,7 +14,7 @@ public sealed class FirestoreTipDataStoreTests
     public void ToDocument_ShouldMapImageFields_WhenTipHasImage()
     {
         // Arrange
-        var tipImage = TipImage.Create(
+        var tipImage = ImageMetadata.Create(
             "https://cdn.example.com/tips/test-image.jpg",
             "tips/test-image.jpg",
             "test-image.jpg",
@@ -232,7 +232,7 @@ public sealed class FirestoreTipDataStoreTests
         return (Tip)result!;
     }
 
-    private static Tip CreateTestTip(TipImage? image = null)
+    private static Tip CreateTestTip(ImageMetadata? image = null)
     {
         var categoryId = CategoryId.Create(Guid.NewGuid());
         var tipTitle = TipTitle.Create("Test Tip");

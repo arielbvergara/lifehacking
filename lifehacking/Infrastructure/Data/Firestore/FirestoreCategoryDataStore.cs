@@ -151,8 +151,8 @@ public sealed class FirestoreCategoryDataStore(
     {
         var id = CategoryId.Create(Guid.Parse(document.Id));
 
-        // Reconstruct CategoryImage if all required fields are present
-        CategoryImage? image = null;
+        // Reconstruct ImageMetadata if all required fields are present
+        ImageMetadata? image = null;
         if (!string.IsNullOrEmpty(document.ImageUrl) &&
             !string.IsNullOrEmpty(document.ImageStoragePath) &&
             !string.IsNullOrEmpty(document.OriginalFileName) &&
@@ -160,7 +160,7 @@ public sealed class FirestoreCategoryDataStore(
             document.FileSizeBytes.HasValue &&
             document.UploadedAt.HasValue)
         {
-            image = CategoryImage.Create(
+            image = ImageMetadata.Create(
                 document.ImageUrl,
                 document.ImageStoragePath,
                 document.OriginalFileName,

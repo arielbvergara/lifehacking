@@ -1,3 +1,4 @@
+using Application.Dtos;
 using Application.Dtos.Tip;
 using Application.Exceptions;
 using Application.Interfaces;
@@ -751,7 +752,7 @@ public class UpdateTipUseCaseTests
             new List<Tag>()
         );
 
-        var imageDto = new TipImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "https://cdn.example.com/images/test.jpg",
             ImageStoragePath: "tips/test-guid/test.jpg",
             OriginalFileName: "test.jpg",
@@ -867,7 +868,7 @@ public class UpdateTipUseCaseTests
             new List<Tag>()
         );
 
-        var imageDto = new TipImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "", // Invalid: empty URL
             ImageStoragePath: "tips/test-guid/test.jpg",
             OriginalFileName: "test.jpg",
@@ -918,7 +919,7 @@ public class UpdateTipUseCaseTests
             new List<Tag>()
         );
 
-        var imageDto = new TipImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "https://cdn.example.com/images/test.jpg",
             ImageStoragePath: "tips/test-guid/test.jpg",
             OriginalFileName: "test.jpg",

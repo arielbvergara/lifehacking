@@ -12,5 +12,5 @@ public record TipDetailResponse(
     string? VideoUrlId,
     DateTime CreatedAt,
     DateTime? UpdatedAt,
-    TipImageDto? Image
+    ImageDto? Image
 );

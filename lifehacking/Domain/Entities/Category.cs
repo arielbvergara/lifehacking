@@ -23,7 +23,7 @@ public sealed class Category
     public DateTime? UpdatedAt { get; private set; }
     public bool IsDeleted { get; private set; }
     public DateTime? DeletedAt { get; private set; }
-    public CategoryImage? Image { get; private set; }
+    public ImageMetadata? Image { get; private set; }
 
     private Category(
         CategoryId id,
@@ -37,7 +37,7 @@ public sealed class Category
         DeletedAt = null;
     }
 
-    public static Category Create(string name, CategoryImage? image = null)
+    public static Category Create(string name, ImageMetadata? image = null)
     {
         ValidateName(name);
 
@@ -58,7 +58,7 @@ public sealed class Category
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void UpdateImage(CategoryImage? image)
+    public void UpdateImage(ImageMetadata? image)
     {
         Image = image;
         UpdatedAt = DateTime.UtcNow;
@@ -87,7 +87,7 @@ public sealed class Category
         DateTime? updatedAt,
         bool isDeleted,
         DateTime? deletedAt,
-        CategoryImage? image = null)
+        ImageMetadata? image = null)
     {
         var category = new Category(
             id,

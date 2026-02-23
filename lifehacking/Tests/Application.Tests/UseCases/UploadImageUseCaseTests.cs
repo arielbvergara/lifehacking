@@ -1,29 +1,29 @@
 using Application.Exceptions;
 using Application.Interfaces;
-using Application.UseCases.Category;
+using Application.UseCases;
 using Domain.Constants;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace Application.Tests.UseCases.Category;
+namespace Application.Tests.UseCases;
 
 /// <summary>
-/// Unit tests for UploadCategoryImageUseCase.
+/// Unit tests for UploadImageUseCase.
 /// Tests validation, error handling, and integration with IImageStorageService.
 /// </summary>
-public sealed class UploadCategoryImageUseCaseTests
+public sealed class UploadImageUseCaseTests
 {
     private readonly Mock<IImageStorageService> _mockImageStorageService;
-    private readonly Mock<ILogger<UploadCategoryImageUseCase>> _mockLogger;
-    private readonly UploadCategoryImageUseCase _useCase;
+    private readonly Mock<ILogger<UploadImageUseCase>> _mockLogger;
+    private readonly UploadImageUseCase _useCase;
 
-    public UploadCategoryImageUseCaseTests()
+    public UploadImageUseCaseTests()
     {
         _mockImageStorageService = new Mock<IImageStorageService>();
-        _mockLogger = new Mock<ILogger<UploadCategoryImageUseCase>>();
-        _useCase = new UploadCategoryImageUseCase(_mockImageStorageService.Object, _mockLogger.Object);
+        _mockLogger = new Mock<ILogger<UploadImageUseCase>>();
+        _useCase = new UploadImageUseCase(_mockImageStorageService.Object, _mockLogger.Object);
     }
 
     #region Success Cases
@@ -47,7 +47,7 @@ public sealed class UploadCategoryImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize);
+        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize, "categories");
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -83,7 +83,7 @@ public sealed class UploadCategoryImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize);
+        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize, "categories");
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -109,7 +109,7 @@ public sealed class UploadCategoryImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize);
+        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize, "categories");
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -135,7 +135,7 @@ public sealed class UploadCategoryImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize);
+        var result = await _useCase.ExecuteAsync(stream, fileName, contentType, fileSize, "categories");
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -150,7 +150,7 @@ public sealed class UploadCategoryImageUseCaseTests
     public async Task ExecuteAsync_ShouldReturnValidationError_WhenFileStreamIsNull()
     {
         // Act
-        var result = await _useCase.ExecuteAsync(null!, "test.jpg", "image/jpeg", 1024);
+        var result = await _useCase.ExecuteAsync(null!, "test.jpg", "image/jpeg", 1024, "categories");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -173,7 +173,7 @@ public sealed class UploadCategoryImageUseCaseTests
         var oversizedFile = ImageConstants.MaxFileSizeBytes + 1;
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", oversizedFile);
+        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", oversizedFile, "categories");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -195,7 +195,7 @@ public sealed class UploadCategoryImageUseCaseTests
         using var stream = new MemoryStream(jpegMagicBytes);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.pdf", "application/pdf", 1024);
+        var result = await _useCase.ExecuteAsync(stream, "test.pdf", "application/pdf", 1024, "categories");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -217,7 +217,7 @@ public sealed class UploadCategoryImageUseCaseTests
         using var stream = new MemoryStream(pngMagicBytes);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "fake.jpg", "image/jpeg", 1024);
+        var result = await _useCase.ExecuteAsync(stream, "fake.jpg", "image/jpeg", 1024, "categories");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -239,7 +239,7 @@ public sealed class UploadCategoryImageUseCaseTests
         using var stream = new MemoryStream(jpegMagicBytes);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.jpg", null!, 1024);
+        var result = await _useCase.ExecuteAsync(stream, "test.jpg", null!, 1024, "categories");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -274,7 +274,7 @@ public sealed class UploadCategoryImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, maliciousFileName, "image/jpeg", 1024);
+        var result = await _useCase.ExecuteAsync(stream, maliciousFileName, "image/jpeg", 1024, "categories");
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -301,7 +301,7 @@ public sealed class UploadCategoryImageUseCaseTests
             .ThrowsAsync(new InfraException("S3", "S3 upload failed"));
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024);
+        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024, "categories");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -321,7 +321,7 @@ public sealed class UploadCategoryImageUseCaseTests
             .ThrowsAsync(new InvalidOperationException("Unexpected error"));
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024);
+        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024, "categories");
 
         // Assert
         result.IsFailure.Should().BeTrue();
@@ -350,14 +350,14 @@ public sealed class UploadCategoryImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        await _useCase.ExecuteAsync(stream, fileName, "image/jpeg", 1024);
+        await _useCase.ExecuteAsync(stream, fileName, "image/jpeg", 1024, "categories");
 
         // Assert
         _mockLogger.Verify(
             x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Uploading category image")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Uploading categories image")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
@@ -366,7 +366,7 @@ public sealed class UploadCategoryImageUseCaseTests
             x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Successfully uploaded category image")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Successfully uploaded categories image")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
@@ -384,14 +384,14 @@ public sealed class UploadCategoryImageUseCaseTests
             .ThrowsAsync(new InfraException("S3", "Upload failed"));
 
         // Act
-        await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024);
+        await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024, "categories");
 
         // Assert
         _mockLogger.Verify(
             x => x.Log(
                 LogLevel.Error,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Application error during category image upload")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Application error during categories image upload")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
@@ -418,7 +418,7 @@ public sealed class UploadCategoryImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024);
+        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024, "categories");
         var afterUpload = DateTime.UtcNow;
 
         // Assert
@@ -443,7 +443,7 @@ public sealed class UploadCategoryImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024);
+        var result = await _useCase.ExecuteAsync(stream, "test.jpg", "image/jpeg", 1024, "categories");
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -468,7 +468,7 @@ public sealed class UploadCategoryImageUseCaseTests
             .ReturnsAsync(expectedStorageResult);
 
         // Act
-        var result = await _useCase.ExecuteAsync(stream, "test.jpg", mixedCaseContentType, 1024);
+        var result = await _useCase.ExecuteAsync(stream, "test.jpg", mixedCaseContentType, 1024, "categories");
 
         // Assert
         result.IsSuccess.Should().BeTrue();

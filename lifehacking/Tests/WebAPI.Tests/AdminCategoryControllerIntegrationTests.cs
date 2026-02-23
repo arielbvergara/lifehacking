@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Application.Dtos;
 using Application.Dtos.Category;
 using Application.Interfaces;
 using FluentAssertions;
@@ -143,7 +144,7 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
     public async Task CreateCategory_ShouldReturn201Created_WhenValidImageMetadataIsProvided()
     {
         // Arrange
-        var imageDto = new CategoryImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "https://cdn.example.com/categories/test-image.jpg",
             ImageStoragePath: "categories/2024/test-image.jpg",
             OriginalFileName: "test-image.jpg",
@@ -204,7 +205,7 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
     public async Task CreateCategory_ShouldReturn400BadRequest_WhenImageContentTypeIsInvalid()
     {
         // Arrange
-        var imageDto = new CategoryImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "https://cdn.example.com/categories/test-image.jpg",
             ImageStoragePath: "categories/2024/test-image.jpg",
             OriginalFileName: "test-image.jpg",
@@ -234,7 +235,7 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
     public async Task CreateCategory_ShouldReturn400BadRequest_WhenImageFileSizeExceedsMaximum()
     {
         // Arrange
-        var imageDto = new CategoryImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "https://cdn.example.com/categories/test-image.jpg",
             ImageStoragePath: "categories/2024/test-image.jpg",
             OriginalFileName: "test-image.jpg",
@@ -264,7 +265,7 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
     public async Task CreateCategory_ShouldReturn400BadRequest_WhenImageUrlIsInvalid()
     {
         // Arrange
-        var imageDto = new CategoryImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "not-a-valid-url", // Invalid URL format
             ImageStoragePath: "categories/2024/test-image.jpg",
             OriginalFileName: "test-image.jpg",
@@ -297,7 +298,7 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
         var categoryRepository = GetCategoryRepository();
 
         // Create category with image
-        var imageDto = new CategoryImageDto(
+        var imageDto = new ImageDto(
             ImageUrl: "https://cdn.example.com/categories/tech-image.jpg",
             ImageStoragePath: "categories/2024/tech-image.jpg",
             OriginalFileName: "tech-image.jpg",
@@ -951,7 +952,7 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
         response.StatusCode.Should().Be(HttpStatusCode.Created,
             "uploading a valid JPEG image should return 201 Created");
 
-        var imageDto = await response.Content.ReadFromJsonAsync<CategoryImageDto>();
+        var imageDto = await response.Content.ReadFromJsonAsync<ImageDto>();
         imageDto.Should().NotBeNull();
         imageDto!.ImageUrl.Should().StartWith("https://");
         imageDto.ImageStoragePath.Should().Contain("categories/");
@@ -978,7 +979,7 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
         response.StatusCode.Should().Be(HttpStatusCode.Created,
             "uploading a valid PNG image should return 201 Created");
 
-        var imageDto = await response.Content.ReadFromJsonAsync<CategoryImageDto>();
+        var imageDto = await response.Content.ReadFromJsonAsync<ImageDto>();
         imageDto.Should().NotBeNull();
         imageDto!.ContentType.Should().Be("image/png");
         imageDto.OriginalFileName.Should().Be("test-image.png");
@@ -1001,7 +1002,7 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
         response.StatusCode.Should().Be(HttpStatusCode.Created,
             "uploading a valid GIF image should return 201 Created");
 
-        var imageDto = await response.Content.ReadFromJsonAsync<CategoryImageDto>();
+        var imageDto = await response.Content.ReadFromJsonAsync<ImageDto>();
         imageDto.Should().NotBeNull();
         imageDto!.ContentType.Should().Be("image/gif");
         imageDto.OriginalFileName.Should().Be("test-image.gif");
@@ -1024,7 +1025,7 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
         response.StatusCode.Should().Be(HttpStatusCode.Created,
             "uploading a valid WebP image should return 201 Created");
 
-        var imageDto = await response.Content.ReadFromJsonAsync<CategoryImageDto>();
+        var imageDto = await response.Content.ReadFromJsonAsync<ImageDto>();
         imageDto.Should().NotBeNull();
         imageDto!.ContentType.Should().Be("image/webp");
         imageDto.OriginalFileName.Should().Be("test-image.webp");
@@ -1164,7 +1165,7 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
         response.StatusCode.Should().Be(HttpStatusCode.Created,
             "uploading with unsafe filename should succeed after sanitization");
 
-        var imageDto = await response.Content.ReadFromJsonAsync<CategoryImageDto>();
+        var imageDto = await response.Content.ReadFromJsonAsync<ImageDto>();
         imageDto.Should().NotBeNull();
         // The use case sanitizes the filename, so the OriginalFileName in the response will be sanitized
         imageDto!.OriginalFileName.Should().NotContain("..",
@@ -1189,7 +1190,7 @@ public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTes
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var imageDto = await response.Content.ReadFromJsonAsync<CategoryImageDto>();
+        var imageDto = await response.Content.ReadFromJsonAsync<ImageDto>();
         imageDto.Should().NotBeNull();
         imageDto!.ImageUrl.Should().StartWith("https://",
             "image URL should be a secure HTTPS URL");

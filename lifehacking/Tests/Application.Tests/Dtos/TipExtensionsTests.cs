@@ -1,3 +1,4 @@
+using Application.Dtos;
 using Application.Dtos.Tip;
 using Domain.Entities;
 using Domain.ValueObject;
@@ -191,10 +192,10 @@ public class TipExtensionsTests
     }
 
     [Fact]
-    public void ToTipImage_ShouldConvertDto_WhenValidDtoProvided()
+    public void ToImageMetadata_ShouldConvertDto_WhenValidDtoProvided()
     {
         // Arrange
-        var dto = new TipImageDto(
+        var dto = new ImageDto(
             ImageUrl: "https://cdn.example.com/tips/test-image.jpg",
             ImageStoragePath: "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
             OriginalFileName: "test-image.jpg",
@@ -204,7 +205,7 @@ public class TipExtensionsTests
         );
 
         // Act
-        var result = dto.ToTipImage();
+        var result = dto.ToImageMetadata();
 
         // Assert
         result.Should().NotBeNull();
@@ -217,24 +218,24 @@ public class TipExtensionsTests
     }
 
     [Fact]
-    public void ToTipImage_ShouldReturnNull_WhenDtoIsNull()
+    public void ToImageMetadata_ShouldReturnNull_WhenDtoIsNull()
     {
         // Arrange
-        TipImageDto? nullDto = null;
+        ImageDto? nullDto = null;
 
         // Act
-        var result = nullDto.ToTipImage();
+        var result = nullDto.ToImageMetadata();
 
         // Assert
         result.Should().BeNull();
     }
 
     [Fact]
-    public void ToTipImageDto_ShouldConvertValueObject_WhenValidImageProvided()
+    public void ToImageDto_ShouldConvertValueObject_WhenValidImageProvided()
     {
         // Arrange
         var uploadedAt = DateTime.UtcNow;
-        var image = TipImage.Create(
+        var image = ImageMetadata.Create(
             imageUrl: "https://cdn.example.com/tips/test-image.jpg",
             imageStoragePath: "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
             originalFileName: "test-image.jpg",
@@ -244,7 +245,7 @@ public class TipExtensionsTests
         );
 
         // Act
-        var result = image.ToTipImageDto();
+        var result = image.ToImageDto();
 
         // Assert
         result.Should().NotBeNull();
@@ -342,7 +343,7 @@ public class TipExtensionsTests
             ? VideoUrl.Create("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
             : null;
         var image = includeImage
-            ? TipImage.Create(
+            ? ImageMetadata.Create(
                 imageUrl: "https://cdn.example.com/tips/test-image.jpg",
                 imageStoragePath: "tips/550e8400-e29b-41d4-a716-446655440000.jpg",
                 originalFileName: "test-image.jpg",
