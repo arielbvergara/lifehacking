@@ -99,6 +99,7 @@ public class UpdateCategoryUseCase(
 
             // Invalidate category list and individual category cache
             cacheInvalidationService.InvalidateCategoryAndList(categoryId);
+            cacheInvalidationService.InvalidateDashboard();
 
             // Get tip count for response
             var tipCount = await tipRepository.CountByCategoryAsync(categoryId, cancellationToken);

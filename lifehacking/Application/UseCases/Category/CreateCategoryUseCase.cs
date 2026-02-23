@@ -81,6 +81,9 @@ public class CreateCategoryUseCase(
 
             // Invalidate category list cache
             cacheInvalidationService.InvalidateCategoryList();
+            
+            // Invalidate dashboard cache
+            cacheInvalidationService.InvalidateDashboard();
 
             // Return response
             return Result<CategoryResponse, AppException>.Ok(category!.ToCategoryResponse(0));
