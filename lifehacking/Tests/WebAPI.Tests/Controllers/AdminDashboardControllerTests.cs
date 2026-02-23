@@ -6,8 +6,10 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using WebAPI.Controllers;
+using WebAPI.ErrorHandling;
 using Xunit;
 
 namespace WebAPI.Tests.Controllers;
@@ -26,7 +28,15 @@ public sealed class AdminDashboardControllerTests
             Mock.Of<Application.Interfaces.ITipRepository>());
 
         _memoryCache = new MemoryCache(new MemoryCacheOptions());
-        _controller = new AdminDashboardController(_useCaseMock.Object, _memoryCache);
+        var logger = NullLogger<AdminDashboardController>.Instance;
+        _controller = new AdminDashboardController(_useCaseMock.Object, _memoryCache, logger);
+
+        // Provide an HttpContext so that ErrorResponseMapper.ToActionResult can resolve
+        // request path and correlation id without throwing.
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
     }
 
     [Fact]
@@ -118,10 +128,16 @@ public sealed class AdminDashboardControllerTests
         // Act
         var result = await _controller.GetDashboard(CancellationToken.None);
 
-        // Assert
+        // Assert – the response must use the standard RFC 7807 envelope and must
+        // NOT leak the raw exception message to the client.
         result.Should().BeOfType<ObjectResult>();
         var objectResult = (ObjectResult)result;
         objectResult.StatusCode.Should().Be(StatusCodes.Status500InternalServerError);
+
+        var errorResponse = objectResult.Value as ApiErrorResponse;
+        errorResponse.Should().NotBeNull();
+        errorResponse!.Detail.Should().Be(ErrorResponseMapper.GenericClientSafeServerErrorDetail,
+            "infrastructure error details must not be exposed to clients");
     }
 
     [Fact]

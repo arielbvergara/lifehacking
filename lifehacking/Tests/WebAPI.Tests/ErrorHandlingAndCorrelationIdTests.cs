@@ -97,4 +97,88 @@ public class ErrorHandlingAndCorrelationIdTests
         context.Response.Headers[CorrelationIdDefaults.CorrelationIdHeaderName].ToString()
             .Should().Be(existingCorrelationId);
     }
+
+    [Fact]
+    public async Task InvokeAsync_ShouldRejectCorrelationId_WhenHeaderContainsSpecialCharacters()
+    {
+        // Arrange — attempt log injection via newline characters
+        const string maliciousCorrelationId = "legit-id\r\nInjected-Header: evil";
+        var context = new DefaultHttpContext();
+        context.Request.Headers[CorrelationIdDefaults.CorrelationIdHeaderName] = maliciousCorrelationId;
+
+        var logger = NullLogger<CorrelationIdMiddleware>.Instance;
+        RequestDelegate next = _ => Task.CompletedTask;
+        var middleware = new CorrelationIdMiddleware(next, logger);
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert — a new GUID should have been generated instead
+        context.TraceIdentifier.Should().NotBe(maliciousCorrelationId);
+        Guid.TryParse(context.TraceIdentifier, out _).Should().BeTrue(
+            "a fresh GUID should be generated when the client-provided value is invalid");
+    }
+
+    [Fact]
+    public async Task InvokeAsync_ShouldRejectCorrelationId_WhenHeaderExceedsMaxLength()
+    {
+        // Arrange — oversized value that could degrade logging infrastructure
+        var oversizedCorrelationId = new string('a', CorrelationIdDefaults.MaxCorrelationIdLength + 1);
+        var context = new DefaultHttpContext();
+        context.Request.Headers[CorrelationIdDefaults.CorrelationIdHeaderName] = oversizedCorrelationId;
+
+        var logger = NullLogger<CorrelationIdMiddleware>.Instance;
+        RequestDelegate next = _ => Task.CompletedTask;
+        var middleware = new CorrelationIdMiddleware(next, logger);
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        context.TraceIdentifier.Should().NotBe(oversizedCorrelationId);
+        Guid.TryParse(context.TraceIdentifier, out _).Should().BeTrue(
+            "a fresh GUID should be generated when the client-provided value is too long");
+    }
+
+    [Fact]
+    public async Task InvokeAsync_ShouldAcceptCorrelationId_WhenHeaderContainsSafeCharacters()
+    {
+        // Arrange — valid correlation ID with safe characters
+        const string safeCorrelationId = "abc-123_DEF.456:789";
+        var context = new DefaultHttpContext();
+        context.Request.Headers[CorrelationIdDefaults.CorrelationIdHeaderName] = safeCorrelationId;
+
+        var logger = NullLogger<CorrelationIdMiddleware>.Instance;
+        RequestDelegate next = _ => Task.CompletedTask;
+        var middleware = new CorrelationIdMiddleware(next, logger);
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        context.TraceIdentifier.Should().Be(safeCorrelationId);
+    }
+
+    [Theory]
+    [InlineData("<script>alert(1)</script>")]
+    [InlineData("id with spaces")]
+    [InlineData("id\twith\ttabs")]
+    [InlineData("id;DROP TABLE logs;")]
+    public async Task InvokeAsync_ShouldRejectCorrelationId_WhenHeaderContainsUnsafePatterns(string unsafeValue)
+    {
+        // Arrange
+        var context = new DefaultHttpContext();
+        context.Request.Headers[CorrelationIdDefaults.CorrelationIdHeaderName] = unsafeValue;
+
+        var logger = NullLogger<CorrelationIdMiddleware>.Instance;
+        RequestDelegate next = _ => Task.CompletedTask;
+        var middleware = new CorrelationIdMiddleware(next, logger);
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert — the unsafe value should have been replaced
+        context.TraceIdentifier.Should().NotBe(unsafeValue);
+        Guid.TryParse(context.TraceIdentifier, out _).Should().BeTrue();
+    }
 }

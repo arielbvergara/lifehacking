@@ -41,5 +41,17 @@ public class SecurityHeadersTests(CustomWebApplicationFactory factory) : IClassF
             .Should().BeTrue("Content-Security-Policy header should be present");
         contentSecurityPolicy!.Should().ContainSingle()
             .Which.Should().Be(SecurityHeaderConstants.ContentSecurityPolicyDefaultSelfValue);
+
+        response.Headers.TryGetValues(SecurityHeaderConstants.PermissionsPolicyHeaderName,
+                out var permissionsPolicy)
+            .Should().BeTrue("Permissions-Policy header should be present");
+        permissionsPolicy!.Should().ContainSingle()
+            .Which.Should().Be(SecurityHeaderConstants.PermissionsPolicyRestrictiveValue);
+
+        response.Headers.TryGetValues(SecurityHeaderConstants.XPermittedCrossDomainPoliciesHeaderName,
+                out var crossDomainPolicies)
+            .Should().BeTrue("X-Permitted-Cross-Domain-Policies header should be present");
+        crossDomainPolicies!.Should().ContainSingle()
+            .Which.Should().Be(SecurityHeaderConstants.XPermittedCrossDomainPoliciesNoneValue);
     }
 }
