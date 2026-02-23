@@ -81,7 +81,7 @@ public class CreateCategoryUseCase(
 
             // Invalidate category list cache
             cacheInvalidationService.InvalidateCategoryList();
-            
+
             // Invalidate dashboard cache
             cacheInvalidationService.InvalidateDashboard();
 

@@ -26,7 +26,7 @@ namespace Application.Tests.Preservation;
 public class CacheInvalidationPreservationTests
 {
     private const string CategoryListCacheKey = "CategoryList";
-    
+
     /// <summary>
     /// **Validates: Requirement 3.2**
     /// Property 3: Preservation - CategoryList Invalidation on Category Creation
@@ -44,13 +44,13 @@ public class CacheInvalidationPreservationTests
         var memoryCache = new MemoryCache(new MemoryCacheOptions());
         var categoryRepositoryMock = new Mock<ICategoryRepository>();
         var mockCacheInvalidationService = new Mock<ICacheInvalidationService>();
-        
+
         // Track if InvalidateCategoryList was called
         bool categoryListInvalidated = false;
         mockCacheInvalidationService
             .Setup(x => x.InvalidateCategoryList())
             .Callback(() => categoryListInvalidated = true);
-        
+
         // Populate CategoryList cache
         var cachedCategories = new List<CategoryResponse>
         {
@@ -58,31 +58,31 @@ public class CacheInvalidationPreservationTests
             new CategoryResponse(Guid.NewGuid(), "Category 2", DateTime.UtcNow, null, null, 3)
         };
         memoryCache.Set(CategoryListCacheKey, cachedCategories, TimeSpan.FromDays(1));
-        
+
         // Setup repository mocks
         categoryRepositoryMock
             .Setup(x => x.GetByNameAsync("New Category", true, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Category?)null);
-        
+
         categoryRepositoryMock
             .Setup(x => x.AddAsync(It.IsAny<Category>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Category c, CancellationToken _) => c);
-        
+
         var useCase = new CreateCategoryUseCase(
             categoryRepositoryMock.Object,
             mockCacheInvalidationService.Object);
-        
+
         var request = new CreateCategoryRequest("New Category");
-        
+
         // Act
         var result = await useCase.ExecuteAsync(request);
-        
+
         // Assert - CategoryList invalidation should be called (existing behavior)
         result.IsSuccess.Should().BeTrue();
         categoryListInvalidated.Should().BeTrue("CategoryList cache should be invalidated when category is created (existing behavior)");
         mockCacheInvalidationService.Verify(x => x.InvalidateCategoryList(), Times.Once);
     }
-    
+
     /// <summary>
     /// **Validates: Requirements 3.2, 3.3**
     /// Property 3: Preservation - CategoryList and Category_{guid} Invalidation on Category Update
@@ -101,7 +101,7 @@ public class CacheInvalidationPreservationTests
         var categoryRepositoryMock = new Mock<ICategoryRepository>();
         var tipRepositoryMock = new Mock<ITipRepository>();
         var mockCacheInvalidationService = new Mock<ICacheInvalidationService>();
-        
+
         // Track if InvalidateCategoryAndList was called
         bool categoryAndListInvalidated = false;
         CategoryId? invalidatedCategoryId = null;
@@ -112,44 +112,44 @@ public class CacheInvalidationPreservationTests
                 categoryAndListInvalidated = true;
                 invalidatedCategoryId = id;
             });
-        
+
         // Setup existing category
         var existingCategory = Category.Create("Old Name");
         var categoryId = existingCategory.Id;
-        
+
         categoryRepositoryMock
             .Setup(x => x.GetByIdAsync(categoryId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingCategory);
-        
+
         categoryRepositoryMock
             .Setup(x => x.GetByNameAsync("New Name", true, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Category?)null);
-        
+
         categoryRepositoryMock
             .Setup(x => x.UpdateAsync(It.IsAny<Category>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        
+
         tipRepositoryMock
             .Setup(x => x.CountByCategoryAsync(categoryId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(3);
-        
+
         var useCase = new UpdateCategoryUseCase(
             categoryRepositoryMock.Object,
             tipRepositoryMock.Object,
             mockCacheInvalidationService.Object);
-        
+
         var request = new UpdateCategoryRequest("New Name", null);
-        
+
         // Act
         var result = await useCase.ExecuteAsync(categoryId.Value, request);
-        
+
         // Assert - InvalidateCategoryAndList should be called (existing behavior)
         result.IsSuccess.Should().BeTrue();
         categoryAndListInvalidated.Should().BeTrue("InvalidateCategoryAndList should be called when category is updated (existing behavior)");
         invalidatedCategoryId.Should().Be(categoryId);
         mockCacheInvalidationService.Verify(x => x.InvalidateCategoryAndList(categoryId), Times.Once);
     }
-    
+
     /// <summary>
     /// **Validates: Requirements 3.2, 3.3**
     /// Property 3: Preservation - CategoryList and Category_{guid} Invalidation on Category Deletion
@@ -168,7 +168,7 @@ public class CacheInvalidationPreservationTests
         var categoryRepositoryMock = new Mock<ICategoryRepository>();
         var tipRepositoryMock = new Mock<ITipRepository>();
         var mockCacheInvalidationService = new Mock<ICacheInvalidationService>();
-        
+
         // Track if InvalidateCategoryAndList was called
         bool categoryAndListInvalidated = false;
         CategoryId? invalidatedCategoryId = null;
@@ -179,38 +179,38 @@ public class CacheInvalidationPreservationTests
                 categoryAndListInvalidated = true;
                 invalidatedCategoryId = id;
             });
-        
+
         // Setup existing category
         var existingCategory = Category.Create("Category to Delete");
         var categoryId = existingCategory.Id;
-        
+
         categoryRepositoryMock
             .Setup(x => x.GetByIdAsync(categoryId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingCategory);
-        
+
         categoryRepositoryMock
             .Setup(x => x.UpdateAsync(It.IsAny<Category>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        
+
         tipRepositoryMock
             .Setup(x => x.GetByCategoryAsync(categoryId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Tip>());
-        
+
         var useCase = new DeleteCategoryUseCase(
             categoryRepositoryMock.Object,
             tipRepositoryMock.Object,
             mockCacheInvalidationService.Object);
-        
+
         // Act
         var result = await useCase.ExecuteAsync(categoryId.Value);
-        
+
         // Assert - InvalidateCategoryAndList should be called (existing behavior)
         result.IsSuccess.Should().BeTrue();
         categoryAndListInvalidated.Should().BeTrue("InvalidateCategoryAndList should be called when category is deleted (existing behavior)");
         invalidatedCategoryId.Should().Be(categoryId);
         mockCacheInvalidationService.Verify(x => x.InvalidateCategoryAndList(categoryId), Times.Once);
     }
-    
+
     /// <summary>
     /// **Validates: Requirements 3.2, 3.3**
     /// Property 3: Preservation - CategoryList and Category_{guid} Invalidation on Tip Creation
@@ -229,7 +229,7 @@ public class CacheInvalidationPreservationTests
         var tipRepositoryMock = new Mock<ITipRepository>();
         var categoryRepositoryMock = new Mock<ICategoryRepository>();
         var mockCacheInvalidationService = new Mock<ICacheInvalidationService>();
-        
+
         // Track if InvalidateCategoryAndList was called
         bool categoryAndListInvalidated = false;
         CategoryId? invalidatedCategoryId = null;
@@ -240,24 +240,24 @@ public class CacheInvalidationPreservationTests
                 categoryAndListInvalidated = true;
                 invalidatedCategoryId = id;
             });
-        
+
         // Setup category
         var category = Category.Create("Test Category");
         var categoryId = category.Id;
-        
+
         categoryRepositoryMock
             .Setup(x => x.GetByIdAsync(categoryId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(category);
-        
+
         tipRepositoryMock
             .Setup(x => x.AddAsync(It.IsAny<Tip>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Tip t, CancellationToken _) => t);
-        
+
         var useCase = new CreateTipUseCase(
             tipRepositoryMock.Object,
             categoryRepositoryMock.Object,
             mockCacheInvalidationService.Object);
-        
+
         var request = new CreateTipRequest(
             "Test Tip",
             "Test Description",
@@ -266,17 +266,17 @@ public class CacheInvalidationPreservationTests
             null,
             null,
             null);
-        
+
         // Act
         var result = await useCase.ExecuteAsync(request);
-        
+
         // Assert - InvalidateCategoryAndList should be called (existing behavior)
         result.IsSuccess.Should().BeTrue();
         categoryAndListInvalidated.Should().BeTrue("InvalidateCategoryAndList should be called when tip is created (existing behavior)");
         invalidatedCategoryId.Should().Be(categoryId);
         mockCacheInvalidationService.Verify(x => x.InvalidateCategoryAndList(categoryId), Times.Once);
     }
-    
+
     /// <summary>
     /// **Validates: Requirements 3.2, 3.3**
     /// Property 3: Preservation - CategoryList and Category_{guid} Invalidation on Tip Update
@@ -295,23 +295,23 @@ public class CacheInvalidationPreservationTests
         var tipRepositoryMock = new Mock<ITipRepository>();
         var categoryRepositoryMock = new Mock<ICategoryRepository>();
         var mockCacheInvalidationService = new Mock<ICacheInvalidationService>();
-        
+
         // Track cache invalidation calls
         var invalidatedCategoryIds = new List<CategoryId>();
         mockCacheInvalidationService
             .Setup(x => x.InvalidateCategoryAndList(It.IsAny<CategoryId>()))
             .Callback<CategoryId>(id => invalidatedCategoryIds.Add(id));
-        
+
         mockCacheInvalidationService
             .Setup(x => x.InvalidateCategory(It.IsAny<CategoryId>()))
             .Callback<CategoryId>(id => invalidatedCategoryIds.Add(id));
-        
+
         // Setup categories
         var oldCategory = Category.Create("Old Category");
         var newCategory = Category.Create("New Category");
         var oldCategoryId = oldCategory.Id;
         var newCategoryId = newCategory.Id;
-        
+
         // Setup existing tip
         var existingTip = Tip.Create(
             TipTitle.Create("Old Title"),
@@ -319,25 +319,25 @@ public class CacheInvalidationPreservationTests
             new List<TipStep> { TipStep.Create(1, "This is step 1 with enough characters") },
             oldCategoryId);
         var tipId = existingTip.Id;
-        
+
         // Setup repository mocks
         tipRepositoryMock
             .Setup(x => x.GetByIdAsync(tipId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingTip);
-        
+
         categoryRepositoryMock
             .Setup(x => x.GetByIdAsync(newCategoryId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(newCategory);
-        
+
         tipRepositoryMock
             .Setup(x => x.UpdateAsync(It.IsAny<Tip>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        
+
         var useCase = new UpdateTipUseCase(
             tipRepositoryMock.Object,
             categoryRepositoryMock.Object,
             mockCacheInvalidationService.Object);
-        
+
         var request = new UpdateTipRequest(
             tipId.Value,
             "New Title",
@@ -347,10 +347,10 @@ public class CacheInvalidationPreservationTests
             null,
             null,
             null);
-        
+
         // Act
         var result = await useCase.ExecuteAsync(tipId.Value, request);
-        
+
         // Assert - Both categories should be invalidated (existing behavior)
         result.IsSuccess.Should().BeTrue();
         invalidatedCategoryIds.Should().Contain(newCategoryId, "New category should be invalidated via InvalidateCategoryAndList (existing behavior)");
@@ -358,7 +358,7 @@ public class CacheInvalidationPreservationTests
         mockCacheInvalidationService.Verify(x => x.InvalidateCategoryAndList(newCategoryId), Times.Once);
         mockCacheInvalidationService.Verify(x => x.InvalidateCategory(oldCategoryId), Times.Once);
     }
-    
+
     /// <summary>
     /// **Validates: Requirements 3.2, 3.3**
     /// Property 3: Preservation - CategoryList and Category_{guid} Invalidation on Tip Deletion
@@ -376,7 +376,7 @@ public class CacheInvalidationPreservationTests
         var memoryCache = new MemoryCache(new MemoryCacheOptions());
         var tipRepositoryMock = new Mock<ITipRepository>();
         var mockCacheInvalidationService = new Mock<ICacheInvalidationService>();
-        
+
         // Track if InvalidateCategoryAndList was called
         bool categoryAndListInvalidated = false;
         CategoryId? invalidatedCategoryId = null;
@@ -387,7 +387,7 @@ public class CacheInvalidationPreservationTests
                 categoryAndListInvalidated = true;
                 invalidatedCategoryId = id;
             });
-        
+
         // Setup category and tip
         var category = Category.Create("Test Category");
         var categoryId = category.Id;
@@ -397,30 +397,30 @@ public class CacheInvalidationPreservationTests
             new List<TipStep> { TipStep.Create(1, "This is step 1 with enough characters") },
             categoryId);
         var tipId = existingTip.Id;
-        
+
         // Setup repository mocks
         tipRepositoryMock
             .Setup(x => x.GetByIdAsync(tipId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingTip);
-        
+
         tipRepositoryMock
             .Setup(x => x.UpdateAsync(It.IsAny<Tip>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        
+
         var useCase = new DeleteTipUseCase(
             tipRepositoryMock.Object,
             mockCacheInvalidationService.Object);
-        
+
         // Act
         var result = await useCase.ExecuteAsync(tipId.Value);
-        
+
         // Assert - InvalidateCategoryAndList should be called (existing behavior)
         result.IsSuccess.Should().BeTrue();
         categoryAndListInvalidated.Should().BeTrue("InvalidateCategoryAndList should be called when tip is deleted (existing behavior)");
         invalidatedCategoryId.Should().Be(categoryId);
         mockCacheInvalidationService.Verify(x => x.InvalidateCategoryAndList(categoryId), Times.Once);
     }
-    
+
     /// <summary>
     /// **Validates: Requirement 3.1**
     /// Property 3: Preservation - CacheInvalidationService Interface Pattern
@@ -438,12 +438,12 @@ public class CacheInvalidationPreservationTests
         // Arrange
         var mockService = new Mock<ICacheInvalidationService>();
         var categoryId = CategoryId.Create(Guid.NewGuid());
-        
+
         // Act & Assert - Verify interface provides existing methods
         mockService.Object.InvalidateCategoryList();
         mockService.Object.InvalidateCategory(categoryId);
         mockService.Object.InvalidateCategoryAndList(categoryId);
-        
+
         // Verify methods can be called without errors (interface contract preserved)
         mockService.Verify(x => x.InvalidateCategoryList(), Times.Once);
         mockService.Verify(x => x.InvalidateCategory(categoryId), Times.Once);
