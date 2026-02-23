@@ -17,4 +17,10 @@ public static class SecurityHeaderConstants
 
     public const string ContentSecurityPolicyHeaderName = "Content-Security-Policy";
     public const string ContentSecurityPolicyDefaultSelfValue = "default-src 'self';";
+
+    public const string PermissionsPolicyHeaderName = "Permissions-Policy";
+    public const string PermissionsPolicyRestrictiveValue = "camera=(), microphone=(), geolocation=()";
+
+    public const string XPermittedCrossDomainPoliciesHeaderName = "X-Permitted-Cross-Domain-Policies";
+    public const string XPermittedCrossDomainPoliciesNoneValue = "none";
 }

@@ -34,6 +34,20 @@ public class SecurityHeadersMiddleware(RequestDelegate next)
                 SecurityHeaderConstants.ContentSecurityPolicyDefaultSelfValue);
         }
 
+        if (!context.Response.Headers.ContainsKey(SecurityHeaderConstants.PermissionsPolicyHeaderName))
+        {
+            context.Response.Headers.Append(
+                SecurityHeaderConstants.PermissionsPolicyHeaderName,
+                SecurityHeaderConstants.PermissionsPolicyRestrictiveValue);
+        }
+
+        if (!context.Response.Headers.ContainsKey(SecurityHeaderConstants.XPermittedCrossDomainPoliciesHeaderName))
+        {
+            context.Response.Headers.Append(
+                SecurityHeaderConstants.XPermittedCrossDomainPoliciesHeaderName,
+                SecurityHeaderConstants.XPermittedCrossDomainPoliciesNoneValue);
+        }
+
         await next(context);
     }
 }

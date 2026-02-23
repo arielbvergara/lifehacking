@@ -73,9 +73,13 @@ public class Program
 
         var app = builder.Build();
 
-        // Swagger
-        app.UseSwagger();
-        app.UseSwaggerUI();
+        // Swagger (restricted to non-production environments to prevent
+        // exposing the full API schema in production — OWASP A05)
+        if (!app.Environment.IsProduction())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
         app.UseHttpsRedirection();
 

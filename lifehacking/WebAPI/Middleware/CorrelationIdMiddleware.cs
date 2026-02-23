@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Primitives;
 
 namespace WebAPI.Middleware;
@@ -6,7 +7,7 @@ namespace WebAPI.Middleware;
 /// Adds and propagates a correlation identifier for each HTTP request so that
 /// logs and error responses can be tied together without exposing internals.
 /// </summary>
-public sealed class CorrelationIdMiddleware
+public sealed partial class CorrelationIdMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<CorrelationIdMiddleware> _logger;
@@ -38,11 +39,34 @@ public sealed class CorrelationIdMiddleware
         if (headers.TryGetValue(CorrelationIdDefaults.CorrelationIdHeaderName, out StringValues values) &&
             !StringValues.IsNullOrEmpty(values))
         {
-            return values.ToString();
+            var candidate = values.ToString();
+
+            if (IsValidCorrelationId(candidate))
+            {
+                return candidate;
+            }
+
+            // Client-provided value failed validation; generate a new one to prevent
+            // log injection or oversized values from propagating through the pipeline.
         }
 
         return Guid.NewGuid().ToString("D");
     }
+
+    /// <summary>
+    /// Validates that a client-supplied correlation ID is safe for use in logs,
+    /// response headers, and error payloads. Accepts only printable ASCII
+    /// characters (letters, digits, hyphens, underscores, dots, colons) up to
+    /// a maximum length to prevent log injection and oversized values.
+    /// </summary>
+    private static bool IsValidCorrelationId(string value)
+    {
+        return value.Length <= CorrelationIdDefaults.MaxCorrelationIdLength &&
+               SafeCorrelationIdRegex().IsMatch(value);
+    }
+
+    [GeneratedRegex(@"^[a-zA-Z0-9\-_.:]+$")]
+    private static partial Regex SafeCorrelationIdRegex();
 }
 
 /// <summary>
@@ -53,4 +77,10 @@ public static class CorrelationIdDefaults
 {
     public const string CorrelationIdHeaderName = "X-Correlation-ID";
     public const string CorrelationIdLogScopeKey = "CorrelationId";
+
+    /// <summary>
+    /// Maximum allowed length for a client-supplied correlation ID. Values
+    /// exceeding this length are discarded to protect logging infrastructure.
+    /// </summary>
+    public const int MaxCorrelationIdLength = 128;
 }

@@ -3,6 +3,7 @@ using Application.UseCases.Dashboard;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using WebAPI.ErrorHandling;
 
 namespace WebAPI.Controllers;
 
@@ -11,7 +12,8 @@ namespace WebAPI.Controllers;
 [Authorize(Policy = "AdminOnly")]
 public sealed class AdminDashboardController(
     GetDashboardUseCase getDashboardUseCase,
-    IMemoryCache memoryCache) : ControllerBase
+    IMemoryCache memoryCache,
+    ILogger<AdminDashboardController> logger) : ControllerBase
 {
     private const string CacheKey = "AdminDashboard";
     private static readonly TimeSpan _cacheDuration = TimeSpan.FromDays(1);
@@ -46,9 +48,10 @@ public sealed class AdminDashboardController(
                 _memoryCache.Set(CacheKey, success, _cacheDuration);
                 return Ok(success);
             },
-            failure => failure switch
+            failure =>
             {
-                _ => StatusCode(StatusCodes.Status500InternalServerError, new { error = failure.Message })
+                logger.LogError(failure.InnerException, "Failed to retrieve dashboard: {Message}", failure.Message);
+                return this.ToActionResult(failure, HttpContext.TraceIdentifier);
             });
     }
 }
