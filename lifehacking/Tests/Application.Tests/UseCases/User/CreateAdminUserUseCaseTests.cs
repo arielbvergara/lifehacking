@@ -18,7 +18,11 @@ public class CreateAdminUserUseCaseTests
         // Arrange
         var userRepositoryMock = new Mock<IUserRepository>();
         var identityProviderServiceMock = new Mock<IIdentityProviderService>();
-        var useCase = new CreateAdminUserUseCase(userRepositoryMock.Object, identityProviderServiceMock.Object);
+        var cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
+        var useCase = new CreateAdminUserUseCase(
+            userRepositoryMock.Object,
+            identityProviderServiceMock.Object,
+            cacheInvalidationServiceMock.Object);
 
         const string email = "admin-existing@example.com";
         const string password = "StrongPassword!123";
@@ -56,6 +60,9 @@ public class CreateAdminUserUseCaseTests
         userRepositoryMock.Verify(
             r => r.AddAsync(It.IsAny<DomainUser>(), It.IsAny<CancellationToken>()),
             Times.Never);
+
+        // Dashboard cache should not be invalidated when user already exists
+        cacheInvalidationServiceMock.Verify(c => c.InvalidateDashboard(), Times.Never);
     }
 
     [Fact]
@@ -64,7 +71,11 @@ public class CreateAdminUserUseCaseTests
         // Arrange
         var userRepositoryMock = new Mock<IUserRepository>();
         var identityProviderServiceMock = new Mock<IIdentityProviderService>();
-        var useCase = new CreateAdminUserUseCase(userRepositoryMock.Object, identityProviderServiceMock.Object);
+        var cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
+        var useCase = new CreateAdminUserUseCase(
+            userRepositoryMock.Object,
+            identityProviderServiceMock.Object,
+            cacheInvalidationServiceMock.Object);
 
         const string email = "admin-new@example.com";
         const string password = "StrongPassword!456";
@@ -105,6 +116,9 @@ public class CreateAdminUserUseCaseTests
             r => r.AddAsync(It.IsAny<DomainUser>(), It.IsAny<CancellationToken>()),
             Times.Once);
 
+        // Dashboard cache should be invalidated when new user is created
+        cacheInvalidationServiceMock.Verify(c => c.InvalidateDashboard(), Times.Once);
+
         addedUser.Should().NotBeNull();
         addedUser!.Email.Value.Should().Be(email.ToLowerInvariant());
         addedUser.Name.Value.Should().Be(name);
@@ -117,7 +131,11 @@ public class CreateAdminUserUseCaseTests
         // Arrange
         var userRepositoryMock = new Mock<IUserRepository>();
         var identityProviderServiceMock = new Mock<IIdentityProviderService>();
-        var useCase = new CreateAdminUserUseCase(userRepositoryMock.Object, identityProviderServiceMock.Object);
+        var cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
+        var useCase = new CreateAdminUserUseCase(
+            userRepositoryMock.Object,
+            identityProviderServiceMock.Object,
+            cacheInvalidationServiceMock.Object);
 
         const string invalidEmail = "not-an-email";
         const string password = "StrongPassword!789";
@@ -140,6 +158,9 @@ public class CreateAdminUserUseCaseTests
         identityProviderServiceMock.Verify(
             s => s.EnsureAdminUserAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
             Times.Never);
+
+        // Dashboard cache should not be invalidated on validation error
+        cacheInvalidationServiceMock.Verify(c => c.InvalidateDashboard(), Times.Never);
     }
 
     [Fact]
@@ -148,7 +169,11 @@ public class CreateAdminUserUseCaseTests
         // Arrange
         var userRepositoryMock = new Mock<IUserRepository>();
         var identityProviderServiceMock = new Mock<IIdentityProviderService>();
-        var useCase = new CreateAdminUserUseCase(userRepositoryMock.Object, identityProviderServiceMock.Object);
+        var cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
+        var useCase = new CreateAdminUserUseCase(
+            userRepositoryMock.Object,
+            identityProviderServiceMock.Object,
+            cacheInvalidationServiceMock.Object);
 
         const string email = "admin-error@example.com";
         const string password = "StrongPassword!000";
@@ -169,5 +194,8 @@ public class CreateAdminUserUseCaseTests
         result.Error.Should().BeOfType<InfraException>();
         result.Error!.InnerException.Should().NotBeNull();
         result.Error.InnerException!.Message.Should().Be("Unexpected repository failure");
+
+        // Dashboard cache should not be invalidated on error
+        cacheInvalidationServiceMock.Verify(c => c.InvalidateDashboard(), Times.Never);
     }
 }

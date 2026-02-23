@@ -21,11 +21,13 @@ public class DeleteUserUseCaseTests
         var ownershipServiceMock = new Mock<IUserOwnershipService>();
         var favoritesRepositoryMock = new Mock<IFavoritesRepository>();
         var identityProviderServiceMock = new Mock<IIdentityProviderService>();
+        var cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
         var useCase = new DeleteUserUseCase(
             repositoryMock.Object,
             ownershipServiceMock.Object,
             favoritesRepositoryMock.Object,
-            identityProviderServiceMock.Object);
+            identityProviderServiceMock.Object,
+            cacheInvalidationServiceMock.Object);
 
         var targetUserId = Guid.NewGuid();
         var externalAuthId = ExternalAuthIdentifier.Create("provider|owner-123");
@@ -56,6 +58,7 @@ public class DeleteUserUseCaseTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeTrue();
         repositoryMock.Verify(r => r.DeleteAsync(It.Is<UserId>(id => id.Value == targetUserId), It.IsAny<CancellationToken>()), Times.Once);
+        cacheInvalidationServiceMock.Verify(c => c.InvalidateDashboard(), Times.Once);
     }
 
     [Fact]
@@ -66,11 +69,13 @@ public class DeleteUserUseCaseTests
         var ownershipServiceMock = new Mock<IUserOwnershipService>();
         var favoritesRepositoryMock = new Mock<IFavoritesRepository>();
         var identityProviderServiceMock = new Mock<IIdentityProviderService>();
+        var cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
         var useCase = new DeleteUserUseCase(
             repositoryMock.Object,
             ownershipServiceMock.Object,
             favoritesRepositoryMock.Object,
-            identityProviderServiceMock.Object);
+            identityProviderServiceMock.Object,
+            cacheInvalidationServiceMock.Object);
 
         var targetUserId = Guid.NewGuid();
         var externalAuthId = ExternalAuthIdentifier.Create("provider|user-123");
@@ -101,6 +106,7 @@ public class DeleteUserUseCaseTests
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeTrue();
         repositoryMock.Verify(r => r.DeleteAsync(It.Is<UserId>(id => id.Value == targetUserId), It.IsAny<CancellationToken>()), Times.Once);
+        cacheInvalidationServiceMock.Verify(c => c.InvalidateDashboard(), Times.Once);
     }
 
     [Fact]
@@ -111,11 +117,13 @@ public class DeleteUserUseCaseTests
         var ownershipServiceMock = new Mock<IUserOwnershipService>();
         var favoritesRepositoryMock = new Mock<IFavoritesRepository>();
         var identityProviderServiceMock = new Mock<IIdentityProviderService>();
+        var cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
         var useCase = new DeleteUserUseCase(
             repositoryMock.Object,
             ownershipServiceMock.Object,
             favoritesRepositoryMock.Object,
-            identityProviderServiceMock.Object);
+            identityProviderServiceMock.Object,
+            cacheInvalidationServiceMock.Object);
 
         var targetUserId = Guid.NewGuid();
         var targetExternalAuthId = ExternalAuthIdentifier.Create("provider|target-123");
@@ -147,6 +155,7 @@ public class DeleteUserUseCaseTests
         result.IsFailure.Should().BeTrue();
         result.Error.Should().BeOfType<NotFoundException>();
         repositoryMock.Verify(r => r.DeleteAsync(It.IsAny<UserId>(), It.IsAny<CancellationToken>()), Times.Never);
+        cacheInvalidationServiceMock.Verify(c => c.InvalidateDashboard(), Times.Never);
     }
 
     [Fact]
@@ -157,11 +166,13 @@ public class DeleteUserUseCaseTests
         var ownershipServiceMock = new Mock<IUserOwnershipService>();
         var favoritesRepositoryMock = new Mock<IFavoritesRepository>();
         var identityProviderServiceMock = new Mock<IIdentityProviderService>();
+        var cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
         var useCase = new DeleteUserUseCase(
             repositoryMock.Object,
             ownershipServiceMock.Object,
             favoritesRepositoryMock.Object,
-            identityProviderServiceMock.Object);
+            identityProviderServiceMock.Object,
+            cacheInvalidationServiceMock.Object);
 
         var targetUserId = Guid.NewGuid();
 
@@ -178,5 +189,6 @@ public class DeleteUserUseCaseTests
         result.IsFailure.Should().BeTrue();
         result.Error.Should().BeOfType<NotFoundException>();
         repositoryMock.Verify(r => r.DeleteAsync(It.IsAny<UserId>(), It.IsAny<CancellationToken>()), Times.Never);
+        cacheInvalidationServiceMock.Verify(c => c.InvalidateDashboard(), Times.Never);
     }
 }

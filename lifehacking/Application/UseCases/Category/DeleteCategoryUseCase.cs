@@ -59,6 +59,7 @@ public class DeleteCategoryUseCase(
 
             // Invalidate category list and individual category cache
             cacheInvalidationService.InvalidateCategoryAndList(categoryId);
+            cacheInvalidationService.InvalidateDashboard();
 
             return Result<bool, AppException>.Ok(true);
         }

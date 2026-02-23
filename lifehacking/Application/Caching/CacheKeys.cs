@@ -15,6 +15,11 @@ public static class CacheKeys
     public const string CategoryList = "CategoryList";
 
     /// <summary>
+    /// Cache key for the admin dashboard statistics.
+    /// </summary>
+    public const string AdminDashboard = "AdminDashboard";
+
+    /// <summary>
     /// Prefix for individual category cache keys.
     /// </summary>
     private const string CategoryPrefix = "Category_";
