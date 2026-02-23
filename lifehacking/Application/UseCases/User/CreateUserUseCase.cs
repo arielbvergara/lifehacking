@@ -7,7 +7,8 @@ using Domain.ValueObject;
 namespace Application.UseCases.User;
 
 public class CreateUserUseCase(
-    IUserRepository userRepository)
+    IUserRepository userRepository,
+    ICacheInvalidationService cacheInvalidationService)
 {
     public async Task<Result<UserResponse, AppException>> ExecuteAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
     {
@@ -30,6 +31,9 @@ public class CreateUserUseCase(
             var user = Domain.Entities.User.Create(email, name, externalAuthId);
 
             await userRepository.AddAsync(user, cancellationToken);
+
+            // Invalidate dashboard cache to reflect updated user statistics
+            cacheInvalidationService.InvalidateDashboard();
 
             return Result<UserResponse, AppException>.Ok(user.ToUserResponse());
         }

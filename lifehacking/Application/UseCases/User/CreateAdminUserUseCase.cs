@@ -8,7 +8,8 @@ namespace Application.UseCases.User;
 
 public class CreateAdminUserUseCase(
     IUserRepository userRepository,
-    IIdentityProviderService identityProviderService)
+    IIdentityProviderService identityProviderService,
+    ICacheInvalidationService cacheInvalidationService)
 {
     public async Task<Result<UserResponse, AppException>> ExecuteAsync(CreateAdminUserRequest request, CancellationToken cancellationToken = default)
     {
@@ -44,6 +45,9 @@ public class CreateAdminUserUseCase(
             var adminUser = Domain.Entities.User.CreateAdmin(email, name, externalAuthId);
 
             await userRepository.AddAsync(adminUser, cancellationToken);
+
+            // Invalidate dashboard cache to reflect updated user statistics
+            cacheInvalidationService.InvalidateDashboard();
 
             return Result<UserResponse, AppException>.Ok(adminUser.ToUserResponse());
         }
