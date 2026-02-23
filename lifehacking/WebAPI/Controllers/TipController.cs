@@ -45,8 +45,9 @@ public class TipController(
     [HttpGet]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
     [ProducesResponseType<PagedTipsResponse>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType<ApiValidationErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> SearchTips(
         [FromQuery] string? q,
         [FromQuery] Guid? categoryId,
@@ -116,9 +117,10 @@ public class TipController(
     [HttpGet("{id}")]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
     [ProducesResponseType<TipDetailResponse>(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType<ApiValidationErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetTipById(string id, CancellationToken cancellationToken)
     {
         // Validate that the provided ID is a valid GUID

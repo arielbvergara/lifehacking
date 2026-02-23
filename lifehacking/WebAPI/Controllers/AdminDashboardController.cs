@@ -7,6 +7,11 @@ using WebAPI.ErrorHandling;
 
 namespace WebAPI.Controllers;
 
+/// <summary>
+/// Exposes administrative endpoints for retrieving dashboard statistics.
+///
+/// All routes are scoped under <c>/api/admin/dashboard</c> and require the AdminOnly policy.
+/// </summary>
 [ApiController]
 [Route("api/admin/dashboard")]
 [Authorize(Policy = "AdminOnly")]
@@ -28,10 +33,10 @@ public sealed class AdminDashboardController(
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Dashboard statistics grouped by entity type.</returns>
     [HttpGet]
-    [ProducesResponseType(typeof(DashboardResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType<DashboardResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetDashboard(CancellationToken cancellationToken)
     {
         if (_memoryCache.TryGetValue(CacheKey, out DashboardResponse? cachedResponse) && cachedResponse is not null)

@@ -34,12 +34,29 @@ public class AdminUserController(
 {
     private const string AdminUserRoutePrefix = "api/admin/User";
 
+    /// <summary>
+    /// Creates a new admin user with Firebase authentication credentials.
+    /// </summary>
+    /// <remarks>
+    /// This endpoint is restricted to administrators. Creates a new user with admin privileges
+    /// using the provided email, display name, and password.
+    ///
+    /// **Validation Rules:**
+    /// - **Email**: Required, must be a valid email address
+    /// - **DisplayName**: Required
+    /// - **Password**: Required, minimum 12 characters
+    /// </remarks>
+    /// <param name="dto">The admin user creation request containing email, display name, and password.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>The created admin user with HTTP 200 OK status.</returns>
     [HttpPost]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType<UserResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ApiValidationErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateAdminUser([FromBody] CreateAdminUserDto dto, CancellationToken cancellationToken)
     {
         var result = await createAdminUserUseCase.ExecuteAsync(
@@ -89,11 +106,21 @@ public class AdminUserController(
     /// Supports searching across email, name, and id, as well as ordering by email, name,
     /// and creation timestamp in both ascending and descending directions.
     /// </remarks>
+    /// <param name="search">Optional search term to filter users by email, name, or id.</param>
+    /// <param name="orderBy">Sort field (Email, Name, CreatedAt). Defaults to CreatedAt.</param>
+    /// <param name="sortDirection">Sort direction (Ascending, Descending). Defaults to Descending.</param>
+    /// <param name="pageNumber">Page number for pagination (starts at 1).</param>
+    /// <param name="pageSize">Number of items per page.</param>
+    /// <param name="isDeleted">Optional filter for deleted status.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>A paginated list of users with pagination metadata.</returns>
     [HttpGet]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<PagedUsersResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ApiValidationErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetUsers(
         [FromQuery] string? search,
         [FromQuery] UserSortField? orderBy,
@@ -132,11 +159,16 @@ public class AdminUserController(
     /// <remarks>
     /// This endpoint is restricted to administrators.
     /// </remarks>
+    /// <param name="id">The internal GUID identifier of the user.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>The user details.</returns>
     [HttpGet("{id:guid}")]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<UserResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetUserById(Guid id, CancellationToken cancellationToken)
     {
         var currentUserContext = User.ToCurrentUserContext();
@@ -158,11 +190,16 @@ public class AdminUserController(
     /// <remarks>
     /// This endpoint is restricted to administrators.
     /// </remarks>
+    /// <param name="email">The email address of the user to retrieve.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>The user details.</returns>
     [HttpGet("email/{email}")]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<UserResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetUserByEmail(string email, CancellationToken cancellationToken)
     {
         var currentUserContext = User.ToCurrentUserContext();
@@ -184,12 +221,18 @@ public class AdminUserController(
     /// <remarks>
     /// This endpoint is restricted to administrators.
     /// </remarks>
+    /// <param name="id">The internal GUID identifier of the user to update.</param>
+    /// <param name="dto">The request containing the new display name.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>The updated user details.</returns>
     [HttpPut("{id:guid}/name")]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<UserResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ApiValidationErrorResponse>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> UpdateUserNameById(Guid id, [FromBody] UpdateUserNameDto dto,
         CancellationToken cancellationToken)
     {
@@ -238,14 +281,19 @@ public class AdminUserController(
     /// Deletes a user identified by id.
     /// </summary>
     /// <remarks>
-    /// This endpoint is restricted to administrators.
+    /// This endpoint is restricted to administrators. Soft-deletes the user with the specified ID.
     /// </remarks>
+    /// <param name="id">The internal GUID identifier of the user to delete.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>HTTP 204 No Content on success.</returns>
     [HttpDelete("{id:guid}")]
     [EnableRateLimiting(RateLimitingPolicies.Fixed)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ApiErrorResponse>(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> DeleteUserById(Guid id, CancellationToken cancellationToken)
     {
         var currentUserContext = User.ToCurrentUserContext();
