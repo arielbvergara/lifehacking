@@ -10,7 +10,8 @@ public class DeleteUserUseCase(
     IUserRepository userRepository,
     IUserOwnershipService userOwnershipService,
     IFavoritesRepository favoritesRepository,
-    IIdentityProviderService identityProviderService)
+    IIdentityProviderService identityProviderService,
+    ICacheInvalidationService cacheInvalidationService)
 {
     public async Task<Result<bool, AppException>> ExecuteAsync(DeleteUserRequest request, CancellationToken cancellationToken = default)
     {
@@ -40,6 +41,9 @@ public class DeleteUserUseCase(
 
             // Soft delete the user in our database
             await userRepository.DeleteAsync(userId, cancellationToken);
+
+            // Invalidate dashboard cache to reflect updated user statistics
+            cacheInvalidationService.InvalidateDashboard();
 
             // Delete the user from Firebase Authentication
             await identityProviderService.DeleteUserAsync(user.ExternalAuthId.Value, cancellationToken);
