@@ -49,6 +49,7 @@ public class DeleteTipUseCase(
 
             // 4. Invalidate category list and individual category cache
             cacheInvalidationService.InvalidateCategoryAndList(tip.CategoryId);
+            cacheInvalidationService.InvalidateDashboard();
 
             // 5. Return success result
             return Result<bool, AppException>.Ok(true);

@@ -186,6 +186,7 @@ public class UpdateTipUseCase(
                 // If category changed, also invalidate the old category
                 cacheInvalidationService.InvalidateCategory(oldCategoryId);
             }
+            cacheInvalidationService.InvalidateDashboard();
 
             // 8. Map to response DTO and return success result
             var response = tip.ToTipDetailResponse(category.Name);

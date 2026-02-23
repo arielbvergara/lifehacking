@@ -168,6 +168,7 @@ public class CreateTipUseCase(
 
             // 6. Invalidate category list and individual category cache
             cacheInvalidationService.InvalidateCategoryAndList(categoryId);
+            cacheInvalidationService.InvalidateDashboard();
 
             // 7. Map to response DTO and return success result
             var response = tip.ToTipDetailResponse(category.Name);
