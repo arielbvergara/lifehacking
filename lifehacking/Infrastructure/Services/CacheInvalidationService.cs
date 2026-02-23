@@ -22,6 +22,14 @@ public sealed class CacheInvalidationService(IMemoryCache memoryCache) : ICacheI
     }
 
     /// <summary>
+    /// Invalidates the cached admin dashboard.
+    /// </summary>
+    public void InvalidateDashboard()
+    {
+        _memoryCache.Remove(CacheKeys.AdminDashboard);
+    }
+
+    /// <summary>
     /// Invalidates the cache for a specific category by ID.
     /// </summary>
     /// <param name="categoryId">The category ID to invalidate.</param>

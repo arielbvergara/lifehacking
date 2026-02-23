@@ -23,4 +23,9 @@ public interface ICacheInvalidationService
     /// </summary>
     /// <param name="categoryId">The category ID to invalidate.</param>
     void InvalidateCategoryAndList(CategoryId categoryId);
+
+    /// <summary>
+    /// Invalidates the cached admin dashboard.
+    /// </summary>
+    void InvalidateDashboard();
 }
