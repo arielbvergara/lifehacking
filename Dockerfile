@@ -13,11 +13,6 @@ ENV ASPNETCORE_URLS=http://+:8080
 # Environment variables used by WebAPI configuration
 # These can be overridden at `docker run` time with `-e` flags.
 #
-# UseInMemoryDB controls whether the app uses the in-memory EF Core database
-# or the configured Firebase/Firestore persistence.
-#   - true  => use in-memory database (no external DB dependency)
-#   - false => use Firebase/Firestore as configured via appsettings / env vars
-ENV UseInMemoryDB=true
 
 # =========================================================
 # 2) Build image (contains SDK and tooling)
