@@ -309,9 +309,7 @@ dotnet build lifehacking.slnx
 dotnet run --project lifehacking/WebAPI/WebAPI.csproj
 ```
 
-The API reads configuration from `lifehacking/WebAPI/appsettings.Development.json` and environment variables. You can choose between:
-- **In-memory database** (`UseInMemoryDB = true`) - Good for quick testing without Firebase setup
-- **Firebase/Firestore** (`UseInMemoryDB = false`) - Production-like environment
+The API reads configuration from `lifehacking/WebAPI/appsettings.Development.json` and environment variables.
 
 ### 4. Configure Firebase Authentication
 
@@ -444,7 +442,6 @@ Any configuration value can be overridden with environment variables using the f
 
 ### Database Configuration
 
-- `UseInMemoryDB` - Set to `true` for in-memory database (testing), `false` for Firebase/Firestore (production)
 - `Firebase__ProjectId` - Your Firebase project identifier
 - `Firebase__DatabaseUrl` - Optional Firestore database URL
 - `Firebase__EmulatorHost` - Optional Firestore emulator host:port for local testing
@@ -494,15 +491,13 @@ For production deployments:
 1. **Set `AllowedHosts`** to your actual domain names
 2. **Configure `ClientApp:Origin`** with your frontend URL(s)
 3. **Use secrets management** for sensitive values (Firebase credentials, Sentry DSN, admin passwords)
-4. **Set `UseInMemoryDB=false`** and provide Firebase configuration
-5. **Enable Sentry** with appropriate sample rates
-6. **Review rate limiting** policies in `RateLimitingConfiguration.cs`
+4**Enable Sentry** with appropriate sample rates
+5**Review rate limiting** policies in `RateLimitingConfiguration.cs`
 
 ### Example Environment Variables
 
 ```bash
 # Database
-export UseInMemoryDB=false
 export Firebase__ProjectId=my-lifehacking-app
 export Firebase__DatabaseUrl=https://my-lifehacking-app.firebaseio.com
 
