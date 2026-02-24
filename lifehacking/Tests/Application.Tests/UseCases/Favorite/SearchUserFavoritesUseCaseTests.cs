@@ -1,6 +1,6 @@
+using Application.Dtos;
 using Application.Dtos.Favorite;
 using Application.Dtos.Tip;
-using Application.Dtos;
 using Application.Exceptions;
 using Application.Interfaces;
 using Application.UseCases.Favorite;
