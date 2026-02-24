@@ -22,20 +22,14 @@ public class SearchTipsUseCase(ITipRepository tipRepository, ICategoryRepository
             var categoryIds = tips.Select(t => t.CategoryId).Distinct().ToList();
 
             // Fetch all categories in a single batch to avoid N+1 queries
-            var categories = new Dictionary<Domain.ValueObject.CategoryId, string>();
-            foreach (var categoryId in categoryIds)
-            {
-                var category = await categoryRepository.GetByIdAsync(categoryId, cancellationToken);
-                if (category is not null)
-                {
-                    categories[categoryId] = category.Name;
-                }
-            }
+            var categoriesById = categoryIds.Count > 0
+                ? await categoryRepository.GetByIdsAsync(categoryIds, cancellationToken)
+                : new Dictionary<Domain.ValueObject.CategoryId, Domain.Entities.Category>();
 
             // Map tips to summary responses
             var tipSummaries = tips.Select(tip =>
             {
-                var categoryName = categories.TryGetValue(tip.CategoryId, out var name) ? name : "Unknown Category";
+                var categoryName = categoriesById.TryGetValue(tip.CategoryId, out var cat) ? cat.Name : "Unknown Category";
                 return tip.ToTipSummaryResponse(categoryName);
             }).ToList();
 

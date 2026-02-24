@@ -45,8 +45,8 @@ public class SearchTipsUseCaseTests
             .ReturnsAsync((tips, 2));
 
         categoryRepositoryMock
-            .Setup(r => r.GetByIdAsync(categoryId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(category);
+            .Setup(r => r.GetByIdsAsync(It.IsAny<IReadOnlyCollection<CategoryId>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<CategoryId, DomainCategory> { [categoryId] = category });
 
         var request = new SearchTipsRequest(criteria);
 
@@ -71,7 +71,7 @@ public class SearchTipsUseCaseTests
             Times.Once);
 
         categoryRepositoryMock.Verify(
-            r => r.GetByIdAsync(categoryId, It.IsAny<CancellationToken>()),
+            r => r.GetByIdsAsync(It.IsAny<IReadOnlyCollection<CategoryId>>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -116,7 +116,7 @@ public class SearchTipsUseCaseTests
             Times.Once);
 
         categoryRepositoryMock.Verify(
-            r => r.GetByIdAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()),
+            r => r.GetByIdsAsync(It.IsAny<IReadOnlyCollection<CategoryId>>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -155,12 +155,12 @@ public class SearchTipsUseCaseTests
             .ReturnsAsync((tips, 2));
 
         categoryRepositoryMock
-            .Setup(r => r.GetByIdAsync(categoryId1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(category1);
-
-        categoryRepositoryMock
-            .Setup(r => r.GetByIdAsync(categoryId2, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(category2);
+            .Setup(r => r.GetByIdsAsync(It.IsAny<IReadOnlyCollection<CategoryId>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<CategoryId, DomainCategory>
+            {
+                [categoryId1] = category1,
+                [categoryId2] = category2
+            });
 
         var request = new SearchTipsRequest(criteria);
 
@@ -175,11 +175,7 @@ public class SearchTipsUseCaseTests
         result.Value.Items[1].CategoryName.Should().Be(categoryName2);
 
         categoryRepositoryMock.Verify(
-            r => r.GetByIdAsync(categoryId1, It.IsAny<CancellationToken>()),
-            Times.Once);
-
-        categoryRepositoryMock.Verify(
-            r => r.GetByIdAsync(categoryId2, It.IsAny<CancellationToken>()),
+            r => r.GetByIdsAsync(It.IsAny<IReadOnlyCollection<CategoryId>>(), It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -210,8 +206,8 @@ public class SearchTipsUseCaseTests
             .ReturnsAsync((tips, 1));
 
         categoryRepositoryMock
-            .Setup(r => r.GetByIdAsync(categoryId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((DomainCategory?)null);
+            .Setup(r => r.GetByIdsAsync(It.IsAny<IReadOnlyCollection<CategoryId>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<CategoryId, DomainCategory>());
 
         var request = new SearchTipsRequest(criteria);
 
@@ -255,8 +251,8 @@ public class SearchTipsUseCaseTests
             .ReturnsAsync((tips, 23)); // Total of 23 items
 
         categoryRepositoryMock
-            .Setup(r => r.GetByIdAsync(categoryId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(category);
+            .Setup(r => r.GetByIdsAsync(It.IsAny<IReadOnlyCollection<CategoryId>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Dictionary<CategoryId, DomainCategory> { [categoryId] = category });
 
         var request = new SearchTipsRequest(criteria);
 
@@ -324,7 +320,7 @@ public class SearchTipsUseCaseTests
             Times.Never);
 
         categoryRepositoryMock.Verify(
-            r => r.GetByIdAsync(It.IsAny<CategoryId>(), It.IsAny<CancellationToken>()),
+            r => r.GetByIdsAsync(It.IsAny<IReadOnlyCollection<CategoryId>>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 

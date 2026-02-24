@@ -30,6 +30,45 @@ public sealed class FirestoreCategoryDataStore(
         return MapToDomainCategory(document);
     }
 
+    public async Task<IReadOnlyDictionary<CategoryId, Category>> GetByIdsAsync(
+        IReadOnlyCollection<CategoryId> ids,
+        CancellationToken cancellationToken = default)
+    {
+        if (ids.Count == 0)
+        {
+            return new Dictionary<CategoryId, Category>();
+        }
+
+        // Firestore WhereIn supports max 10 items per query, so batch into groups of 10
+        const int batchSize = 10;
+        var idsList = ids.ToList();
+        var allCategories = new Dictionary<CategoryId, Category>();
+
+        for (var i = 0; i < idsList.Count; i += batchSize)
+        {
+            var batch = idsList.Skip(i).Take(batchSize).ToList();
+            var idStrings = batch.Select(id => id.Value.ToString()).ToList();
+
+            var snapshot = await GetCollection()
+                .WhereIn(FieldPath.DocumentId, idStrings)
+                .WhereEqualTo("isDeleted", false)
+                .GetSnapshotAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+            foreach (var document in snapshot.Documents)
+            {
+                var categoryDocument = document.ConvertTo<CategoryDocument>();
+                if (categoryDocument is not null)
+                {
+                    var category = MapToDomainCategory(categoryDocument);
+                    allCategories[category.Id] = category;
+                }
+            }
+        }
+
+        return allCategories;
+    }
+
     public async Task<IReadOnlyCollection<Category>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var snapshot = await GetCollection()
