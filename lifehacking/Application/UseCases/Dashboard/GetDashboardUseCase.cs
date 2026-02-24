@@ -1,23 +1,35 @@
+using Application.Caching;
 using Application.Dtos.Dashboard;
 using Application.Exceptions;
 using Application.Interfaces;
 using Domain.Primitives;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Application.UseCases.Dashboard;
 
 public class GetDashboardUseCase(
     IUserRepository userRepository,
     ICategoryRepository categoryRepository,
-    ITipRepository tipRepository)
+    ITipRepository tipRepository,
+    IMemoryCache memoryCache)
 {
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
+
     private readonly IUserRepository _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
     private readonly ICategoryRepository _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
     private readonly ITipRepository _tipRepository = tipRepository ?? throw new ArgumentNullException(nameof(tipRepository));
+    private readonly IMemoryCache _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
 
     public virtual async Task<Result<DashboardResponse, AppException>> ExecuteAsync(
         GetDashboardRequest request,
         CancellationToken cancellationToken = default)
     {
+        // Check cache first
+        if (_memoryCache.TryGetValue(CacheKeys.AdminDashboard, out DashboardResponse? cachedResponse) && cachedResponse is not null)
+        {
+            return Result<DashboardResponse, AppException>.Ok(cachedResponse);
+        }
+
         try
         {
             var now = DateTime.UtcNow;
@@ -83,6 +95,9 @@ public class GetDashboardUseCase(
                 Categories = categoryStats,
                 Tips = tipStats
             };
+
+            // Cache the response
+            _memoryCache.Set(CacheKeys.AdminDashboard, response, CacheDuration);
 
             return Result<DashboardResponse, AppException>.Ok(response);
         }

@@ -1,8 +1,10 @@
+using Application.Caching;
 using Application.Dtos.Dashboard;
 using Application.Interfaces;
 using Application.UseCases.Dashboard;
 using Domain.ValueObject;
 using FluentAssertions;
+using Microsoft.Extensions.Caching.Memory;
 using Moq;
 using Xunit;
 
@@ -13,6 +15,7 @@ public sealed class GetDashboardUseCaseTests
     private readonly Mock<IUserRepository> _userRepositoryMock;
     private readonly Mock<ICategoryRepository> _categoryRepositoryMock;
     private readonly Mock<ITipRepository> _tipRepositoryMock;
+    private readonly IMemoryCache _memoryCache;
     private readonly GetDashboardUseCase _useCase;
 
     public GetDashboardUseCaseTests()
@@ -20,10 +23,12 @@ public sealed class GetDashboardUseCaseTests
         _userRepositoryMock = new Mock<IUserRepository>();
         _categoryRepositoryMock = new Mock<ICategoryRepository>();
         _tipRepositoryMock = new Mock<ITipRepository>();
+        _memoryCache = new MemoryCache(new MemoryCacheOptions());
         _useCase = new GetDashboardUseCase(
             _userRepositoryMock.Object,
             _categoryRepositoryMock.Object,
-            _tipRepositoryMock.Object);
+            _tipRepositoryMock.Object,
+            _memoryCache);
     }
 
     [Fact]
@@ -309,6 +314,94 @@ public sealed class GetDashboardUseCaseTests
                         result.Value.Users.ThisMonth + result.Value.Users.LastMonth +
                         result.Value.Users.ThisYear + result.Value.Users.LastYear;
         allPeriods.Should().BeGreaterOrEqualTo(0, "all period counts should be non-negative");
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldReturnCachedData_WhenCacheExists()
+    {
+        // Arrange
+        var cachedResponse = new DashboardResponse
+        {
+            Users = new EntityStatistics { Total = 5, ThisMonth = 2, LastMonth = 1 },
+            Categories = new EntityStatistics { Total = 3, ThisMonth = 1, LastMonth = 0 },
+            Tips = new EntityStatistics { Total = 10, ThisMonth = 5, LastMonth = 2 }
+        };
+
+        _memoryCache.Set(CacheKeys.AdminDashboard, cachedResponse, TimeSpan.FromHours(1));
+
+        var request = new GetDashboardRequest();
+
+        // Act
+        var result = await _useCase.ExecuteAsync(request);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeEquivalentTo(cachedResponse);
+
+        // Verify repositories were not called
+        _userRepositoryMock.Verify(
+            x => x.GetAllActiveAsync(It.IsAny<CancellationToken>()),
+            Times.Never);
+        _categoryRepositoryMock.Verify(
+            x => x.GetAllAsync(It.IsAny<CancellationToken>()),
+            Times.Never);
+        _tipRepositoryMock.Verify(
+            x => x.GetAllAsync(It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldCacheResponse_WhenExecutedSuccessfully()
+    {
+        // Arrange
+        var now = DateTime.UtcNow;
+        var users = new List<global::Domain.Entities.User> { CreateUser(now) };
+        var categories = new List<global::Domain.Entities.Category> { CreateCategory(now) };
+        var tips = new List<global::Domain.Entities.Tip> { CreateTip(now) };
+
+        _userRepositoryMock
+            .Setup(x => x.GetAllActiveAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(users);
+
+        _categoryRepositoryMock
+            .Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(categories);
+
+        _tipRepositoryMock
+            .Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(tips);
+
+        var request = new GetDashboardRequest();
+
+        // Act
+        var result = await _useCase.ExecuteAsync(request);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+
+        var cachedValue = _memoryCache.Get<DashboardResponse>(CacheKeys.AdminDashboard);
+        cachedValue.Should().NotBeNull();
+        cachedValue.Should().BeEquivalentTo(result.Value);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ShouldNotCacheResponse_WhenExecutionFails()
+    {
+        // Arrange
+        _userRepositoryMock
+            .Setup(x => x.GetAllActiveAsync(It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("Database error"));
+
+        var request = new GetDashboardRequest();
+
+        // Act
+        var result = await _useCase.ExecuteAsync(request);
+
+        // Assert
+        result.IsFailure.Should().BeTrue();
+
+        var cachedValue = _memoryCache.Get<DashboardResponse>(CacheKeys.AdminDashboard);
+        cachedValue.Should().BeNull();
     }
 
     private static global::Domain.Entities.User CreateUser(DateTime createdAt)
