@@ -15,14 +15,17 @@ This file provides guidance to AI agents (e.g., Warp, Cursor, Claude, GitHub Cop
     - No dependencies on other projects; everything here should be persistence-agnostic.
   - `Application/`
     - Application layer orchestrating use cases and DTOs.
-    - `Dtos/User/` and `Dtos/Category/` contain request/response DTOs used by the API and use cases.
-    - `Interfaces/` defines ports such as `IUserRepository`, `ICategoryRepository`, and `IImageStorageService`, which the infrastructure implements.
+    - `Dtos/User/`, `Dtos/Category/`, and `Dtos/Dashboard/` contain request/response DTOs used by the API and use cases.
+    - `Interfaces/` defines ports such as `IUserRepository`, `ICategoryRepository`, `IImageStorageService`, and `ICacheInvalidationService`, which the infrastructure implements.
     - `Exceptions/` defines `AppException` and specific exception types (validation, conflict, not-found, infrastructure, etc.).
     - `Validation/` contains validation utilities:
       - `FileValidationHelper` provides magic byte validation and filename sanitization for image uploads.
-    - `UseCases/` contains use case classes, grouped by feature (e.g., `UseCases/User/`, `UseCases/Category/`). Each use case typically:
+    - `Caching/` contains cache key definitions:
+      - `CacheKeys` centralizes all cache key constants to ensure consistency across the application.
+    - `UseCases/` contains use case classes, grouped by feature (e.g., `UseCases/User/`, `UseCases/Category/`, `UseCases/Dashboard/`). Each use case typically:
       - Validates and creates domain value objects.
       - Interacts with repositories via interfaces.
+      - Implements caching logic where appropriate (categories cached 1 hour, dashboard cached 1 hour).
       - Returns `Domain.Primitives.Result<..., AppException>` to encode success/failure.
     - `UseCases/DependencyInjection.cs` exposes `AddUseCases(this IServiceCollection)` to register all use cases with DI.
   - `Infrastructure/`
@@ -42,11 +45,14 @@ This file provides guidance to AI agents (e.g., Warp, Cursor, Claude, GitHub Cop
       - Controllers and global filters (including `GlobalExceptionFilter`).
       - Swagger/Swashbuckle for API exploration in development.
       - Dependency injection for repositories and application use cases via `AddUseCases()`.
+      - In-memory caching for performance optimization.
       - Firebase/Firestore configuration for data persistence.
       - AWS S3 and CloudFront configuration for image storage.
       - Authentication and authorization using Firebase Authentication.
-    - Controllers (e.g., `UserController`, `AdminCategoryController`) expose REST endpoints, consuming application use cases via constructor injection and mapping `Result<..., AppException>` to HTTP status codes.
+    - Controllers (e.g., `UserController`, `AdminCategoryController`, `AdminDashboardController`) expose REST endpoints, consuming application use cases via constructor injection and mapping `Result<..., AppException>` to HTTP status codes.
     - `AdminCategoryController` includes a multipart/form-data endpoint for image uploads with request size limits.
+    - `AdminDashboardController` provides dashboard statistics for administrators.
+    - Controllers are kept thin and focused on HTTP concerns; business logic and caching are handled in use cases.
     - `Filters/GlobalExceptionFilter` provides a last-resort 500 handler for unhandled exceptions.
     - `Configuration/` contains configuration setup classes for AWS services.
     - `appsettings.json` and `appsettings.Development.json` configure logging, Firebase project settings, AWS S3/CloudFront settings, and other application configuration.
@@ -154,7 +160,7 @@ Use the standard `--filter` syntax supported by `dotnet test` (and honored by Mi
 - Treat this as a Clean Architecture, domain-driven design repository. Preserve the existing dependency direction and keep domain logic independent of infrastructure concerns.
 - Do not introduce magic numbers or magic strings. Instead:
   - Define meaningful named constants, enums, or configuration values.
-  - Centralize reusable values in a single place when appropriate (e.g., `ImageConstants` for image validation rules).
+  - Centralize reusable values in a single place when appropriate (e.g., `ImageConstants` for image validation rules, `CacheKeys` for cache key definitions).
   - Use self-describing names that clearly express intent.
 - Keep the `Domain` project free of any references to Firestore, Firebase, ASP.NET, AWS, or external infrastructure libraries.
 - Use value objects and entities consistently; prefer rich domain models over anemic ones, but keep persistence-specific concerns in `Infrastructure`.
@@ -168,6 +174,11 @@ Use the standard `--filter` syntax supported by `dotnet test` (and honored by Mi
   - Sanitize filenames to prevent path traversal vulnerabilities.
   - Validate file sizes against defined constants.
   - Generate unique storage paths using GUIDs to prevent filename collisions.
+- For caching:
+  - Implement caching logic in use cases (Application layer), not in controllers.
+  - Use centralized cache keys from `Application.Caching.CacheKeys` to ensure consistency.
+  - Cache durations should be defined as constants within the use case (e.g., categories: 1 hour, dashboard: 1 hour).
+  - Controllers should remain thin and focused on HTTP concerns only.
 
 ## Testing conventions
 
@@ -177,10 +188,14 @@ Use the standard `--filter` syntax supported by `dotnet test` (and honored by Mi
   - `{MethodName}_Should{DoSomething}_When{Condition}`
   - Example: `CreateUserAsync_ShouldReturnValidationError_WhenEmailIsInvalid`.
 - Group tests by feature/use case and target the appropriate test project:
-  - Application layer behaviors → `lifehacking/Tests/Application.Tests/`.
+  - Application layer behaviors (including caching) → `lifehacking/Tests/Application.Tests/`.
   - Infrastructure behaviors (repositories, Firestore mappings, etc.) → `lifehacking/Tests/Infrastructure.Tests/`.
   - Web API behaviors (filters, controllers, pipeline) → `lifehacking/Tests/WebAPI.Tests/`.
 - Infrastructure and WebAPI tests use the Firestore emulator for integration testing to ensure realistic persistence behavior.
+- When testing use cases with caching:
+  - Use a real `IMemoryCache` instance (not a mock) to test actual caching behavior.
+  - Test cache hits, cache misses, and cache invalidation scenarios.
+  - Verify that repositories are not called when cached data exists.
 
 ## Git, branching, and commits
 

@@ -2,7 +2,57 @@
 
 A production-ready REST API for building tip discovery and management applications. Lifehacking provides a complete backend for browsing practical daily-life tips, organizing them by categories, and managing user favorites with seamless anonymous-to-authenticated user transitions.
 
-Built with Clean Architecture principles, this API is designed for frontend developers who need a robust, secure, and scalable backend for content discovery applications.
+Built with **.NET 10** and **Clean Architecture** principles. This project was bootstrapped from [arielbvergara/clean-architecture](https://github.com/arielbvergara/clean-architecture) — a reusable Clean Architecture template developed during lessons and then made into a template.
+
+> 🤖 AI-assisted development: [**Kiro**](https://kiro.dev) was used as an AI assistant throughout the development of this project.
+
+---
+
+## 🔗 Related Projects
+
+| Project | Description | Deployment |
+|---------|-------------|------------|
+| **[lifehacking-app](https://github.com/arielbvergara/lifehacking-app)** | Frontend — Next.js 16, Google Stitch design, Firebase, Docker, Vercel | [Vercel](https://vercel.com) |
+| **lifehacking** *(this repo)* | Backend API — .NET 10, Clean Architecture, Firebase, Docker, AWS | [Koyeb](https://app.koyeb.com) |
+
+---
+
+## 🛠️ Tech Stack
+
+### Backend (this repository)
+
+| Technology | Purpose |
+|-----------|---------|
+| **.NET 10 + Clean Architecture** | Web API with Domain, Application, Infrastructure, and WebAPI layers |
+| **Firebase Authentication** | JWT Bearer token validation and identity management |
+| **Firebase Cloud Firestore** | Primary NoSQL database |
+| **AWS S3** | Category image storage |
+| **AWS CloudFront** | CDN for delivering images |
+| **Docker & Docker Compose** | Containerised deployment |
+| **[Koyeb](https://app.koyeb.com)** | Cloud deployment platform |
+| **Dependabot** | Automated weekly dependency updates |
+| **GitHub Actions** | CI pipeline (build, test, lint, security scanning) and code review |
+| **Kiro** | AI assistant used during development |
+| **Sentry** | Error tracking and performance monitoring |
+| **Swagger / OpenAPI** | Interactive API documentation |
+| **Github Copilot** | AI assistant used for code review |
+
+### Frontend ([lifehacking-app](https://github.com/arielbvergara/lifehacking-app))
+
+| Technology | Purpose |
+|-----------|---------|
+| **Next.js 16** | React-based frontend framework |
+| **Google Stitch** | UI/UX design |
+| **Firebase Authentication** | Authentication and identity |
+| **Vercel** | Frontend deployment |
+| **Sentry.io** | Monitoring and error tracking |
+| **Docker** | Containerised deployment |
+| **Dependabot** | Automated weekly dependency updates |
+| **GitHub Actions** | CI pipeline and code review |
+| **Kiro** | AI assistant used during development |
+| **Github Copilot** | AI assistant used for code review |
+
+---
 
 ## Overview
 
@@ -44,6 +94,7 @@ The API supports three user types:
 - Category management with cascade delete
 - User management and administration
 - Admin user creation with Firebase integration
+- Dashboard with real-time statistics and entity counts
 - Audit logging for all administrative actions
 
 ## API Endpoints
@@ -138,6 +189,13 @@ For complete request/response schemas, validation rules, and interactive testing
 - `PUT /api/admin/user/{id}/name` - Update user's display name
 - `DELETE /api/admin/user/{id}` - Soft-delete user account
 
+#### Admin Dashboard API - `/api/admin/dashboard`
+
+- `GET /api/admin/dashboard` - Get dashboard statistics
+  - Returns entity counts for users, categories, and tips
+  - Results cached for 1 hour for optimal performance
+  - Provides quick overview for administrative monitoring
+
 ## Domain Model
 
 ### Tip
@@ -171,11 +229,20 @@ For complete request/response schemas, validation rules, and interactive testing
 
 ## Technology Stack
 
+See the [Tech Stack](#️-tech-stack) section above for a full overview of all tools and services used in this project.
+
 - **.NET 10.0 Web API** - Modern C# with Clean Architecture (Domain, Application, Infrastructure, WebAPI layers)
 - **Firebase Authentication** - JWT Bearer token validation with role-based authorization
 - **Firebase Cloud Firestore** - Primary NoSQL datastore with real-time capabilities
+- **AWS S3 + CloudFront** - Image storage and CDN delivery for category images
+- **In-Memory Caching** - Performance optimization with automatic cache invalidation (categories cached 1 hour, dashboard 1 hour)
 - **Sentry** - Error tracking, performance monitoring, and observability
 - **Docker & Docker Compose** - Containerized deployment with single-command setup
+- **Koyeb** - Cloud deployment platform (live at [app.koyeb.com](https://app.koyeb.com))
+- **GitHub Actions** - CI/CD pipeline with automated build, test, lint, and security scanning
+- **Dependabot** - Automated weekly dependency updates for NuGet, Docker, and GitHub Actions
+- **Kiro** - AI assistant used throughout development
+- **Github Copilot** - AI assistant used throughout development
 - **Microsoft Testing Platform** - Modern test runner with xUnit and property-based testing
 - **Swagger/OpenAPI** - Interactive API documentation and testing
 
@@ -192,10 +259,11 @@ Key architectural decisions are documented in `ADRs/` including:
 - Firebase Firestore as the primary datastore (ADR-018)
 - JWT/Firebase authentication with self-service `/me` endpoints
 - User roles and soft-delete lifecycle (ADR-006)
+- User favorites domain model and storage (ADR-020)
 - Security headers, rate limiting, and hardened production configuration (ADR-010, ADR-011)
 - Sentry integration and standardized error handling (ADR-013, ADR-015)
 
-For product requirements and MVP scope, see `docs/MVP.md`.
+For product requirements and MVP scope, see `docs/MVP.md`. For future search architecture planning, see `docs/Search-Architecture-Decision.md`.
 
 ## Getting Started
 
@@ -587,4 +655,4 @@ Copyright (c) 2026 Lifehacking Tips API Contributors
 
 ---
 
-**Built with Clean Architecture • Powered by Firebase • Monitored by Sentry**
+**Built with Clean Architecture • Powered by Firebase & AWS • Deployed on Koyeb • AI-assisted with Kiro**
