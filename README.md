@@ -93,6 +93,7 @@ The API supports three user types:
 - Category management with cascade delete
 - User management and administration
 - Admin user creation with Firebase integration
+- Dashboard with real-time statistics and entity counts
 - Audit logging for all administrative actions
 
 ## API Endpoints
@@ -187,6 +188,13 @@ For complete request/response schemas, validation rules, and interactive testing
 - `PUT /api/admin/user/{id}/name` - Update user's display name
 - `DELETE /api/admin/user/{id}` - Soft-delete user account
 
+#### Admin Dashboard API - `/api/admin/dashboard`
+
+- `GET /api/admin/dashboard` - Get dashboard statistics
+  - Returns entity counts for users, categories, and tips
+  - Results cached for 1 hour for optimal performance
+  - Provides quick overview for administrative monitoring
+
 ## Domain Model
 
 ### Tip
@@ -226,6 +234,7 @@ See the [Tech Stack](#️-tech-stack) section above for a full overview of all t
 - **Firebase Authentication** - JWT Bearer token validation with role-based authorization
 - **Firebase Cloud Firestore** - Primary NoSQL datastore with real-time capabilities
 - **AWS S3 + CloudFront** - Image storage and CDN delivery for category images
+- **In-Memory Caching** - Performance optimization with automatic cache invalidation (categories cached 1 hour, dashboard 1 hour)
 - **Sentry** - Error tracking, performance monitoring, and observability
 - **Docker & Docker Compose** - Containerized deployment with single-command setup
 - **Koyeb** - Cloud deployment platform (live at [app.koyeb.com](https://app.koyeb.com))
@@ -248,10 +257,11 @@ Key architectural decisions are documented in `ADRs/` including:
 - Firebase Firestore as the primary datastore (ADR-018)
 - JWT/Firebase authentication with self-service `/me` endpoints
 - User roles and soft-delete lifecycle (ADR-006)
+- User favorites domain model and storage (ADR-020)
 - Security headers, rate limiting, and hardened production configuration (ADR-010, ADR-011)
 - Sentry integration and standardized error handling (ADR-013, ADR-015)
 
-For product requirements and MVP scope, see `docs/MVP.md`.
+For product requirements and MVP scope, see `docs/MVP.md`. For future search architecture planning, see `docs/Search-Architecture-Decision.md`.
 
 ## Getting Started
 
