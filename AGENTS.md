@@ -160,7 +160,7 @@ Use the standard `--filter` syntax supported by `dotnet test` (and honored by Mi
 - Treat this as a Clean Architecture, domain-driven design repository. Preserve the existing dependency direction and keep domain logic independent of infrastructure concerns.
 - Do not introduce magic numbers or magic strings. Instead:
   - Define meaningful named constants, enums, or configuration values.
-  - Centralize reusable values in a single place when appropriate (e.g., `ImageConstants` for image validation rules).
+  - Centralize reusable values in a single place when appropriate (e.g., `ImageConstants` for image validation rules, `CacheKeys` for cache key definitions).
   - Use self-describing names that clearly express intent.
 - Keep the `Domain` project free of any references to Firestore, Firebase, ASP.NET, AWS, or external infrastructure libraries.
 - Use value objects and entities consistently; prefer rich domain models over anemic ones, but keep persistence-specific concerns in `Infrastructure`.
@@ -174,6 +174,11 @@ Use the standard `--filter` syntax supported by `dotnet test` (and honored by Mi
   - Sanitize filenames to prevent path traversal vulnerabilities.
   - Validate file sizes against defined constants.
   - Generate unique storage paths using GUIDs to prevent filename collisions.
+- For caching:
+  - Implement caching logic in use cases (Application layer), not in controllers.
+  - Use centralized cache keys from `Application.Caching.CacheKeys` to ensure consistency.
+  - Cache durations should be defined as constants within the use case (e.g., categories: 1 hour, dashboard: 1 hour).
+  - Controllers should remain thin and focused on HTTP concerns only.
 
 ## Testing conventions
 
@@ -183,10 +188,14 @@ Use the standard `--filter` syntax supported by `dotnet test` (and honored by Mi
   - `{MethodName}_Should{DoSomething}_When{Condition}`
   - Example: `CreateUserAsync_ShouldReturnValidationError_WhenEmailIsInvalid`.
 - Group tests by feature/use case and target the appropriate test project:
-  - Application layer behaviors → `lifehacking/Tests/Application.Tests/`.
+  - Application layer behaviors (including caching) → `lifehacking/Tests/Application.Tests/`.
   - Infrastructure behaviors (repositories, Firestore mappings, etc.) → `lifehacking/Tests/Infrastructure.Tests/`.
   - Web API behaviors (filters, controllers, pipeline) → `lifehacking/Tests/WebAPI.Tests/`.
 - Infrastructure and WebAPI tests use the Firestore emulator for integration testing to ensure realistic persistence behavior.
+- When testing use cases with caching:
+  - Use a real `IMemoryCache` instance (not a mock) to test actual caching behavior.
+  - Test cache hits, cache misses, and cache invalidation scenarios.
+  - Verify that repositories are not called when cached data exists.
 
 ## Git, branching, and commits
 
