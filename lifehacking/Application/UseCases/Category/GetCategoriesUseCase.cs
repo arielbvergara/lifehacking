@@ -15,7 +15,7 @@ public class GetCategoriesUseCase(
     ITipRepository tipRepository,
     IMemoryCache memoryCache)
 {
-    private static readonly TimeSpan CacheDuration = TimeSpan.FromDays(7);
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
     private readonly ICategoryRepository _categoryRepository = categoryRepository ?? throw new ArgumentNullException(nameof(categoryRepository));
     private readonly ITipRepository _tipRepository = tipRepository ?? throw new ArgumentNullException(nameof(tipRepository));

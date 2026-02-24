@@ -5,7 +5,6 @@ using Domain.Primitives;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using WebAPI.Controllers;
@@ -17,7 +16,6 @@ namespace WebAPI.Tests.Controllers;
 public sealed class AdminDashboardControllerTests
 {
     private readonly Mock<GetDashboardUseCase> _useCaseMock;
-    private readonly IMemoryCache _memoryCache;
     private readonly AdminDashboardController _controller;
 
     public AdminDashboardControllerTests()
@@ -25,11 +23,11 @@ public sealed class AdminDashboardControllerTests
         _useCaseMock = new Mock<GetDashboardUseCase>(
             Mock.Of<Application.Interfaces.IUserRepository>(),
             Mock.Of<Application.Interfaces.ICategoryRepository>(),
-            Mock.Of<Application.Interfaces.ITipRepository>());
+            Mock.Of<Application.Interfaces.ITipRepository>(),
+            Mock.Of<Microsoft.Extensions.Caching.Memory.IMemoryCache>());
 
-        _memoryCache = new MemoryCache(new MemoryCacheOptions());
         var logger = NullLogger<AdminDashboardController>.Instance;
-        _controller = new AdminDashboardController(_useCaseMock.Object, _memoryCache, logger);
+        _controller = new AdminDashboardController(_useCaseMock.Object, logger);
 
         // Provide an HttpContext so that ErrorResponseMapper.ToActionResult can resolve
         // request path and correlation id without throwing.
@@ -65,57 +63,6 @@ public sealed class AdminDashboardControllerTests
     }
 
     [Fact]
-    public async Task GetDashboard_ShouldReturnCachedData_WhenCacheExists()
-    {
-        // Arrange
-        var cachedResponse = new DashboardResponse
-        {
-            Users = new EntityStatistics { Total = 5, ThisMonth = 2, LastMonth = 1 },
-            Categories = new EntityStatistics { Total = 3, ThisMonth = 1, LastMonth = 0 },
-            Tips = new EntityStatistics { Total = 10, ThisMonth = 5, LastMonth = 2 }
-        };
-
-        _memoryCache.Set("AdminDashboard", cachedResponse, TimeSpan.FromDays(1));
-
-        // Act
-        var result = await _controller.GetDashboard(CancellationToken.None);
-
-        // Assert
-        result.Should().BeOfType<OkObjectResult>();
-        var okResult = (OkObjectResult)result;
-        okResult.Value.Should().BeEquivalentTo(cachedResponse);
-
-        // Verify use case was not called
-        _useCaseMock.Verify(
-            x => x.ExecuteAsync(It.IsAny<GetDashboardRequest>(), It.IsAny<CancellationToken>()),
-            Times.Never);
-    }
-
-    [Fact]
-    public async Task GetDashboard_ShouldCacheResponse_WhenUseCaseSucceeds()
-    {
-        // Arrange
-        var dashboardResponse = new DashboardResponse
-        {
-            Users = new EntityStatistics { Total = 10, ThisMonth = 5, LastMonth = 3 },
-            Categories = new EntityStatistics { Total = 8, ThisMonth = 2, LastMonth = 1 },
-            Tips = new EntityStatistics { Total = 20, ThisMonth = 10, LastMonth = 5 }
-        };
-
-        _useCaseMock
-            .Setup(x => x.ExecuteAsync(It.IsAny<GetDashboardRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<DashboardResponse, AppException>.Ok(dashboardResponse));
-
-        // Act
-        await _controller.GetDashboard(CancellationToken.None);
-
-        // Assert
-        var cachedValue = _memoryCache.Get<DashboardResponse>("AdminDashboard");
-        cachedValue.Should().NotBeNull();
-        cachedValue.Should().BeEquivalentTo(dashboardResponse);
-    }
-
-    [Fact]
     public async Task GetDashboard_ShouldReturnInternalServerError_WhenUseCaseFails()
     {
         // Arrange
@@ -138,23 +85,5 @@ public sealed class AdminDashboardControllerTests
         errorResponse.Should().NotBeNull();
         errorResponse!.Detail.Should().Be(ErrorResponseMapper.GenericClientSafeServerErrorDetail,
             "infrastructure error details must not be exposed to clients");
-    }
-
-    [Fact]
-    public async Task GetDashboard_ShouldNotCacheResponse_WhenUseCaseFails()
-    {
-        // Arrange
-        var error = new InfraException("Database connection failed");
-
-        _useCaseMock
-            .Setup(x => x.ExecuteAsync(It.IsAny<GetDashboardRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result<DashboardResponse, AppException>.Fail(error));
-
-        // Act
-        await _controller.GetDashboard(CancellationToken.None);
-
-        // Assert
-        var cachedValue = _memoryCache.Get<DashboardResponse>("AdminDashboard");
-        cachedValue.Should().BeNull();
     }
 }
