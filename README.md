@@ -35,6 +35,7 @@ Built with **.NET 10** and **Clean Architecture** principles. This project was b
 | **Kiro** | AI assistant used during development |
 | **Sentry** | Error tracking and performance monitoring |
 | **Swagger / OpenAPI** | Interactive API documentation |
+| **Github Copilot** | AI assistant used for code review |
 
 ### Frontend ([lifehacking-app](https://github.com/arielbvergara/lifehacking-app))
 
