@@ -242,6 +242,7 @@ See the [Tech Stack](#️-tech-stack) section above for a full overview of all t
 - **GitHub Actions** - CI/CD pipeline with automated build, test, lint, and security scanning
 - **Dependabot** - Automated weekly dependency updates for NuGet, Docker, and GitHub Actions
 - **Kiro** - AI assistant used throughout development
+- **Github Copilot** - AI assistant used throughout development
 - **Microsoft Testing Platform** - Modern test runner with xUnit and property-based testing
 - **Swagger/OpenAPI** - Interactive API documentation and testing
 
