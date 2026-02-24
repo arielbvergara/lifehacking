@@ -49,6 +49,7 @@ Built with **.NET 10** and **Clean Architecture** principles. This project was b
 | **Dependabot** | Automated weekly dependency updates |
 | **GitHub Actions** | CI pipeline and code review |
 | **Kiro** | AI assistant used during development |
+| **Github Copilot** | AI assistant used for code review |
 
 ---
 
