@@ -14,6 +14,13 @@ public sealed class CategoryRepository(IFirestoreCategoryDataStore dataStore) : 
         return _dataStore.GetByIdAsync(id, cancellationToken);
     }
 
+    public Task<IReadOnlyDictionary<CategoryId, Category>> GetByIdsAsync(
+        IReadOnlyCollection<CategoryId> ids,
+        CancellationToken cancellationToken = default)
+    {
+        return _dataStore.GetByIdsAsync(ids, cancellationToken);
+    }
+
     public Task<IReadOnlyCollection<Category>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return _dataStore.GetAllAsync(cancellationToken);
