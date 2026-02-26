@@ -2,13 +2,10 @@ services:
   webapi:
     build: .
     environment:
-      # UseInMemoryDB=false so that the application uses Firebase/Firestore
-      # as configured via appsettings and environment variables.
-      UseInMemoryDB: "false"
       ASPNETCORE_ENVIRONMENT: Development
       ClientApp__Origin: "http://localhost:3000"
-      GOOGLE_APPLICATION_CREDENTIALS: /app/firebase-adminsdk.json
+      GOOGLE_APPLICATION_CREDENTIALS: /app/lifehacking-firebase-adminsdk.json
     volumes:
-      - ~/secrets/firebase-adminsdk.json:/app/firebase-adminsdk.json
+      - ~/secrets/lifehacking-firebase-adminsdk.json:/app/lifehacking-firebase-adminsdk.json
     ports:
       - "8080:8080"
