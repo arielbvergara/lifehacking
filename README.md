@@ -8,6 +8,27 @@ Construido con **.NET 10** y principios de **Arquitectura Limpia**. Este proyect
 
 > 🤖 Desarrollo asistido por IA: [**Kiro**](https://kiro.dev) y [**Warp**](https://warp.dev) fue utilizado como asistente de IA durante todo el desarrollo de este proyecto.
 
+
+---
+
+## 📋 Tabla de Contenidos
+
+- [Aplicación Desplegada](#-aplicación-desplegada)
+- [Slides de la presentacion del proyecto](#slides-de-la-presentacion-del-proyecto)
+- [Descripción General del Proyecto](#-descripción-general-del-proyecto)
+- [Stack Tecnológico](#️-stack-tecnológico)
+- [Proyectos Relacionados](#-proyectos-relacionados)
+- [Características Principales](#-características-principales)
+- [Instalación y Ejecución](#-instalación-y-ejecución)
+- [Estructura del Proyecto](#-estructura-del-proyecto)
+- [Endpoints de la API](#-endpoints-de-la-api)
+- [Arquitectura](#-arquitectura)
+- [Autenticación y Autorización](#-autenticación-y-autorización)
+- [Características de Seguridad](#-características-de-seguridad)
+- [Pruebas](#-pruebas)
+- [Guías de Desarrollo](#-guías-de-desarrollo)
+- [Roadmap](#️-roadmap)
+
 ---
 
 ## 🌐 Aplicación Desplegada
@@ -21,28 +42,6 @@ Construido con **.NET 10** y principios de **Arquitectura Limpia**. Este proyect
 ## Slides de la presentacion del proyecto
 
 [Lifehacking Master Slides Presentation](lifehacking-master-presentation.pptx)
-
----
-
-## 📋 Tabla de Contenidos
-
-- [Descripción General del Proyecto](#-descripción-general-del-proyecto)
-- [Stack Tecnológico](#️-stack-tecnológico)
-- [Proyectos Relacionados](#-proyectos-relacionados)
-- [Características Principales](#-características-principales)
-- [Instalación y Ejecución](#-instalación-y-ejecución)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Endpoints de la API](#-endpoints-de-la-api)
-- [Modelo de Dominio](#-modelo-de-dominio)
-- [Arquitectura](#-arquitectura)
-- [Autenticación y Autorización](#-autenticación-y-autorización)
-- [Características de Seguridad](#-características-de-seguridad)
-- [Configuración y Variables de Entorno](#️-configuración-y-variables-de-entorno)
-- [Pruebas](#-pruebas)
-- [Guías de Desarrollo](#-guías-de-desarrollo)
-- [Formatos de Respuesta de la API](#-formatos-de-respuesta-de-la-api)
-- [Contribuciones](#-contribuciones)
-- [Licencia](#-licencia)
 
 ---
 
