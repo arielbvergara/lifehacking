@@ -1,5 +1,7 @@
 # API de Consejos Lifehacking
 
+> **Nota:** Se generarán credenciales de administrador y se enviarán de forma segura como parte de la entrega al mail: mouredev@gmail.com
+
 Una API REST lista para producción diseñada para construir aplicaciones de descubrimiento y gestión de consejos prácticos. Lifehacking proporciona un backend completo para explorar consejos de vida diaria, organizarlos por categorías y gestionar favoritos de usuarios con transiciones fluidas de anónimo a autenticado.
 
 Construido con **.NET 10** y principios de **Arquitectura Limpia**. Este proyecto fue creado a partir de [arielbvergara/clean-architecture](https://github.com/arielbvergara/clean-architecture) — una plantilla reutilizable de Arquitectura Limpia desarrollada durante lecciones y convertida en plantilla. En ese proyecto podran ver los commits que se hicieron previos a la creacion de este proyecto. 
