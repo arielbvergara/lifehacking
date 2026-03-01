@@ -2,10 +2,59 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow all reads and writes for testing
-    // In production, these rules should be more restrictive
-    match /{document=**} {
-      allow read, write: if true;
+    // Helper functions for authentication and authorization
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "Admin";
+    }
+    
+    // Users collection - users can only access their own documents
+    match /users/{userId} {
+      // Allow read only if authenticated and accessing own document
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Allow update only if authenticated and updating own document
+      allow update: if isAuthenticated() && request.auth.uid == userId;
+      
+      // Deny create and delete - handled by backend Admin SDK
+      allow create, delete: if false;
+    }
+    
+    // Categories collection - public read for authenticated users, admin-only write
+    match /categories/{categoryId} {
+      // Allow read if authenticated (public data for authenticated users)
+      allow read: if isAuthenticated();
+      
+      // Allow create, update, delete only if admin
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Tips collection - public read for authenticated users, admin-only write
+    match /tips/{tipId} {
+      // Allow read if authenticated (public data for authenticated users)
+      allow read: if isAuthenticated();
+      
+      // Allow create, update, delete only if admin
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Favorites collection - owner-only access using composite key format {userId}_{tipId}
+    match /favorites/{favoriteId} {
+      // Allow read only if authenticated and favoriteId starts with user's uid
+      allow read: if isAuthenticated() && favoriteId.matches(request.auth.uid + '_.*');
+      
+      // Allow create only if authenticated and userId in data matches authenticated user
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      
+      // Allow delete only if authenticated and favoriteId starts with user's uid
+      allow delete: if isAuthenticated() && favoriteId.matches(request.auth.uid + '_.*');
+      
+      // Deny update - favorites are immutable (delete and recreate instead)
+      allow update: if false;
     }
   }
 }
