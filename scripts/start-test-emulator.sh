@@ -3,7 +3,7 @@
 # This uses firestore.test.rules which allows all operations for testing
 
 FIRESTORE_EMULATOR_PROJECT="demo-test"
-FIRESTORE_EMULATOR_HOST="localhost:8080"
+FIRESTORE_EMULATOR_HOST="127.0.0.1:8080"
 export FIRESTORE_EMULATOR_HOST
 
 echo "Starting Firestore emulator with test configuration..."
