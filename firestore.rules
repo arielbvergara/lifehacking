@@ -8,8 +8,9 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      return isAuthenticated() && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "Admin";
+      // Admins are identified via a custom claim on the Auth token.
+      // Backend code must set request.auth.token.role = "Admin" for admin users.
+      return isAuthenticated() && request.auth.token.role == "Admin";
     }
     
     // Users collection - users can only access their own documents
@@ -17,8 +18,11 @@ service cloud.firestore {
       // Allow read only if authenticated and accessing own document
       allow read: if isAuthenticated() && request.auth.uid == userId;
       
-      // Allow update only if authenticated and updating own document
-      allow update: if isAuthenticated() && request.auth.uid == userId;
+      // Allow update only if authenticated, updating own document,
+      // and not changing the authorization-related "role" field
+      allow update: if isAuthenticated()
+                    && request.auth.uid == userId
+                    && request.resource.data.role == resource.data.role;
       
       // Deny create and delete - handled by backend Admin SDK
       allow create, delete: if false;
@@ -47,8 +51,11 @@ service cloud.firestore {
       // Allow read only if authenticated and favoriteId starts with user's uid
       allow read: if isAuthenticated() && favoriteId.matches(request.auth.uid + '_.*');
       
-      // Allow create only if authenticated and userId in data matches authenticated user
-      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      // Allow create only if authenticated, userId in data matches authenticated user,
+      // and favoriteId starts with the user's uid to prevent cross-user ID spoofing
+      allow create: if isAuthenticated()
+                    && request.resource.data.userId == request.auth.uid
+                    && favoriteId.matches(request.auth.uid + '_.*');
       
       // Allow delete only if authenticated and favoriteId starts with user's uid
       allow delete: if isAuthenticated() && favoriteId.matches(request.auth.uid + '_.*');
