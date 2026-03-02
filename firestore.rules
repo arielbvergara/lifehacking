@@ -2,81 +2,18 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions for authentication and authorization
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    function isAdmin() {
-      // Admins are identified via a custom claim on the Auth token.
-      // Backend code must set request.auth.token.role = "Admin" for admin users.
-      return isAuthenticated() && request.auth.token.role == "Admin";
-    }
-    
-    // Users collection - users can only access their own documents
-    match /users/{userId} {
-      // Allow read only if authenticated and accessing own document
-      allow read: if isAuthenticated() && request.auth.uid == userId;
-      
-      // Allow update only if authenticated, updating own document,
-      // and not changing any sensitive fields (authorization or identity-related)
-      // Note: Firestore field names are PascalCase (Role, Email, etc.) as defined in UserDocument
-      allow update: if isAuthenticated()
-                    && request.auth.uid == userId
-                    && !resource.data.diff(request.resource.data)
-                          .changedKeys()
-                          .hasAny(['Role', 'Email', 'ExternalAuthId', 'CreatedAt', 'IsDeleted', 'DeletedAt', 'Id']);
-      
-      // Deny create and delete - handled by backend Admin SDK
-      allow create, delete: if false;
-    }
-    
-    // Categories collection - public read for authenticated users, admin-only write
-    match /categories/{categoryId} {
-      // Allow read if authenticated (public data for authenticated users)
-      allow read: if isAuthenticated();
-      
-      // Allow create, update, delete only if admin
-      allow create, update, delete: if isAdmin();
-    }
-    
-    // Tips collection - public read for authenticated users, admin-only write
-    match /tips/{tipId} {
-      // Allow read if authenticated (public data for authenticated users)
-      allow read: if isAuthenticated();
-      
-      // Allow create, update, delete only if admin
-      allow create, update, delete: if isAdmin();
-    }
-    
-    // Favorites collection - owner-only access using composite key format {userId}_{tipId}
-    match /favorites/{favoriteId} {
-      // Allow read only if authenticated, resource exists, and the stored userId matches the authenticated user
-      // This prevents reading favorites even if someone guesses the document ID format
-      allow read: if isAuthenticated() && resource != null && resource.data.userId == request.auth.uid;
-      
-      // Allow create only if authenticated and all validation checks pass:
-      // 1. Document has exactly the required fields (no extra fields)
-      // 2. All required fields are present
-      // 3. userId matches authenticated user
-      // 4. tipId is a non-empty string
-      // 5. addedAt is a timestamp not in the future
-      // 6. Document ID matches the exact composite key format: {userId}_{tipId}
-      allow create: if isAuthenticated()
-                    && request.resource.data.keys().hasOnly(['userId', 'tipId', 'addedAt'])
-                    && request.resource.data.keys().hasAll(['userId', 'tipId', 'addedAt'])
-                    && request.resource.data.userId == request.auth.uid
-                    && request.resource.data.tipId is string
-                    && request.resource.data.tipId.size() > 0
-                    && request.resource.data.addedAt is timestamp
-                    && request.resource.data.addedAt <= request.time
-                    && favoriteId == (request.resource.data.userId + '_' + request.resource.data.tipId);
-      
-      // Allow delete only if authenticated, resource exists, and the stored userId matches the authenticated user
-      allow delete: if isAuthenticated() && resource != null && resource.data.userId == request.auth.uid;
-      
-      // Deny update - favorites are immutable (delete and recreate instead)
-      allow update: if false;
+    // Deny all direct client access to Firestore.
+    // 
+    // Architecture:
+    // - Frontend uses Firebase Authentication to obtain JWT tokens
+    // - All data access goes through the backend REST API
+    // - Backend validates JWT and enforces authorization
+    // - Backend uses Firebase Admin SDK to access Firestore (bypasses these rules)
+    // 
+    // These rules exist to prevent accidental direct Firestore access from clients.
+    // All security and authorization logic is implemented in the backend API layer.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
