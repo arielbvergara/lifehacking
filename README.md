@@ -1069,21 +1069,30 @@ list.Should().HaveCount(5);
 
 #### Emulador de Firestore
 
-Las pruebas de infraestructura usan el emulador local de Firestore:
+Las pruebas de infraestructura y WebAPI usan el emulador local de Firestore con reglas de seguridad permisivas para testing:
 
 ```bash
-# Iniciar emulador
-firebase emulators:start --only firestore
+# Iniciar emulador con configuración de pruebas
+firebase emulators:start --only firestore --config firebase.test.json
 
 # Las pruebas se conectan automáticamente al emulador
-export FIRESTORE_EMULATOR_HOST=localhost:8080
+# La variable FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 se configura en las clases base de pruebas
 ```
 
+**Archivos de Configuración:**
+- `firebase.json` - Configuración de producción (usa `firestore.rules` con seguridad completa)
+- `firebase.test.json` - Configuración de pruebas (usa `firestore.test.rules` con acceso permisivo)
+- `firestore.rules` - Reglas de seguridad de producción (autenticación y autorización requeridas)
+- `firestore.test.rules` - Reglas de prueba (permite todas las operaciones para testing)
+
 **Beneficios:**
-- Pruebas de integración realistas
-- Sin costos de Firebase
+- Pruebas de integración realistas con Firestore real
+- Sin costos de Firebase (emulador local)
 - Datos aislados por ejecución de prueba
 - Velocidad de ejecución rápida
+- Separación clara entre reglas de producción y pruebas
+
+**Nota:** El emulador debe estar ejecutándose antes de correr las pruebas. Las pruebas fallarán si el emulador no está disponible en el puerto 8080.
 
 ### Convención de Nombres de Pruebas
 
