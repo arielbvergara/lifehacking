@@ -20,11 +20,12 @@ service cloud.firestore {
       
       // Allow update only if authenticated, updating own document,
       // and not changing any sensitive fields (authorization or identity-related)
+      // Note: Firestore field names are PascalCase (Role, Email, etc.) as defined in UserDocument
       allow update: if isAuthenticated()
                     && request.auth.uid == userId
                     && !resource.data.diff(request.resource.data)
                           .changedKeys()
-                          .hasAny(['role', 'email', 'externalAuthId', 'createdAt', 'isDeleted', 'deletedAt', 'id']);
+                          .hasAny(['Role', 'Email', 'ExternalAuthId', 'CreatedAt', 'IsDeleted', 'DeletedAt', 'Id']);
       
       // Deny create and delete - handled by backend Admin SDK
       allow create, delete: if false;
@@ -50,9 +51,9 @@ service cloud.firestore {
     
     // Favorites collection - owner-only access using composite key format {userId}_{tipId}
     match /favorites/{favoriteId} {
-      // Allow read only if authenticated and the stored userId matches the authenticated user
+      // Allow read only if authenticated, resource exists, and the stored userId matches the authenticated user
       // This prevents reading favorites even if someone guesses the document ID format
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && resource != null && resource.data.userId == request.auth.uid;
       
       // Allow create only if authenticated and all validation checks pass:
       // 1. Document has exactly the required fields (no extra fields)
@@ -71,8 +72,8 @@ service cloud.firestore {
                     && request.resource.data.addedAt <= request.time
                     && favoriteId == (request.resource.data.userId + '_' + request.resource.data.tipId);
       
-      // Allow delete only if authenticated and the stored userId matches the authenticated user
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // Allow delete only if authenticated, resource exists, and the stored userId matches the authenticated user
+      allow delete: if isAuthenticated() && resource != null && resource.data.userId == request.auth.uid;
       
       // Deny update - favorites are immutable (delete and recreate instead)
       allow update: if false;
