@@ -2,10 +2,18 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow all reads and writes for testing
-    // In production, these rules should be more restrictive
+    // Deny all direct client access to Firestore.
+    // 
+    // Architecture:
+    // - Frontend uses Firebase Authentication to obtain JWT tokens
+    // - All data access goes through the backend REST API
+    // - Backend validates JWT and enforces authorization
+    // - Backend uses a server-side Firestore SDK with service account / ADC (not subject to Security Rules)
+    // 
+    // These rules exist to prevent accidental direct Firestore access from clients.
+    // All security and authorization logic is implemented in the backend API layer.
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }
