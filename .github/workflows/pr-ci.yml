@@ -51,7 +51,7 @@ jobs:
 
       - name: Run tests with Firebase emulator
         env:
-          FIRESTORE_EMULATOR_HOST: localhost:8080
+          FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
         run: |
           firebase emulators:exec \
             "dotnet test $SOLUTION_FILE --configuration $BUILD_CONFIGURATION --no-build --logger trx --results-directory $TEST_RESULTS_DIR" \
