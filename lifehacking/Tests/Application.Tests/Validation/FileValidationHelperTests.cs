@@ -249,7 +249,7 @@ public sealed class FileValidationHelperTests
         var result = FileValidationHelper.SanitizeFileName(longFileName);
 
         // Assert
-        result.Length.Should().BeLessOrEqualTo(255, "filename should be truncated to 255 characters");
+        result.Length.Should().BeLessThanOrEqualTo(255, "filename should be truncated to 255 characters");
     }
 
     [Fact]
@@ -263,7 +263,7 @@ public sealed class FileValidationHelperTests
 
         // Assert
         result.Should().EndWith(".jpg", "file extension should be preserved when truncating");
-        result.Length.Should().BeLessOrEqualTo(255);
+        result.Length.Should().BeLessThanOrEqualTo(255);
     }
 
     [Fact]
