@@ -1,37 +1,35 @@
-# API de Consejos Lifehacking
+# Lifehacking Tips API
 
-> **Nota:** Se generarán credenciales de administrador y se enviarán de forma segura como parte de la entrega al mail: mouredev@gmail.com
+A production-ready REST API designed for building practical tip discovery and management applications. Lifehacking provides a complete backend for exploring daily life tips, organizing them by categories, and managing user favorites with smooth anonymous-to-authenticated transitions.
 
-Una API REST lista para producción diseñada para construir aplicaciones de descubrimiento y gestión de consejos prácticos. Lifehacking proporciona un backend completo para explorar consejos de vida diaria, organizarlos por categorías y gestionar favoritos de usuarios con transiciones fluidas de anónimo a autenticado.
+Built with **.NET 10** and **Clean Architecture** principles. This project was created from [arielbvergara/clean-architecture](https://github.com/arielbvergara/clean-architecture) — a reusable Clean Architecture template developed during lessons and converted into a template. In that project you can see the commits made prior to the creation of this project.
 
-Construido con **.NET 10** y principios de **Arquitectura Limpia**. Este proyecto fue creado a partir de [arielbvergara/clean-architecture](https://github.com/arielbvergara/clean-architecture) — una plantilla reutilizable de Arquitectura Limpia desarrollada durante lecciones y convertida en plantilla. En ese proyecto podran ver los commits que se hicieron previos a la creacion de este proyecto. 
-
-> 🤖 Desarrollo asistido por IA: [**Kiro**](https://kiro.dev) y [**Warp**](https://warp.dev) fue utilizado como asistente de IA durante todo el desarrollo de este proyecto.
+> 🤖 AI-assisted development: [**Kiro**](https://kiro.dev) and [**Warp**](https://warp.dev) were used as AI assistants throughout the development of this project.
 
 
 ---
 
-## 📋 Tabla de Contenidos
+## 📋 Table of Contents
 
-- [Aplicación Desplegada](#-aplicación-desplegada)
-- [Slides de la presentacion del proyecto](#slides-de-la-presentacion-del-proyecto)
-- [Descripción General del Proyecto](#-descripción-general-del-proyecto)
-- [Stack Tecnológico](#️-stack-tecnológico)
-- [Proyectos Relacionados](#-proyectos-relacionados)
-- [Características Principales](#-características-principales)
-- [Instalación y Ejecución](#-instalación-y-ejecución)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Endpoints de la API](#-endpoints-de-la-api)
-- [Arquitectura](#-arquitectura)
-- [Autenticación y Autorización](#-autenticación-y-autorización)
-- [Características de Seguridad](#-características-de-seguridad)
-- [Pruebas](#-pruebas)
-- [Guías de Desarrollo](#-guías-de-desarrollo)
+- [Deployed Application](#-deployed-application)
+- [Project Presentation Slides](#project-presentation-slides)
+- [Project Overview](#-project-overview)
+- [Technology Stack](#️-technology-stack)
+- [Related Projects](#-related-projects)
+- [Key Features](#-key-features)
+- [Installation & Running](#-installation--running)
+- [Project Structure](#-project-structure)
+- [API Endpoints](#-api-endpoints)
+- [Architecture](#️-architecture)
+- [Authentication & Authorization](#-authentication--authorization)
+- [Security Features](#️-security-features)
+- [Testing](#-testing)
+- [Development Guidelines](#-development-guidelines)
 - [Roadmap](#️-roadmap)
 
 ---
 
-## 🌐 Aplicación Desplegada
+## 🌐 Deployed Application
 
 - **Frontend:** [https://lifehacking.vercel.app/](https://lifehacking.vercel.app/)
 - **Backend API:** [https://slight-janet-lifehacking-ce47cbe0.koyeb.app/](https://slight-janet-lifehacking-ce47cbe0.koyeb.app/)
@@ -39,633 +37,633 @@ Construido con **.NET 10** y principios de **Arquitectura Limpia**. Este proyect
 
 ---
 
-## Slides de la presentacion del proyecto
+## Project Presentation Slides
 
 [Lifehacking Master Slides Presentation](lifehacking-master-presentation.pptx)
 
 ---
 
-## 🎯 Descripción General del Proyecto
+## 🎯 Project Overview
 
 
-### ¿Qué es Lifehacking Tips API?
+### What is the Lifehacking Tips API?
 
-Lifehacking Tips API es una solución backend completa y robusta que permite construir aplicaciones donde los usuarios pueden descubrir, organizar y gestionar consejos prácticos para mejorar su vida diaria. La API está diseñada con arquitectura moderna y mejores prácticas de la industria, proporcionando una base sólida para aplicaciones web y móviles.
+The Lifehacking Tips API is a complete and robust backend solution that enables building applications where users can discover, organize, and manage practical tips to improve their daily lives. The API is designed with modern architecture and industry best practices, providing a solid foundation for web and mobile applications.
 
-### Casos de Uso Principales
+### Main Use Cases
 
-La API permite a los desarrolladores crear aplicaciones donde los usuarios pueden:
+The API allows developers to build applications where users can:
 
-- **Descubrir consejos** a través de búsqueda avanzada, filtrado por categorías y etiquetas (sin necesidad de autenticación)
-- **Guardar favoritos** con sincronización automática entre almacenamiento local y persistencia del lado del servidor
-- **Gestionar contenido** mediante una interfaz administrativa completa para consejos y categorías
-- **Administrar usuarios** con autenticación Firebase, control de acceso basado en roles y gestión de cuentas de autoservicio
+- **Discover tips** through advanced search, filtering by categories and tags (no authentication required)
+- **Save favorites** with automatic sync between local storage and server-side persistence
+- **Manage content** through a complete administrative interface for tips and categories
+- **Manage users** with Firebase authentication, role-based access control, and self-service account management
 
-### Tipos de Usuarios Soportados
+### Supported User Types
 
-El sistema está diseñado para soportar tres tipos de usuarios con diferentes niveles de acceso:
+The system is designed to support three user types with different access levels:
 
-1. **Usuarios Anónimos** - Acceso completo de lectura con favoritos del lado del cliente
-2. **Usuarios Autenticados** - Favoritos persistentes con fusión automática del almacenamiento local
-3. **Administradores** - Capacidades completas de gestión de contenido y usuarios
+1. **Anonymous Users** — Full read access with client-side favorites
+2. **Authenticated Users** — Persistent favorites with automatic merge from local storage
+3. **Administrators** — Full content and user management capabilities
 
-### Filosofía de Diseño
+### Design Philosophy
 
-El proyecto sigue los principios de **Arquitectura Limpia** (Clean Architecture) y **Diseño Dirigido por el Dominio** (Domain-Driven Design), garantizando:
+The project follows the principles of **Clean Architecture** and **Domain-Driven Design (DDD)**, ensuring:
 
-- Separación clara de responsabilidades entre capas
-- Independencia del dominio de negocio respecto a frameworks y tecnologías externas
-- Código mantenible, testeable y escalable
-- Facilidad para agregar nuevas funcionalidades sin afectar el código existente
+- Clear separation of concerns between layers
+- Business domain independence from frameworks and external technologies
+- Maintainable, testable, and scalable code
+- Easy addition of new features without affecting existing code
 
 ---
 
-## 🛠️ Stack Tecnológico
+## 🛠️ Technology Stack
 
-### Backend (este repositorio)
+### Backend (this repository)
 
 
-| Tecnología | Propósito |
+| Technology | Purpose |
 |-----------|-----------|
-| **.NET 10 + Arquitectura Limpia** | API Web con capas Domain, Application, Infrastructure y WebAPI |
-| **Firebase Authentication** | Validación de tokens JWT Bearer y gestión de identidad |
-| **Firebase Cloud Firestore** | Base de datos NoSQL principal |
-| **AWS S3** | Almacenamiento de imágenes de categorías |
-| **AWS CloudFront** | CDN para entrega de imágenes |
-| **Docker & Docker Compose** | Despliegue containerizado |
-| **[Koyeb](https://app.koyeb.com)** | Plataforma de despliegue en la nube |
-| **Dependabot** | Actualizaciones automáticas semanales de dependencias |
-| **GitHub Actions** | Pipeline CI (build, test, lint, escaneo de seguridad) y revisión de código |
-| **[Kiro](https://kiro.dev)** | Asistente de IA utilizado durante el desarrollo |
-| **[Warp](https://warp.dev)** | Asistente de IA utilizado durante el desarrollo |
-| **[Sentry](https://sentry.io)** | Seguimiento de errores y monitoreo de rendimiento |
-| **Swagger / OpenAPI** | Documentación interactiva de la API |
-| **Github Copilot** | Asistente de IA utilizado para revisión de código |
+| **.NET 10 + Clean Architecture** | Web API with Domain, Application, Infrastructure, and WebAPI layers |
+| **Firebase Authentication** | JWT Bearer token validation and identity management |
+| **Firebase Cloud Firestore** | Primary NoSQL database |
+| **AWS S3** | Category image storage |
+| **AWS CloudFront** | CDN for image delivery |
+| **Docker & Docker Compose** | Containerized deployment |
+| **[Koyeb](https://app.koyeb.com)** | Cloud deployment platform |
+| **Dependabot** | Automatic weekly dependency updates |
+| **GitHub Actions** | CI pipeline (build, test, lint, security scanning) and code review |
+| **[Kiro](https://kiro.dev)** | AI assistant used during development |
+| **[Warp](https://warp.dev)** | AI assistant used during development |
+| **[Sentry](https://sentry.io)** | Error tracking and performance monitoring |
+| **Swagger / OpenAPI** | Interactive API documentation |
+| **Github Copilot** | AI assistant used for code review |
 
 ### Frontend ([lifehacking-app](https://github.com/arielbvergara/lifehacking-app))
 
-| Tecnología | Propósito |
+| Technology | Purpose |
 |-----------|---------|
-| **Next.js 16** | Framework frontend basado en React |
-| **Google Stitch** | Diseño UI/UX |
-| **Firebase Authentication** | Autenticación e identidad |
-| **Vercel** | Despliegue del frontend |
-| **Sentry.io** | Monitoreo y seguimiento de errores |
-| **Docker** | Despliegue containerizado |
-| **Dependabot** | Actualizaciones automáticas semanales de dependencias |
-| **GitHub Actions** | Pipeline CI y revisión de código |
-| **Kiro** | Asistente de IA utilizado durante el desarrollo |
-| **Github Copilot** | Asistente de IA utilizado para revisión de código |
+| **Next.js 16** | React-based frontend framework |
+| **Google Stitch** | UI/UX design |
+| **Firebase Authentication** | Authentication and identity |
+| **Vercel** | Frontend deployment |
+| **Sentry.io** | Monitoring and error tracking |
+| **Docker** | Containerized deployment |
+| **Dependabot** | Automatic weekly dependency updates |
+| **GitHub Actions** | CI pipeline and code review |
+| **Kiro** | AI assistant used during development |
+| **Github Copilot** | AI assistant used for code review |
 
 ---
 
-## 🔗 Proyectos Relacionados
+## 🔗 Related Projects
 
-| Proyecto | Descripción | Despliegue |
+| Project | Description | Deployment |
 |---------|-------------|------------|
-| **[lifehacking-app](https://github.com/arielbvergara/lifehacking-app)** | Frontend — Next.js 16, diseño Google Stitch, Firebase, Docker, Vercel | [Vercel](https://vercel.com) |
-| **lifehacking** *(este repositorio)* | API Backend — .NET 10, Arquitectura Limpia, Firebase, Docker, AWS | [Koyeb](https://app.koyeb.com) |
+| **[lifehacking-app](https://github.com/arielbvergara/lifehacking-app)** | Frontend — Next.js 16, Google Stitch design, Firebase, Docker, Vercel | [Vercel](https://vercel.com) |
+| **lifehacking** *(this repository)* | Backend API — .NET 10, Clean Architecture, Firebase, Docker, AWS | [Koyeb](https://app.koyeb.com) |
 
 ---
 
-## ✨ Características Principales
+## ✨ Key Features
 
 
-### Para Usuarios Anónimos (API Pública)
+### For Anonymous Users (Public API)
 
-- **Exploración de consejos** con búsqueda y filtrado avanzado (por categoría, etiquetas, término de búsqueda)
-- **Visualización detallada** de información de consejos incluyendo instrucciones paso a paso
-- **Exploración de categorías** con acceso a todas las categorías disponibles
-- **Ordenamiento flexible** de resultados por fecha de creación, fecha de actualización o título
-- **Respuestas paginadas** para rendimiento óptimo
-- **Gestión de favoritos del lado del cliente** (almacenamiento local)
+- **Tip exploration** with advanced search and filtering (by category, tags, search term)
+- **Detailed view** of tip information including step-by-step instructions
+- **Category browsing** with access to all available categories
+- **Flexible sorting** of results by creation date, update date, or title
+- **Paginated responses** for optimal performance
+- **Client-side favorites management** (local storage)
 
-### Para Usuarios Autenticados
+### For Authenticated Users
 
-- **Todas las capacidades de usuarios anónimos**
-- **Favoritos persistentes** almacenados del lado del servidor
-- **Fusión automática** de favoritos locales en el primer inicio de sesión (sin duplicados)
-- **Sincronización entre dispositivos** de favoritos
-- **Gestión de perfil de autoservicio** (ver, actualizar nombre, eliminar cuenta)
+- **All anonymous user capabilities**
+- **Persistent favorites** stored server-side
+- **Automatic merge** of local favorites on first login (no duplicates)
+- **Cross-device sync** of favorites
+- **Self-service profile management** (view, update name, delete account)
 
-### Para Administradores
+### For Administrators
 
-- **Todas las capacidades de usuarios autenticados**
-- **Gestión completa del ciclo de vida de consejos** (crear, actualizar, eliminar)
-- **Gestión de categorías** con eliminación en cascada
-- **Administración de usuarios** completa
-- **Creación de usuarios administradores** con integración Firebase
-- **Panel de control** con estadísticas en tiempo real y conteo de entidades
-- **Registro de auditoría** para todas las acciones administrativas
+- **All authenticated user capabilities**
+- **Full tip lifecycle management** (create, update, delete)
+- **Category management** with cascade deletion
+- **Complete user administration**
+- **Admin user creation** with Firebase integration
+- **Dashboard** with real-time statistics and entity counts
+- **Audit log** for all administrative actions
 
-### Características Técnicas Destacadas
+### Notable Technical Features
 
-- **Arquitectura Limpia** con separación clara de responsabilidades
-- **Caché en memoria** con invalidación automática para optimización de rendimiento
-- **Eliminación suave (Soft Delete)** para preservación de datos y auditoría
-- **Validación exhaustiva** de entrada con respuestas de error detalladas
-- **IDs de correlación** para trazabilidad de solicitudes en logs y sistemas de monitoreo
-- **Documentación interactiva** con Swagger/OpenAPI
-- **Seguridad robusta** con JWT, rate limiting, headers de seguridad y CORS configurable
+- **Clean Architecture** with clear separation of concerns
+- **In-memory cache** with automatic invalidation for performance optimization
+- **Soft Delete** for data preservation and auditing
+- **Exhaustive input validation** with detailed error responses
+- **Correlation IDs** for request traceability in logs and monitoring systems
+- **Interactive documentation** with Swagger/OpenAPI
+- **Robust security** with JWT, rate limiting, security headers, and configurable CORS
 
 ---
 
-## 🚀 Instalación y Ejecución
+## 🚀 Installation & Running
 
-### 1. Requisitos Previos
+### 1. Prerequisites
 
-Antes de comenzar, asegúrate de tener instalado:
+Before getting started, make sure you have installed:
 
-- [.NET SDK 10.0](https://dotnet.microsoft.com/) o superior
-- [Docker](https://www.docker.com/) y Docker Compose
-- Un proyecto Firebase para autenticación (créalo en [Firebase Console](https://console.firebase.google.com/))
-- Opcional: Un proyecto Sentry para monitoreo (regístrate en [sentry.io](https://sentry.io/))
+- [.NET SDK 10.0](https://dotnet.microsoft.com/) or higher
+- [Docker](https://www.docker.com/) and Docker Compose
+- A Firebase project for authentication (create one at [Firebase Console](https://console.firebase.google.com/))
+- Optional: A Sentry project for monitoring (sign up at [sentry.io](https://sentry.io/))
 
 
-### 2. Inicio Rápido con Docker Compose
+### 2. Quick Start with Docker Compose
 
-La forma más rápida de ejecutar la API localmente con todas las dependencias configuradas.
+The fastest way to run the API locally with all dependencies configured.
 
-#### Requisitos Previos para Docker Compose
+#### Prerequisites for Docker Compose
 
-Antes de ejecutar `docker compose up`, necesitas:
+Before running `docker compose up`, you need:
 
-1. **Archivo de credenciales de Firebase Admin SDK**
-   - Descarga el archivo JSON de credenciales desde [Firebase Console](https://console.firebase.google.com/)
-   - Ve a: Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada
-   - Guarda el archivo como `firebase-adminsdk.json` en `~/secrets/`
-   
+1. **Firebase Admin SDK credentials file**
+   - Download the JSON credentials file from [Firebase Console](https://console.firebase.google.com/)
+   - Go to: Project Settings → Service Accounts → Generate new private key
+   - Save the file as `firebase-adminsdk.json` in `~/secrets/`
+
    ```bash
-   # Crear directorio si no existe
+   # Create directory if it doesn't exist
    mkdir -p ~/secrets
-   
-   # Copiar tu archivo de credenciales
-   cp /ruta/a/tu/firebase-adminsdk.json ~/secrets/firebase-adminsdk.json
+
+   # Copy your credentials file
+   cp /path/to/your/firebase-adminsdk.json ~/secrets/firebase-adminsdk.json
    ```
 
-2. **Configurar variables de entorno en docker-compose.yml** (ya configuradas por defecto):
-   - `ASPNETCORE_ENVIRONMENT: Development` - Entorno de desarrollo
-   - `ClientApp__Origin: "http://localhost:3000"` - Origen del frontend para CORS
-   - `GOOGLE_APPLICATION_CREDENTIALS: /app/firebase-adminsdk.json` - Ruta a credenciales dentro del contenedor
+2. **Configure environment variables in docker-compose.yml** (already configured by default):
+   - `ASPNETCORE_ENVIRONMENT: Development` — Development environment
+   - `ClientApp__Origin: "http://localhost:3000"` — Frontend origin for CORS
+   - `GOOGLE_APPLICATION_CREDENTIALS: /app/firebase-adminsdk.json` — Path to credentials inside the container
 
-3. **Configurar Firebase en appsettings.json o variables de entorno**
-   
-   Opción A: Editar `lifehacking/WebAPI/appsettings.Development.json`:
+3. **Configure Firebase in appsettings.json or environment variables**
+
+   Option A: Edit `lifehacking/WebAPI/appsettings.Development.json`:
    ```json
    {
      "Firebase": {
-       "ProjectId": "tu-proyecto-firebase",
+       "ProjectId": "your-firebase-project",
      },
      "Authentication": {
-       "Authority": "https://securetoken.google.com/tu-proyecto-firebase",
-       "Audience": "tu-proyecto-firebase"
+       "Authority": "https://securetoken.google.com/your-firebase-project",
+       "Audience": "your-firebase-project"
      }
    }
    ```
-   
-   Opción B: Agregar variables de entorno en `docker-compose.yml`:
+
+   Option B: Add environment variables in `docker-compose.yml`:
    ```yaml
    environment:
-     Firebase__ProjectId: "tu-proyecto-firebase"
-     Authentication__Authority: "https://securetoken.google.com/tu-proyecto-firebase"
-     Authentication__Audience: "tu-proyecto-firebase"
+     Firebase__ProjectId: "your-firebase-project"
+     Authentication__Authority: "https://securetoken.google.com/your-firebase-project"
+     Authentication__Audience: "your-firebase-project"
    ```
 
-#### Ejecutar con Docker Compose
+#### Run with Docker Compose
 
-Una vez configurado:
+Once configured:
 
 ```bash
 docker compose up --build
 ```
 
-Esto realizará:
-- Construcción de la imagen Docker con .NET 10
-- Montaje del archivo de credenciales Firebase
-- Inicio del contenedor WebAPI
-- Configuración de la API para usar Firebase/Firestore
-- Exposición de la API en el puerto 8080
+This will:
+- Build the Docker image with .NET 10
+- Mount the Firebase credentials file
+- Start the WebAPI container
+- Configure the API to use Firebase/Firestore
+- Expose the API on port 8080
 
-Una vez en ejecución:
-- **URL Base de la API**: `http://localhost:8080`
-- **Swagger UI**: `http://localhost:8080/swagger` (documentación interactiva de la API)
-- **Health Check**: `http://localhost:8080/health` (si está configurado)
+Once running:
+- **API Base URL**: `http://localhost:8080`
+- **Swagger UI**: `http://localhost:8080/swagger` (interactive API documentation)
+- **Health Check**: `http://localhost:8080/health` (if configured)
 
-Para detener los servicios:
+To stop the services:
 
 ```bash
 docker compose down
 ```
 
-**Nota importante:** El proyecto está diseñado para usar Firebase/Firestore como base de datos. Docker Compose está configurado para conectarse automáticamente a tu proyecto Firebase.
+**Important note:** The project is designed to use Firebase/Firestore as the database. Docker Compose is configured to automatically connect to your Firebase project.
 
-### 3. Ejecutar la WebAPI Directamente (Sin Docker)
+### 3. Run the WebAPI Directly (Without Docker)
 
-Para iteración más rápida durante el desarrollo, ejecuta la API directamente usando el SDK de .NET:
+For faster iteration during development, run the API directly using the .NET SDK:
 
 ```bash
-# Compilar la solución
+# Build the solution
 dotnet build lifehacking.slnx
 
-# Ejecutar el proyecto WebAPI
+# Run the WebAPI project
 dotnet run --project lifehacking/WebAPI/WebAPI.csproj
 ```
 
-La API lee la configuración de `lifehacking/WebAPI/appsettings.Development.json` y variables de entorno, conectándose a Firebase/Firestore según la configuración establecida.
+The API reads configuration from `lifehacking/WebAPI/appsettings.Development.json` and environment variables, connecting to Firebase/Firestore as configured.
 
-### 4. Configurar Autenticación Firebase
+### 4. Configure Firebase Authentication
 
-Para probar endpoints autenticados y de administrador, configura Firebase como tu proveedor de identidad:
+To test authenticated and admin endpoints, configure Firebase as your identity provider:
 
-1. **Actualiza `appsettings.Development.json`**:
+1. **Update `appsettings.Development.json`**:
    ```json
    {
      "Authentication": {
-       "Authority": "https://securetoken.google.com/<tu-firebase-project-id>",
-       "Audience": "<tu-firebase-project-id>"
+       "Authority": "https://securetoken.google.com/<your-firebase-project-id>",
+       "Audience": "<your-firebase-project-id>"
      },
      "Firebase": {
-       "ProjectId": "<tu-firebase-project-id>"
+       "ProjectId": "<your-firebase-project-id>"
      }
    }
    ```
 
-2. **Obtén un token de ID de Firebase**:
-   - Autentica un usuario a través de Firebase (web, móvil o API REST)
-   - Extrae el token de ID de la respuesta de autenticación
+2. **Get a Firebase ID token**:
+   - Authenticate a user through Firebase (web, mobile, or REST API)
+   - Extract the ID token from the authentication response
 
-3. **Usa el token en las solicitudes de la API**:
+3. **Use the token in API requests**:
    ```bash
    curl -H "Authorization: Bearer <firebase-id-token>" \
         http://localhost:8080/api/user/me
    ```
 
-La API valida el token JWT y mapea el claim `sub` al `ExternalAuthId` del usuario interno.
+The API validates the JWT token and maps the `sub` claim to the internal user's `ExternalAuthId`.
 
 
-### 5. Configurar Monitoreo con Sentry (Opcional)
+### 5. Configure Monitoring with Sentry (Optional)
 
-La integración con Sentry es opcional. La API funciona normalmente con Sentry deshabilitado.
+Sentry integration is optional. The API works normally with Sentry disabled.
 
-Para habilitar el monitoreo, establece estas variables de entorno:
+To enable monitoring, set these environment variables:
 
 ```bash
 export Sentry__Enabled=true
-export Sentry__Dsn=<tu-sentry-dsn>
+export Sentry__Dsn=<your-sentry-dsn>
 export Sentry__Environment=Development
 export Sentry__TracesSampleRate=0.2
 ```
 
-O configura en `appsettings.Development.json`:
+Or configure in `appsettings.Development.json`:
 
 ```json
 {
   "Sentry": {
     "Enabled": true,
-    "Dsn": "<tu-sentry-dsn>",
+    "Dsn": "<your-sentry-dsn>",
     "Environment": "Development",
     "TracesSampleRate": 0.2
   }
 }
 ```
 
-Cuando está habilitado, los errores no manejados y las trazas de rendimiento se envían a Sentry con contexto completo (ruta, usuario, ID de correlación).
+When enabled, unhandled errors and performance traces are sent to Sentry with full context (path, user, correlation ID).
 
-### 6. Explorar la API con Swagger
+### 6. Explore the API with Swagger
 
-Una vez que la API esté en ejecución, navega a la interfaz Swagger para documentación interactiva:
+Once the API is running, navigate to the Swagger UI for interactive documentation:
 
 **http://localhost:8080/swagger**
 
-Swagger proporciona:
-- Documentación completa de endpoints con esquemas de solicitud/respuesta
-- Reglas de validación y restricciones
-- Pruebas interactivas (prueba endpoints directamente desde el navegador)
-- Soporte de autenticación (agrega tu token Bearer para probar endpoints protegidos)
+Swagger provides:
+- Complete endpoint documentation with request/response schemas
+- Validation rules and constraints
+- Interactive testing (try endpoints directly from the browser)
+- Authentication support (add your Bearer token to test protected endpoints)
 
-Nota: Swagger esta habilitado solo en ambientes no productivos.
+Note: Swagger is only enabled in non-production environments.
 
-### 7. Configurar AWS S3 para Carga de Imágenes
+### 7. Configure AWS S3 for Image Uploads
 
-Para habilitar la carga de imágenes de categorías, configura AWS S3 y CloudFront:
+To enable category image uploads, configure AWS S3 and CloudFront:
 
 ```bash
-export AWS_ACCESS_KEY_ID=tu-access-key-id
-export AWS_SECRET_ACCESS_KEY=tu-secret-access-key
+export AWS_ACCESS_KEY_ID=your-access-key-id
+export AWS_SECRET_ACCESS_KEY=your-secret-access-key
 export AWS_REGION=us-east-1
 export AWS__S3__BucketName=lifehacking-category-images
-export AWS__CloudFront__Domain=tu-distribucion.cloudfront.net
+export AWS__CloudFront__Domain=your-distribution.cloudfront.net
 ```
 
-Para instrucciones detalladas de configuración de AWS, consulta **[docs/AWS-S3-Setup-Guide.md](docs/AWS-S3-Setup-Guide.md)**
+For detailed AWS setup instructions, see **[docs/AWS-S3-Setup-Guide.md](docs/AWS-S3-Setup-Guide.md)**
 
 ---
 
-## 📁 Estructura del Proyecto
+## 📁 Project Structure
 
 
-El proyecto sigue los principios de **Arquitectura Limpia** con una clara separación de responsabilidades:
+The project follows **Clean Architecture** principles with a clear separation of concerns:
 
 ```
 lifehacking/
-├── lifehacking.slnx                 # Archivo de solución .NET 10
-├── README.md                        # Documentación principal (inglés)
-├── AGENTS.md                        # Guía para agentes de IA
-├── docker-compose.yml               # Configuración Docker Compose
-├── Dockerfile                       # Imagen Docker de la aplicación
+├── lifehacking.slnx                 # .NET 10 solution file
+├── README.md                        # Main documentation (English)
+├── AGENTS.md                        # Guide for AI agents
+├── docker-compose.yml               # Docker Compose configuration
+├── Dockerfile                       # Application Docker image
 │
 ├── ADRs/                            # Architecture Decision Records
 │   ├── 001-use-microsoft-testing-platform-runner.md
 │   ├── 018-replace-postgresql-persistence-with-firebase-database.md
 │   ├── 020-user-favorites-domain-model-and-storage.md
-│   └── ...                          # Más decisiones arquitectónicas
+│   └── ...                          # More architectural decisions
 │
-├── docs/                            # Documentación adicional
-│   ├── MVP.md                       # Requisitos del producto y alcance MVP
-│   ├── AWS-S3-Setup-Guide.md        # Guía de configuración AWS S3
+├── docs/                            # Additional documentation
+│   ├── MVP.md                       # Product requirements and MVP scope
+│   ├── AWS-S3-Setup-Guide.md        # AWS S3 configuration guide
 │   └── Search-Architecture-Decision.md
 │
-└── lifehacking/                     # Código fuente principal
+└── lifehacking/                     # Main source code
     │
-    ├── Domain/                      # Capa de Dominio
-    │   ├── Entities/                # Entidades del dominio (User, Tip, Category, UserFavorites)
-    │   ├── ValueObject/             # Objetos de valor (CategoryImage, etc.)
-    │   ├── Primitives/              # Tipos primitivos (Result<T, TE>)
-    │   └── Constants/               # Constantes del dominio (ImageConstants)
+    ├── Domain/                      # Domain Layer
+    │   ├── Entities/                # Domain entities (User, Tip, Category, UserFavorites)
+    │   ├── ValueObject/             # Value objects (CategoryImage, etc.)
+    │   ├── Primitives/              # Primitive types (Result<T, TE>)
+    │   └── Constants/               # Domain constants (ImageConstants)
     │
-    ├── Application/                 # Capa de Aplicación
-    │   ├── UseCases/                # Casos de uso organizados por característica
-    │   │   ├── User/                # Casos de uso de usuarios
-    │   │   ├── Category/            # Casos de uso de categorías
-    │   │   ├── Tip/                 # Casos de uso de consejos
-    │   │   ├── Favorite/            # Casos de uso de favoritos
-    │   │   └── Dashboard/           # Casos de uso del panel de control
-    │   ├── Dtos/                    # Objetos de transferencia de datos
-    │   │   ├── User/                # DTOs de usuarios
-    │   │   ├── Category/            # DTOs de categorías
-    │   │   ├── Tip/                 # DTOs de consejos
-    │   │   ├── Favorite/            # DTOs de favoritos
-    │   │   └── Dashboard/           # DTOs del panel de control
-    │   ├── Interfaces/              # Interfaces (puertos)
+    ├── Application/                 # Application Layer
+    │   ├── UseCases/                # Use cases organized by feature
+    │   │   ├── User/                # User use cases
+    │   │   ├── Category/            # Category use cases
+    │   │   ├── Tip/                 # Tip use cases
+    │   │   ├── Favorite/            # Favorites use cases
+    │   │   └── Dashboard/           # Dashboard use cases
+    │   ├── Dtos/                    # Data Transfer Objects
+    │   │   ├── User/                # User DTOs
+    │   │   ├── Category/            # Category DTOs
+    │   │   ├── Tip/                 # Tip DTOs
+    │   │   ├── Favorite/            # Favorites DTOs
+    │   │   └── Dashboard/           # Dashboard DTOs
+    │   ├── Interfaces/              # Interfaces (ports)
     │   │   ├── IUserRepository
     │   │   ├── ICategoryRepository
     │   │   ├── IImageStorageService
     │   │   └── ICacheInvalidationService
-    │   ├── Exceptions/              # Excepciones de aplicación
-    │   ├── Validation/              # Utilidades de validación
-    │   └── Caching/                 # Definiciones de claves de caché
+    │   ├── Exceptions/              # Application exceptions
+    │   ├── Validation/              # Validation utilities
+    │   └── Caching/                 # Cache key definitions
     │
-    ├── Infrastructure/              # Capa de Infraestructura
-    │   ├── Data/Firestore/          # Implementación Firestore
-    │   │   ├── Documents/           # Clases de documentos Firestore
-    │   │   └── DataStores/          # Almacenes de datos (mapeo entidad-documento)
-    │   ├── Repositories/            # Implementaciones de repositorios
-    │   ├── Storage/                 # Servicios de almacenamiento en la nube
+    ├── Infrastructure/              # Infrastructure Layer
+    │   ├── Data/Firestore/          # Firestore implementation
+    │   │   ├── Documents/           # Firestore document classes
+    │   │   └── DataStores/          # Data stores (entity-document mapping)
+    │   ├── Repositories/            # Repository implementations
+    │   ├── Storage/                 # Cloud storage services
     │   │   └── S3ImageStorageService.cs
-    │   └── Configuration/           # Clases de opciones de configuración
+    │   └── Configuration/           # Configuration option classes
     │
-    ├── WebAPI/                      # Capa de API Web
-    │   ├── Program.cs               # Punto de entrada y composición raíz
-    │   ├── Controllers/             # Controladores REST
+    ├── WebAPI/                      # Web API Layer
+    │   ├── Program.cs               # Entry point and root composition
+    │   ├── Controllers/             # REST controllers
     │   │   ├── UserController.cs
     │   │   ├── AdminCategoryController.cs
     │   │   ├── AdminDashboardController.cs
     │   │   └── ...
-    │   ├── Filters/                 # Filtros globales
+    │   ├── Filters/                 # Global filters
     │   │   └── GlobalExceptionFilter.cs
-    │   ├── Configuration/           # Configuración de servicios
-    │   ├── appsettings.json         # Configuración base
+    │   ├── Configuration/           # Service configuration
+    │   ├── appsettings.json         # Base configuration
     │   ├── appsettings.Development.json
     │   └── appsettings.Production.json
     │
-    └── Tests/                       # Proyectos de pruebas
-        ├── Application.Tests/       # Pruebas de la capa de aplicación
-        ├── Infrastructure.Tests/    # Pruebas de la capa de infraestructura
-        └── WebAPI.Tests/            # Pruebas de integración de la API
+    └── Tests/                       # Test projects
+        ├── Application.Tests/       # Application layer tests
+        ├── Infrastructure.Tests/    # Infrastructure layer tests
+        └── WebAPI.Tests/            # API integration tests
 
 ```
 
-### Dirección de Dependencias
+### Dependency Direction
 
-El proyecto sigue estrictamente las reglas de dependencia de Arquitectura Limpia:
+The project strictly follows Clean Architecture dependency rules:
 
-- **Domain** → Sin referencias a otros proyectos (completamente independiente)
-- **Application** → Depende solo de **Domain**
-- **Infrastructure** → Depende de **Application** y **Domain**
-- **WebAPI** → Depende de **Application**, **Domain** e **Infrastructure**
-- **Tests** → Referencian solo las capas que están destinados a validar
+- **Domain** → No references to other projects (completely independent)
+- **Application** → Depends only on **Domain**
+- **Infrastructure** → Depends on **Application** and **Domain**
+- **WebAPI** → Depends on **Application**, **Domain**, and **Infrastructure**
+- **Tests** → Reference only the layers they are intended to validate
 
-### Flujo de Solicitudes HTTP
+### HTTP Request Flow
 
 ```
-Cliente HTTP
+HTTP Client
     ↓
-WebAPI Controller (capa de presentación)
+WebAPI Controller (presentation layer)
     ↓
-Application Use Case (lógica de negocio)
+Application Use Case (business logic)
     ↓
-Domain Entities/Value Objects (modelo de dominio)
+Domain Entities/Value Objects (domain model)
     ↓
-Infrastructure Repository (acceso a datos)
+Infrastructure Repository (data access)
     ↓
-Firestore/Firebase (persistencia)
+Firestore/Firebase (persistence)
     ↓
-Result<T, AppException> (respuesta)
+Result<T, AppException> (response)
     ↓
-HTTP Response (mapeo a códigos de estado)
+HTTP Response (mapped to status codes)
 ```
 
 ---
 
-## 🔌 Endpoints de la API
+## 🔌 API Endpoints
 
 
-Todos los endpoints devuelven JSON y siguen RFC 7807 Problem Details para respuestas de error. Cada respuesta incluye un `correlationId` para trazabilidad de solicitudes.
+All endpoints return JSON and follow RFC 7807 Problem Details for error responses. Each response includes a `correlationId` for request traceability.
 
-Para esquemas completos de solicitud/respuesta, reglas de validación y pruebas interactivas, consulta la **Swagger UI** en `http://localhost:8080/swagger` cuando ejecutes la API.
+For complete request/response schemas, validation rules, and interactive testing, see the **Swagger UI** at `http://localhost:8080/swagger` when running the API.
 
-### Endpoints Públicos (Sin Autenticación Requerida)
+### Public Endpoints (No Authentication Required)
 
-#### API de Consejos - `/api/tip`
+#### Tips API - `/api/tip`
 
-- **`GET /api/tip`** - Buscar y filtrar consejos
-  - Parámetros de consulta: `q` (término de búsqueda), `categoryId`, `tags[]`, `orderBy`, `sortDirection`, `pageNumber`, `pageSize`
-  - Devuelve resúmenes de consejos paginados con metadatos
-  
-- **`GET /api/tip/{id}`** - Obtener detalles completos de un consejo
-  - Devuelve consejo completo con título, descripción, pasos ordenados, categoría, etiquetas y URL de video opcional
+- **`GET /api/tip`** — Search and filter tips
+  - Query parameters: `q` (search term), `categoryId`, `tags[]`, `orderBy`, `sortDirection`, `pageNumber`, `pageSize`
+  - Returns paginated tip summaries with metadata
 
-#### API de Categorías - `/api/category`
+- **`GET /api/tip/{id}`** — Get full tip details
+  - Returns complete tip with title, description, ordered steps, category, tags, and optional video URL
 
-- **`GET /api/category`** - Listar todas las categorías disponibles
-  - Devuelve todas las categorías no eliminadas
-  
-- **`GET /api/category/{id}/tips`** - Obtener consejos por categoría
-  - Parámetros de consulta: `orderBy`, `sortDirection`, `pageNumber`, `pageSize`
-  - Devuelve consejos paginados para la categoría especificada
+#### Categories API - `/api/category`
 
-### Endpoints Autenticados (Requiere Token JWT Bearer)
+- **`GET /api/category`** — List all available categories
+  - Returns all non-deleted categories
 
-#### API de Usuario - `/api/user`
+- **`GET /api/category/{id}/tips`** — Get tips by category
+  - Query parameters: `orderBy`, `sortDirection`, `pageNumber`, `pageSize`
+  - Returns paginated tips for the specified category
 
-- **`POST /api/user`** - Crear perfil de usuario después de la autenticación
-  - Se llama una vez después de la autenticación Firebase para crear el registro de usuario interno
-  - ID de autenticación externa derivado del token JWT
-  
-- **`GET /api/user/me`** - Obtener perfil del usuario actual
-  - Usuario resuelto desde el token JWT
-  
-- **`PUT /api/user/me/name`** - Actualizar nombre de visualización del usuario actual
-  - Actualización de perfil de autoservicio
-  
-- **`DELETE /api/user/me`** - Eliminar cuenta del usuario actual
-  - Eliminación suave con registro de auditoría
+### Authenticated Endpoints (Requires JWT Bearer Token)
 
-#### API de Favoritos - `/api/me/favorites`
+#### User API - `/api/user`
 
-- **`GET /api/me/favorites`** - Listar consejos favoritos del usuario
-  - Parámetros de consulta: `q`, `categoryId`, `tags[]`, `orderBy`, `sortDirection`, `pageNumber`, `pageSize`
-  - Devuelve favoritos paginados con detalles completos del consejo
-  
-- **`POST /api/me/favorites/{tipId}`** - Agregar consejo a favoritos
-  - Operación idempotente
-  
-- **`DELETE /api/me/favorites/{tipId}`** - Eliminar consejo de favoritos
+- **`POST /api/user`** — Create user profile after authentication
+  - Called once after Firebase authentication to create the internal user record
+  - External auth ID derived from the JWT token
 
-- **`POST /api/me/favorites/merge`** - Fusionar favoritos locales del almacenamiento del cliente
-  - Acepta array de IDs de consejos del almacenamiento local
-  - Devuelve resumen con conteos de agregados, omitidos y fallidos
-  - Idempotente y soporta éxito parcial
+- **`GET /api/user/me`** — Get current user profile
+  - User resolved from the JWT token
+
+- **`PUT /api/user/me/name`** — Update current user's display name
+  - Self-service profile update
+
+- **`DELETE /api/user/me`** — Delete current user's account
+  - Soft delete with audit log
+
+#### Favorites API - `/api/me/favorites`
+
+- **`GET /api/me/favorites`** — List user's favorite tips
+  - Query parameters: `q`, `categoryId`, `tags[]`, `orderBy`, `sortDirection`, `pageNumber`, `pageSize`
+  - Returns paginated favorites with full tip details
+
+- **`POST /api/me/favorites/{tipId}`** — Add tip to favorites
+  - Idempotent operation
+
+- **`DELETE /api/me/favorites/{tipId}`** — Remove tip from favorites
+
+- **`POST /api/me/favorites/merge`** — Merge local favorites from client storage
+  - Accepts array of tip IDs from local storage
+  - Returns summary with added, skipped, and failed counts
+  - Idempotent and supports partial success
 
 
-### Endpoints de Administrador (Requiere Rol de Admin)
+### Admin Endpoints (Requires Admin Role)
 
-#### API de Consejos de Admin - `/api/admin/tips`
+#### Admin Tips API - `/api/admin/tips`
 
-- **`POST /api/admin/tips`** - Crear nuevo consejo
-  - Requerido: title, description, steps (lista ordenada), categoryId
-  - Opcional: tags (máx 10), videoUrl (YouTube/Instagram)
-  
-- **`PUT /api/admin/tips/{id}`** - Actualizar consejo existente
-  - Todos los campos actualizables
-  
-- **`DELETE /api/admin/tips/{id}`** - Eliminación suave de consejo
-  - Marca el consejo como eliminado, preserva los datos
+- **`POST /api/admin/tips`** — Create new tip
+  - Required: title, description, steps (ordered list), categoryId
+  - Optional: tags (max 10), videoUrl (YouTube/Instagram)
 
-#### API de Categorías de Admin - `/api/admin/categories`
+- **`PUT /api/admin/tips/{id}`** — Update existing tip
+  - All fields updatable
 
-- **`POST /api/admin/categories/images`** - Subir imagen de categoría
-  - Acepta multipart/form-data con archivo de imagen
-  - Valida tamaño de archivo (máx 5MB), tipo de contenido (JPEG, PNG, GIF, WebP) y bytes mágicos
-  - Sube a AWS S3 con nombre de archivo único basado en GUID
-  - Devuelve metadatos de imagen incluyendo URL de CDN CloudFront
-  - Requerido para crear categorías con imágenes
-  
-- **`POST /api/admin/categories`** - Crear nueva categoría
-  - Requerido: name (2-100 caracteres, único sin distinción de mayúsculas)
-  - Opcional: metadatos de imagen del endpoint de carga
-  
-- **`PUT /api/admin/categories/{id}`** - Actualizar nombre de categoría
-  - Aplica unicidad
-  
-- **`DELETE /api/admin/categories/{id}`** - Eliminación suave de categoría
-  - Cascada de eliminación suave a todos los consejos asociados
+- **`DELETE /api/admin/tips/{id}`** — Soft delete tip
+  - Marks the tip as deleted, preserves data
 
-#### API de Usuarios de Admin - `/api/admin/user`
+#### Admin Categories API - `/api/admin/categories`
 
-- **`POST /api/admin/user`** - Crear usuario administrador
-  - Crea usuario en Firebase y base de datos interna
-  - Requerido: email, displayName, password
-  
-- **`GET /api/admin/user`** - Listar usuarios con paginación
-  - Parámetros de consulta: `search`, `orderBy`, `sortDirection`, `pageNumber`, `pageSize`, `isDeleted`
-  - Soporta búsqueda en email, nombre e ID
-  
-- **`GET /api/admin/user/{id}`** - Obtener usuario por ID interno
+- **`POST /api/admin/categories/images`** — Upload category image
+  - Accepts multipart/form-data with image file
+  - Validates file size (max 5MB), content type (JPEG, PNG, GIF, WebP), and magic bytes
+  - Uploads to AWS S3 with GUID-based unique filename
+  - Returns image metadata including CloudFront CDN URL
+  - Required before creating categories with images
 
-- **`GET /api/admin/user/email/{email}`** - Obtener usuario por dirección de email
+- **`POST /api/admin/categories`** — Create new category
+  - Required: name (2-100 characters, case-insensitive unique)
+  - Optional: image metadata from upload endpoint
 
-- **`PUT /api/admin/user/{id}/name`** - Actualizar nombre de visualización del usuario
+- **`PUT /api/admin/categories/{id}`** — Update category name
+  - Uniqueness enforced
 
-- **`DELETE /api/admin/user/{id}`** - Eliminación suave de cuenta de usuario
+- **`DELETE /api/admin/categories/{id}`** — Soft delete category
+  - Cascade soft delete to all associated tips
 
-#### API de Panel de Control de Admin - `/api/admin/dashboard`
+#### Admin Users API - `/api/admin/user`
 
-- **`GET /api/admin/dashboard`** - Obtener estadísticas del panel de control
-  - Devuelve conteos de entidades para usuarios, categorías y consejos
-  - Resultados en caché durante 1 hora para rendimiento óptimo
-  - Proporciona vista rápida para monitoreo administrativo
+- **`POST /api/admin/user`** — Create admin user
+  - Creates user in Firebase and internal database
+  - Required: email, displayName, password
+
+- **`GET /api/admin/user`** — List users with pagination
+  - Query parameters: `search`, `orderBy`, `sortDirection`, `pageNumber`, `pageSize`, `isDeleted`
+  - Supports search by email, name, and ID
+
+- **`GET /api/admin/user/{id}`** — Get user by internal ID
+
+- **`GET /api/admin/user/email/{email}`** — Get user by email address
+
+- **`PUT /api/admin/user/{id}/name`** — Update user's display name
+
+- **`DELETE /api/admin/user/{id}`** — Soft delete user account
+
+#### Admin Dashboard API - `/api/admin/dashboard`
+
+- **`GET /api/admin/dashboard`** — Get dashboard statistics
+  - Returns entity counts for users, categories, and tips
+  - Results cached for 1 hour for optimal performance
+  - Provides a quick overview for administrative monitoring
 
 ---
 
-## 🏗️ Arquitectura
+## 🏗️ Architecture
 
 
-Esta API sigue los principios de **Arquitectura Limpia** (Clean Architecture) con clara separación de responsabilidades:
+This API follows **Clean Architecture** principles with clear separation of concerns:
 
-### Capas de la Arquitectura
+### Architecture Layers
 
-#### 1. Capa de Dominio (Domain Layer)
+#### 1. Domain Layer
 
-**Responsabilidad:** Contiene la lógica de negocio central y las reglas del dominio.
+**Responsibility:** Contains the core business logic and domain rules.
 
-**Características:**
-- Entidades del negocio (User, Tip, Category, UserFavorites)
-- Objetos de valor (CategoryImage)
-- Tipos primitivos del dominio (Result<T, TE>)
-- Constantes del dominio (ImageConstants)
-- Sin dependencias externas (completamente independiente)
-- Agnóstico de persistencia y frameworks
+**Features:**
+- Business entities (User, Tip, Category, UserFavorites)
+- Value objects (CategoryImage)
+- Domain primitive types (Result<T, TE>)
+- Domain constants (ImageConstants)
+- No external dependencies (completely independent)
+- Persistence and framework agnostic
 
-**Principio:** El dominio es el corazón de la aplicación y no debe depender de nada externo.
+**Principle:** The domain is the heart of the application and must not depend on anything external.
 
-#### 2. Capa de Aplicación (Application Layer)
+#### 2. Application Layer
 
-**Responsabilidad:** Orquesta los casos de uso y coordina el flujo de datos.
+**Responsibility:** Orchestrates use cases and coordinates data flow.
 
-**Características:**
-- Casos de uso organizados por característica (User, Category, Tip, Favorite, Dashboard)
-- DTOs (Data Transfer Objects) para comunicación con la capa de presentación
-- Interfaces (puertos) para servicios externos (IUserRepository, ICategoryRepository, IImageStorageService)
-- Lógica de validación y transformación
-- Gestión de caché con invalidación automática
-- Manejo de excepciones de aplicación
+**Features:**
+- Use cases organized by feature (User, Category, Tip, Favorite, Dashboard)
+- DTOs (Data Transfer Objects) for communication with the presentation layer
+- Interfaces (ports) for external services (IUserRepository, ICategoryRepository, IImageStorageService)
+- Validation and transformation logic
+- Cache management with automatic invalidation
+- Application exception handling
 
-**Principio:** Define qué hace el sistema sin preocuparse por cómo lo hace.
+**Principle:** Defines what the system does without caring about how it does it.
 
-#### 3. Capa de Infraestructura (Infrastructure Layer)
+#### 3. Infrastructure Layer
 
-**Responsabilidad:** Implementa los detalles técnicos y servicios externos.
+**Responsibility:** Implements technical details and external services.
 
-**Características:**
-- Implementaciones de repositorios (UserRepository, CategoryRepository)
-- Acceso a datos con Firestore (documentos, data stores)
-- Servicios de almacenamiento en la nube (S3ImageStorageService)
-- Integración con Firebase Authentication
-- Configuración de servicios externos (AWS, Firebase)
-- Mapeo entre entidades de dominio y documentos de persistencia
+**Features:**
+- Repository implementations (UserRepository, CategoryRepository)
+- Data access with Firestore (documents, data stores)
+- Cloud storage services (S3ImageStorageService)
+- Firebase Authentication integration
+- External service configuration (AWS, Firebase)
+- Mapping between domain entities and persistence documents
 
-**Principio:** Proporciona las implementaciones concretas de las abstracciones definidas en Application.
+**Principle:** Provides concrete implementations of the abstractions defined in Application.
 
-#### 4. Capa de API Web (WebAPI Layer)
+#### 4. Web API Layer
 
-**Responsabilidad:** Expone la funcionalidad a través de endpoints HTTP REST.
+**Responsibility:** Exposes functionality through HTTP REST endpoints.
 
-**Características:**
-- Controladores REST organizados por característica
-- Middleware de autenticación y autorización
-- Filtros globales (GlobalExceptionFilter)
-- Configuración de servicios y composición raíz (Program.cs)
-- Documentación Swagger/OpenAPI
-- Mapeo de Result<T, AppException> a códigos de estado HTTP
+**Features:**
+- REST controllers organized by feature
+- Authentication and authorization middleware
+- Global filters (GlobalExceptionFilter)
+- Service configuration and root composition (Program.cs)
+- Swagger/OpenAPI documentation
+- Mapping of Result<T, AppException> to HTTP status codes
 
-**Principio:** Capa delgada enfocada en preocupaciones HTTP, delegando lógica a Application.
+**Principle:** Thin layer focused on HTTP concerns, delegating logic to Application.
 
-### Patrones Arquitectónicos Aplicados
+### Architectural Patterns Applied
 
-#### Patrón Result
+#### Result Pattern
 
-En lugar de lanzar excepciones para flujo de control normal, se usa el patrón Result:
+Instead of throwing exceptions for normal control flow, the Result pattern is used:
 
 ```csharp
 Result<TipDetailResponse, AppException> result = await useCase.ExecuteAsync(request);
@@ -676,21 +674,21 @@ return result.Match(
 );
 ```
 
-**Beneficios:**
-- Manejo explícito de errores
-- Mejor rendimiento (sin stack unwinding)
-- Código más predecible y testeable
+**Benefits:**
+- Explicit error handling
+- Better performance (no stack unwinding)
+- More predictable and testable code
 
-#### Inyección de Dependencias
+#### Dependency Injection
 
-Todas las dependencias se inyectan a través de constructores:
+All dependencies are injected through constructors:
 
 ```csharp
 public class CreateTipUseCase
 {
     private readonly ITipRepository _tipRepository;
     private readonly ICategoryRepository _categoryRepository;
-    
+
     public CreateTipUseCase(
         ITipRepository tipRepository,
         ICategoryRepository categoryRepository)
@@ -701,14 +699,14 @@ public class CreateTipUseCase
 }
 ```
 
-**Beneficios:**
-- Facilita testing con mocks
-- Bajo acoplamiento
-- Fácil sustitución de implementaciones
+**Benefits:**
+- Facilitates testing with mocks
+- Low coupling
+- Easy substitution of implementations
 
 #### Repository Pattern
 
-Abstrae el acceso a datos detrás de interfaces:
+Abstracts data access behind interfaces:
 
 ```csharp
 public interface ITipRepository
@@ -721,68 +719,68 @@ public interface ITipRepository
 }
 ```
 
-**Beneficios:**
-- Independencia de la tecnología de persistencia
-- Facilita cambios de base de datos
-- Mejora testabilidad
+**Benefits:**
+- Independence from persistence technology
+- Facilitates database changes
+- Improves testability
 
-### Decisiones Arquitectónicas Documentadas
+### Documented Architectural Decisions
 
-Las decisiones arquitectónicas clave están documentadas en `ADRs/`:
+Key architectural decisions are documented in `ADRs/`:
 
-- **ADR-018** - Reemplazo de PostgreSQL por Firebase Firestore
-- **ADR-020** - Modelo de dominio y almacenamiento de favoritos de usuario
-- **ADR-006** - Roles de usuario y ciclo de vida de eliminación suave
-- **ADR-010** - Configuración de producción endurecida
-- **ADR-011** - Headers de seguridad y rate limiting
-- **ADR-013** - Manejo estandarizado de errores y logging de seguridad
-- **ADR-015** - Integración de monitoreo y observabilidad con Sentry
+- **ADR-018** — Replacement of PostgreSQL with Firebase Firestore
+- **ADR-020** — User favorites domain model and storage
+- **ADR-006** — User roles and soft delete lifecycle
+- **ADR-010** — Hardened production configuration
+- **ADR-011** — Security headers and rate limiting
+- **ADR-013** — Standardized error handling and security logging
+- **ADR-015** — Sentry monitoring and observability integration
 
 ---
 
-## 🔐 Autenticación y Autorización
+## 🔐 Authentication & Authorization
 
 
-### Flujo de Autenticación
+### Authentication Flow
 
-El sistema utiliza Firebase Authentication con tokens JWT Bearer:
+The system uses Firebase Authentication with JWT Bearer tokens:
 
-1. **Usuario se autentica con Firebase** (tu frontend maneja esto)
-2. **Frontend recibe token de ID de Firebase** (JWT)
-3. **Frontend llama a la API con el token** en el header `Authorization: Bearer <token>`
-4. **API valida el token** con Firebase y extrae la identidad del usuario
-5. **API mapea el UID de Firebase** al registro de usuario interno
+1. **User authenticates with Firebase** (your frontend handles this)
+2. **Frontend receives Firebase ID token** (JWT)
+3. **Frontend calls the API with the token** in the `Authorization: Bearer <token>` header
+4. **API validates the token** with Firebase and extracts the user's identity
+5. **API maps the Firebase UID** to the internal user record
 
-### Tipos de Usuarios y Permisos
+### User Types and Permissions
 
-#### Usuarios Anónimos
-- **Acceso:** Sin autenticación requerida
-- **Permisos:**
-  - Lectura completa de consejos y categorías
-  - Búsqueda y filtrado avanzado
-  - Gestión de favoritos del lado del cliente (local storage)
+#### Anonymous Users
+- **Access:** No authentication required
+- **Permissions:**
+  - Full read access to tips and categories
+  - Advanced search and filtering
+  - Client-side favorites management (local storage)
 
-#### Usuarios Autenticados
-- **Acceso:** Requiere token JWT válido
-- **Permisos:**
-  - Todos los permisos de usuarios anónimos
-  - Favoritos persistentes del lado del servidor
-  - Gestión de perfil (ver, actualizar nombre)
-  - Eliminación de cuenta (autoservicio)
-  - Fusión de favoritos locales
+#### Authenticated Users
+- **Access:** Requires valid JWT token
+- **Permissions:**
+  - All anonymous user permissions
+  - Server-side persistent favorites
+  - Profile management (view, update name)
+  - Account deletion (self-service)
+  - Local favorites merge
 
-#### Administradores
-- **Acceso:** Requiere token JWT válido con rol Admin
-- **Permisos:**
-  - Todos los permisos de usuarios autenticados
-  - Gestión completa de consejos (crear, actualizar, eliminar)
-  - Gestión de categorías (crear, actualizar, eliminar, subir imágenes)
-  - Administración de usuarios (crear, listar, actualizar, eliminar)
-  - Acceso al panel de control con estadísticas
+#### Administrators
+- **Access:** Requires valid JWT token with Admin role
+- **Permissions:**
+  - All authenticated user permissions
+  - Full tip management (create, update, delete)
+  - Category management (create, update, delete, upload images)
+  - User administration (create, list, update, delete)
+  - Dashboard access with statistics
 
-### Registro de Usuario por Primera Vez
+### First-Time User Registration
 
-Después de la autenticación con Firebase, los usuarios deben crear su perfil interno:
+After authenticating with Firebase, users must create their internal profile:
 
 ```bash
 POST /api/user
@@ -790,81 +788,81 @@ Authorization: Bearer <firebase-id-token>
 Content-Type: application/json
 
 {
-  "email": "usuario@ejemplo.com",
-  "name": "Juan Pérez"
+  "email": "user@example.com",
+  "name": "John Doe"
 }
 ```
 
-El `ExternalAuthId` se extrae automáticamente del token JWT (claim `sub`).
+The `ExternalAuthId` is automatically extracted from the JWT token (`sub` claim).
 
-### Bootstrap de Administrador
+### Admin Bootstrap
 
-Los administradores pueden crearse mediante:
+Administrators can be created via:
 
-1. **Seeding en inicio** - Configura `AdminUser:SeedOnStartup=true` con credenciales en variables de entorno
-2. **API de Admin** - Administradores existentes pueden crear nuevos admins vía `POST /api/admin/user`
+1. **Seeding on startup** — Set `AdminUser:SeedOnStartup=true` with credentials in environment variables
+2. **Admin API** — Existing administrators can create new admins via `POST /api/admin/user`
 
-**Ejemplo de configuración para seeding:**
+**Example seeding configuration:**
 
 ```json
 {
   "AdminUser": {
     "SeedOnStartup": true,
-    "Email": "admin@ejemplo.com",
-    "DisplayName": "Administrador",
-    "Password": "ContraseñaSegura123!"
+    "Email": "admin@example.com",
+    "DisplayName": "Administrator",
+    "Password": "SecurePassword123!"
   }
 }
 ```
 
-### Validación de Tokens JWT
+### JWT Token Validation
 
-La API valida automáticamente los tokens JWT usando la configuración de Firebase:
+The API automatically validates JWT tokens using the Firebase configuration:
 
 ```json
 {
   "Authentication": {
-    "Authority": "https://securetoken.google.com/<tu-project-id>",
-    "Audience": "<tu-project-id>"
+    "Authority": "https://securetoken.google.com/<your-project-id>",
+    "Audience": "<your-project-id>"
   }
 }
 ```
 
-**Claims importantes del JWT:**
-- `sub` - UID de Firebase (mapeado a ExternalAuthId)
-- `email` - Email del usuario
-- `email_verified` - Estado de verificación del email
-- `role` - Rol personalizado (User o Admin)
+**Important JWT claims:**
+- `sub` — Firebase UID (mapped to ExternalAuthId)
+- `email` — User email
+- `email_verified` — Email verification status
+- `role` — Custom role (User or Admin)
 
 ---
 
-## 🛡️ Características de Seguridad
+## 🛡️ Security Features
 
 
-Esta API está lista para producción con medidas de seguridad exhaustivas:
+This API is production-ready with exhaustive security measures:
 
-### Autenticación y Autorización
+### Authentication and Authorization
 
-- **JWT Authentication** - Validación de tokens basada en Firebase con autorización basada en roles
-- **Role-Based Access Control (RBAC)** - Separación clara entre usuarios anónimos, autenticados y administradores
-- **Token Validation** - Validación automática de firma, expiración y audiencia de tokens JWT
-- **Secure Claims Mapping** - Mapeo seguro de claims JWT a identidad de usuario interno
+- **JWT Authentication** — Firebase-based token validation with role-based authorization
+- **Role-Based Access Control (RBAC)** — Clear separation between anonymous, authenticated, and admin users
+- **Token Validation** — Automatic validation of JWT token signature, expiration, and audience
+- **Secure Claims Mapping** — Secure mapping of JWT claims to internal user identity
 
-### Rate Limiting (Limitación de Tasa)
+### Rate Limiting
 
-Dos políticas de rate limiting para proteger contra abuso:
+Two rate limiting policies to protect against abuse:
 
-#### Política Fixed (Fija)
-- **Límite:** 100 solicitudes por minuto
-- **Aplicado a:** Endpoints estándar de lectura y escritura
-- **Ventana:** 1 minuto deslizante
+#### Fixed Policy
+- **Limit:** 100 requests per minute
+- **Applied to:** Standard read and write endpoints
+- **Window:** 1-minute sliding window
 
-#### Política Strict (Estricta)
-- **Límite:** 10 solicitudes por minuto
-- **Aplicado a:** Operaciones sensibles (crear, actualizar, eliminar)
-- **Ventana:** 1 minuto deslizante
+#### Strict Policy
+- **Limit:** 10 requests per minute
+- **Applied to:** Sensitive operations (create, update, delete)
+- **Window:** 1-minute sliding window
 
-**Respuesta cuando se excede el límite:**
+**Response when limit is exceeded:**
 ```json
 {
   "status": 429,
@@ -876,77 +874,77 @@ Dos políticas de rate limiting para proteger contra abuso:
 }
 ```
 
-### Headers de Seguridad
+### Security Headers
 
-La API configura automáticamente headers de seguridad HTTP:
+The API automatically configures HTTP security headers:
 
-- **Content-Security-Policy (CSP)** - Previene ataques XSS
-- **Strict-Transport-Security (HSTS)** - Fuerza conexiones HTTPS
-- **X-Frame-Options** - Previene clickjacking
-- **X-Content-Type-Options** - Previene MIME sniffing
-- **Referrer-Policy** - Controla información de referrer
-- **Permissions-Policy** - Controla características del navegador
+- **Content-Security-Policy (CSP)** — Prevents XSS attacks
+- **Strict-Transport-Security (HSTS)** — Forces HTTPS connections
+- **X-Frame-Options** — Prevents clickjacking
+- **X-Content-Type-Options** — Prevents MIME sniffing
+- **Referrer-Policy** — Controls referrer information
+- **Permissions-Policy** — Controls browser features
 
 ### CORS (Cross-Origin Resource Sharing)
 
-Configuración CORS flexible para integración con frontend:
+Flexible CORS configuration for frontend integration:
 
 ```json
 {
   "ClientApp": {
-    "Origin": "https://tu-app.com"
+    "Origin": "https://your-app.com"
   }
 }
 ```
 
-**Características:**
-- Orígenes configurables por entorno
-- Soporte para múltiples orígenes en producción
-- Headers permitidos específicos
-- Métodos HTTP permitidos controlados
+**Features:**
+- Configurable origins per environment
+- Multiple origins supported in production
+- Specific allowed headers
+- Controlled allowed HTTP methods
 
-### Validación de Entrada
+### Input Validation
 
-Validación exhaustiva en múltiples niveles:
+Exhaustive validation at multiple levels:
 
-#### Validación de DTOs
-- Anotaciones de datos en DTOs
-- Validación automática en el pipeline de ASP.NET Core
-- Mensajes de error descriptivos
+#### DTO Validation
+- Data annotations on DTOs
+- Automatic validation in the ASP.NET Core pipeline
+- Descriptive error messages
 
-#### Validación de Dominio
-- Reglas de negocio en entidades
-- Objetos de valor con validación incorporada
-- Validación de invariantes del dominio
+#### Domain Validation
+- Business rules in entities
+- Value objects with built-in validation
+- Domain invariant validation
 
-#### Validación de Archivos
-- **Magic Byte Validation** - Previene spoofing de tipo de contenido
-- **Sanitización de nombres de archivo** - Previene vulnerabilidades de path traversal
-- **Validación de tamaño** - Límites definidos en constantes (máx 5MB para imágenes)
-- **Validación de tipo MIME** - Solo tipos permitidos (JPEG, PNG, GIF, WebP)
+#### File Validation
+- **Magic Byte Validation** — Prevents content type spoofing
+- **Filename Sanitization** — Prevents path traversal vulnerabilities
+- **Size Validation** — Limits defined in constants (max 5MB for images)
+- **MIME Type Validation** — Only allowed types (JPEG, PNG, GIF, WebP)
 
-### Soft Delete (Eliminación Suave)
+### Soft Delete
 
-Preservación de datos con registro de auditoría:
+Data preservation with audit log:
 
-- **Usuarios** - Marcados como eliminados, datos preservados
-- **Consejos** - Marcados como eliminados, relaciones preservadas
-- **Categorías** - Eliminación en cascada suave a consejos relacionados
-- **Auditoría** - Timestamps de eliminación para trazabilidad
+- **Users** — Marked as deleted, data preserved
+- **Tips** — Marked as deleted, relationships preserved
+- **Categories** — Cascade soft delete to related tips
+- **Audit** — Deletion timestamps for traceability
 
-### Logging y Auditoría
+### Logging and Auditing
 
-Sistema completo de logging con integración Sentry:
+Complete logging system with Sentry integration:
 
-- **Correlation IDs** - Trazabilidad de solicitudes en todos los logs
-- **Structured Logging** - Logs estructurados con contexto rico
-- **Security Events** - Logging de eventos de seguridad (autenticación, autorización)
-- **Error Tracking** - Captura automática de excepciones no manejadas
-- **Performance Monitoring** - Trazas de rendimiento con sample rate configurable
+- **Correlation IDs** — Request traceability across all logs
+- **Structured Logging** — Structured logs with rich context
+- **Security Events** — Logging of security events (authentication, authorization)
+- **Error Tracking** — Automatic capture of unhandled exceptions
+- **Performance Monitoring** — Performance traces with configurable sample rate
 
-### Manejo de Errores Estandarizado
+### Standardized Error Handling
 
-Respuestas de error consistentes siguiendo RFC 7807:
+Consistent error responses following RFC 7807:
 
 ```csharp
 {
@@ -957,63 +955,63 @@ Respuestas de error consistentes siguiendo RFC 7807:
   "instance": "/api/admin/tips",
   "correlationId": "abc123",
   "errors": {
-    "Title": ["El título del consejo debe tener al menos 5 caracteres"]
+    "Title": ["The tip title must be at least 5 characters long"]
   }
 }
 ```
 
-**Beneficios:**
-- Formato estándar de la industria
-- Información de error detallada sin exponer detalles de implementación
-- Correlation IDs para soporte y debugging
-- Respuestas consistentes en toda la API
+**Benefits:**
+- Industry-standard format
+- Detailed error information without exposing implementation details
+- Correlation IDs for support and debugging
+- Consistent responses across the entire API
 
-### Protección contra Vulnerabilidades Comunes
+### Protection Against Common Vulnerabilities
 
-- **SQL Injection** - No aplicable (NoSQL con Firestore)
-- **XSS (Cross-Site Scripting)** - Headers CSP y sanitización de entrada
-- **CSRF (Cross-Site Request Forgery)** - Tokens JWT stateless
-- **Path Traversal** - Sanitización de nombres de archivo
-- **Content Type Spoofing** - Validación de magic bytes
-- **Denial of Service** - Rate limiting y timeouts configurables
-- **Information Disclosure** - Mensajes de error genéricos en producción
+- **SQL Injection** — Not applicable (NoSQL with Firestore)
+- **XSS (Cross-Site Scripting)** — CSP headers and input sanitization
+- **CSRF (Cross-Site Request Forgery)** — Stateless JWT tokens
+- **Path Traversal** — Filename sanitization
+- **Content Type Spoofing** — Magic byte validation
+- **Denial of Service** — Rate limiting and configurable timeouts
+- **Information Disclosure** — Generic error messages in production
 
 ---
 
-## 🧪 Pruebas
+## 🧪 Testing
 
 
-El proyecto incluye cobertura de pruebas exhaustiva en todas las capas:
+The project includes exhaustive test coverage across all layers:
 
-### Proyectos de Pruebas
+### Test Projects
 
-- **Application.Tests** - Pruebas de casos de uso y lógica de dominio
-- **Infrastructure.Tests** - Pruebas de repositorios y acceso a datos con emulador Firestore
-- **WebAPI.Tests** - Pruebas de integración para controladores y middleware
+- **Application.Tests** — Use case and domain logic tests
+- **Infrastructure.Tests** — Repository and data access tests with Firestore emulator
+- **WebAPI.Tests** — Integration tests for controllers and middleware
 
-### Ejecutar Pruebas
+### Running Tests
 
 ```bash
-# Ejecutar todas las pruebas
+# Run all tests
 dotnet test lifehacking.slnx
 
-# Ejecutar pruebas de un proyecto específico
+# Run tests for a specific project
 dotnet test lifehacking/Tests/Application.Tests/Application.Tests.csproj
 dotnet test lifehacking/Tests/Infrastructure.Tests/Infrastructure.Tests.csproj
 dotnet test lifehacking/Tests/WebAPI.Tests/WebAPI.Tests.csproj
 
-# Ejecutar una prueba específica
+# Run a specific test
 dotnet test --filter "Name=CreateTip_ShouldReturnValidationError_WhenTitleIsTooShort"
 
-# Ejecutar todas las pruebas de una clase
+# Run all tests in a class
 dotnet test --filter "FullyQualifiedName~CreateTipUseCaseTests"
 ```
 
-### Enfoque de Pruebas
+### Testing Approach
 
 #### Microsoft Testing Platform
 
-El proyecto utiliza **Microsoft Testing Platform** como runner de pruebas moderno:
+The project uses **Microsoft Testing Platform** as the modern test runner:
 
 ```xml
 <PropertyGroup>
@@ -1021,14 +1019,14 @@ El proyecto utiliza **Microsoft Testing Platform** como runner de pruebas modern
 </PropertyGroup>
 ```
 
-**Beneficios:**
-- Rendimiento mejorado
-- Mejor integración con herramientas de desarrollo
-- Soporte para pruebas basadas en propiedades
+**Benefits:**
+- Improved performance
+- Better integration with development tools
+- Support for property-based testing
 
 #### xUnit Framework
 
-Todas las pruebas usan xUnit como framework de testing:
+All tests use xUnit as the testing framework:
 
 ```csharp
 [Fact]
@@ -1036,10 +1034,10 @@ public async Task CreateTip_ShouldReturnSuccess_WhenDataIsValid()
 {
     // Arrange
     var request = new CreateTipRequest { /* ... */ };
-    
+
     // Act
     var result = await _useCase.ExecuteAsync(request);
-    
+
     // Assert
     result.IsSuccess.Should().BeTrue();
 }
@@ -1047,53 +1045,53 @@ public async Task CreateTip_ShouldReturnSuccess_WhenDataIsValid()
 
 #### FluentAssertions
 
-Sintaxis de aserciones expresiva y legible:
+Expressive and readable assertion syntax:
 
 ```csharp
-// En lugar de
+// Instead of
 Assert.Equal(expected, actual);
 Assert.True(condition);
 
-// Usamos
+// We use
 actual.Should().Be(expected);
 condition.Should().BeTrue();
 result.Should().NotBeNull();
 list.Should().HaveCount(5);
 ```
 
-**Beneficios:**
-- Mensajes de error más descriptivos
-- Sintaxis más natural y legible
-- Mejor experiencia de desarrollo
+**Benefits:**
+- More descriptive error messages
+- More natural and readable syntax
+- Better developer experience
 
 
-#### Emulador de Firestore
+#### Firestore Emulator
 
-Las pruebas de infraestructura usan el emulador local de Firestore:
+Infrastructure tests use the local Firestore emulator:
 
 ```bash
-# Iniciar emulador
+# Start emulator
 firebase emulators:start --only firestore
 
-# Las pruebas se conectan automáticamente al emulador
+# Tests connect automatically to the emulator
 export FIRESTORE_EMULATOR_HOST=localhost:8080
 ```
 
-**Beneficios:**
-- Pruebas de integración realistas
-- Sin costos de Firebase
-- Datos aislados por ejecución de prueba
-- Velocidad de ejecución rápida
+**Benefits:**
+- Realistic integration tests
+- No Firebase costs
+- Isolated data per test run
+- Fast execution speed
 
-### Convención de Nombres de Pruebas
+### Test Naming Convention
 
-Todas las pruebas siguen el patrón:
+All tests follow the pattern:
 
 ```
-{NombreDelMétodo}_Should{HacerAlgo}_When{Condición}
+{MethodName}_Should{DoSomething}_When{Condition}
 ```
 
-**Ejemplos:**
+**Examples:**
 ```csharp
 CreateTip_ShouldReturnSuccess_WhenDataIsValid()
 CreateTip_ShouldReturnValidationError_WhenTitleIsTooShort()
@@ -1101,14 +1099,14 @@ GetUserById_ShouldReturnNotFound_WhenUserDoesNotExist()
 AddFavorite_ShouldBeIdempotent_WhenCalledMultipleTimes()
 ```
 
-**Beneficios:**
-- Nombres autodescriptivos
-- Fácil identificación de escenarios
-- Documentación viva del comportamiento
+**Benefits:**
+- Self-descriptive names
+- Easy identification of scenarios
+- Living documentation of behavior
 
-### Organización de Pruebas
+### Test Organization
 
-Las pruebas están organizadas por característica y capa:
+Tests are organized by feature and layer:
 
 ```
 Tests/
@@ -1148,14 +1146,14 @@ Tests/
         └── GlobalExceptionFilterTests.cs
 ```
 
-### Estrategias de Testing
+### Testing Strategies
 
-#### Pruebas Unitarias (Application.Tests)
+#### Unit Tests (Application.Tests)
 
-- Prueban casos de uso aislados
-- Usan mocks para dependencias (repositorios, servicios)
-- Verifican lógica de negocio y validación
-- Prueban comportamiento de caché
+- Test isolated use cases
+- Use mocks for dependencies (repositories, services)
+- Verify business logic and validation
+- Test cache behavior
 
 ```csharp
 [Fact]
@@ -1164,22 +1162,22 @@ public async Task GetDashboard_ShouldReturnCachedData_WhenCacheHit()
     // Arrange
     var cachedData = new DashboardResponse { /* ... */ };
     _cache.Set(CacheKeys.Dashboard, cachedData);
-    
+
     // Act
     var result = await _useCase.ExecuteAsync(new GetDashboardRequest());
-    
+
     // Assert
     result.IsSuccess.Should().BeTrue();
     _mockRepository.Verify(r => r.GetStatistics(), Times.Never);
 }
 ```
 
-#### Pruebas de Integración (Infrastructure.Tests)
+#### Integration Tests (Infrastructure.Tests)
 
-- Prueban repositorios con emulador Firestore
-- Verifican mapeo entre entidades y documentos
-- Prueban consultas y filtros complejos
-- Validan comportamiento de persistencia
+- Test repositories with Firestore emulator
+- Verify mapping between entities and documents
+- Test complex queries and filters
+- Validate persistence behavior
 
 ```csharp
 [Fact]
@@ -1187,10 +1185,10 @@ public async Task CreateUser_ShouldPersistToFirestore_WhenDataIsValid()
 {
     // Arrange
     var user = User.Create(/* ... */);
-    
+
     // Act
     await _repository.CreateAsync(user);
-    
+
     // Assert
     var retrieved = await _repository.GetByIdAsync(user.Id);
     retrieved.Should().NotBeNull();
@@ -1198,12 +1196,12 @@ public async Task CreateUser_ShouldPersistToFirestore_WhenDataIsValid()
 }
 ```
 
-#### Pruebas de API (WebAPI.Tests)
+#### API Tests (WebAPI.Tests)
 
-- Prueban endpoints HTTP completos
-- Verifican códigos de estado y respuestas
-- Validan autenticación y autorización
-- Prueban manejo de errores
+- Test complete HTTP endpoints
+- Verify status codes and responses
+- Validate authentication and authorization
+- Test error handling
 
 ```csharp
 [Fact]
@@ -1211,25 +1209,25 @@ public async Task CreateTip_ShouldReturn401_WhenNotAuthenticated()
 {
     // Arrange
     var request = new CreateTipRequest { /* ... */ };
-    
+
     // Act
     var response = await _client.PostAsJsonAsync("/api/admin/tips", request);
-    
+
     // Assert
     response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 }
 ```
 
-### Cobertura de Pruebas
+### Test Coverage
 
-El proyecto mantiene alta cobertura de pruebas:
+The project maintains high test coverage:
 
-- **Casos de uso:** >90% de cobertura
-- **Repositorios:** >85% de cobertura
-- **Controladores:** >80% de cobertura
-- **Lógica de dominio:** 100% de cobertura
+- **Use cases:** >90% coverage
+- **Repositories:** >85% coverage
+- **Controllers:** >80% coverage
+- **Domain logic:** 100% coverage
 
-Para generar reporte de cobertura:
+To generate a coverage report:
 
 ```bash
 dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
@@ -1237,52 +1235,52 @@ dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 
 ---
 
-## 📚 Guías de Desarrollo
+## 📚 Development Guidelines
 
 
-### Para Agentes de IA y Desarrolladores
+### For AI Agents and Developers
 
-El proyecto incluye documentación exhaustiva para facilitar el desarrollo:
+The project includes exhaustive documentation to facilitate development:
 
-- **AGENTS.md** - Guía completa para agentes de IA trabajando con este código
-- **ADRs/** - Architecture Decision Records documentando decisiones técnicas clave
-- **docs/MVP.md** - Requisitos del producto y alcance del MVP
-- **docs/AWS-S3-Setup-Guide.md** - Guía detallada de configuración de AWS S3
+- **AGENTS.md** — Complete guide for AI agents working with this code
+- **ADRs/** — Architecture Decision Records documenting key technical decisions
+- **docs/MVP.md** — Product requirements and MVP scope
+- **docs/AWS-S3-Setup-Guide.md** — Detailed AWS S3 configuration guide
 
-### Estándares de Código
+### Code Standards
 
-#### Arquitectura Limpia
+#### Clean Architecture
 
-- Mantén dependencias estrictas entre capas
-- Domain no debe depender de nada
-- Application solo depende de Domain
-- Infrastructure implementa interfaces de Application
-- WebAPI es la capa de composición
+- Maintain strict dependencies between layers
+- Domain must not depend on anything
+- Application only depends on Domain
+- Infrastructure implements Application interfaces
+- WebAPI is the composition layer
 
-#### Diseño Dirigido por Dominio (DDD)
+#### Domain-Driven Design (DDD)
 
-- Usa entidades ricas con comportamiento
-- Encapsula lógica de negocio en el dominio
-- Usa objetos de valor para conceptos sin identidad
-- Mantén agregados consistentes
+- Use rich entities with behavior
+- Encapsulate business logic in the domain
+- Use value objects for concepts without identity
+- Keep aggregates consistent
 
-#### Sin Valores Mágicos
+#### No Magic Values
 
 ```csharp
-// ❌ Incorrecto
+// ❌ Wrong
 if (file.Length > 5242880) { /* ... */ }
 
-// ✅ Correcto
+// ✅ Correct
 if (file.Length > ImageConstants.MaxFileSizeInBytes) { /* ... */ }
 ```
 
-**Reglas:**
-- Define constantes con nombres significativos
-- Centraliza valores reutilizables
-- Usa enums para conjuntos de valores relacionados
-- Nombres autodescriptivos que expresen intención
+**Rules:**
+- Define constants with meaningful names
+- Centralize reusable values
+- Use enums for related value sets
+- Self-descriptive names that express intent
 
-#### Validación Exhaustiva
+#### Exhaustive Validation
 
 ```csharp
 public class CreateTipRequest
@@ -1290,21 +1288,21 @@ public class CreateTipRequest
     [Required]
     [StringLength(200, MinimumLength = 5)]
     public string Title { get; set; }
-    
+
     [Required]
     [StringLength(2000, MinimumLength = 10)]
     public string Description { get; set; }
-    
+
     [Required]
     [MinLength(1)]
     public List<TipStepRequest> Steps { get; set; }
 }
 ```
 
-#### Patrón Result para Manejo de Errores
+#### Result Pattern for Error Handling
 
 ```csharp
-// En lugar de lanzar excepciones
+// Instead of throwing exceptions
 public async Task<Result<TipDetailResponse, AppException>> ExecuteAsync(
     CreateTipRequest request)
 {
@@ -1312,15 +1310,15 @@ public async Task<Result<TipDetailResponse, AppException>> ExecuteAsync(
     {
         return new NotFoundException("Category not found");
     }
-    
+
     var tip = Tip.Create(/* ... */);
     await _repository.CreateAsync(tip);
-    
+
     return tip.ToDetailResponse();
 }
 ```
 
-#### Soft Delete para Preservación de Datos
+#### Soft Delete for Data Preservation
 
 ```csharp
 public class User
@@ -1329,37 +1327,37 @@ public class User
     public string Email { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? DeletedAt { get; private set; }
-    
+
     public void Delete()
     {
         DeletedAt = DateTime.UtcNow;
     }
-    
+
     public bool IsDeleted => DeletedAt.HasValue;
 }
 ```
 
-### Convenciones de Commits
+### Commit Conventions
 
-Sigue [Conventional Commits](https://www.conventionalcommits.org/):
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
-<tipo>: <descripción>
+<type>: <description>
 
-<cuerpo opcional>
+<optional body>
 
-<footer opcional>
+<optional footer>
 ```
 
-**Tipos permitidos:**
-- `feat` - Nueva funcionalidad
-- `fix` - Corrección de bug
-- `chore` - Tareas de mantenimiento
-- `refactor` - Refactorización de código
-- `docs` - Cambios en documentación
-- `test` - Agregar o modificar pruebas
+**Allowed types:**
+- `feat` — New feature
+- `fix` — Bug fix
+- `chore` — Maintenance tasks
+- `refactor` — Code refactoring
+- `docs` — Documentation changes
+- `test` — Adding or modifying tests
 
-**Ejemplos:**
+**Examples:**
 ```
 feat: add user favorites merge endpoint
 
@@ -1378,44 +1376,45 @@ causing stale data to be served.
 refs: WT-5678
 ```
 
-### Estrategia de Branching
+### Branching Strategy
 
-- **Ramas de características:** `issue-<ticket-id>-<descripcion-corta>`
-- **Sin commits directos** a la rama principal
-- **Pull requests requeridos** para todos los cambios
-- **Revisión de código** antes de merge
+- **Feature branches:** `issue-<ticket-id>-<short-description>`
+- **No direct commits** to the main branch
+- **Pull requests required** for all changes
+- **Code review** before merging
 
-**Ejemplo:**
+**Example:**
 ```bash
-# Crear rama desde issue
+# Create branch from issue
 git checkout -b issue-123-add-favorites-merge
 
-# Hacer commits
+# Make commits
 git commit -m "feat: add merge favorites use case"
 git commit -m "test: add merge favorites tests"
 
-# Push y crear PR
+# Push and create PR
 git push origin issue-123-add-favorites-merge
 ```
+
 ---
 
 ## 🗺️ Roadmap
 
-Características planificadas para futuras versiones:
+Planned features for future versions:
 
 ### v2.0
-- [ ] Búsqueda de texto completo con Algolia o Elasticsearch
-- [ ] Sistema de comentarios y valoraciones de consejos
-- [ ] Notificaciones push para nuevos consejos
+- [ ] Full-text search with Algolia or Elasticsearch
+- [ ] Comments and tip rating system
+- [ ] Push notifications for new tips
 
 ### v2.1
-- [ ] Soporte multiidioma para consejos
-- [ ] Recomendaciones personalizadas basadas en IA
-- [ ] Integración con redes sociales para compartir
-- [ ] Estadísticas avanzadas para administradores
+- [ ] Multi-language support for tips
+- [ ] AI-based personalized recommendations
+- [ ] Social media sharing integration
+- [ ] Advanced statistics for administrators
 
 ### v3.0
-- [ ] Aplicación móvil nativa (iOS y Android)
-- [ ] Modo offline con sincronización
-- [ ] Gamificación (badges, logros, niveles)
-- [ ] Comunidad de usuarios con perfiles públicos
+- [ ] Native mobile application (iOS and Android)
+- [ ] Offline mode with synchronization
+- [ ] Gamification (badges, achievements, levels)
+- [ ] User community with public profiles
