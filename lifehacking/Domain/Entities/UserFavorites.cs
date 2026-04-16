@@ -45,7 +45,7 @@ public sealed class UserFavorites
 
     /// <summary>
     /// Gets the composite key for this favorite in the format "userId_tipId".
-    /// This is used for Firestore document identification.
+    /// This is used as the composite database key identifier.
     /// </summary>
     public string GetCompositeKey() => $"{UserId.Value}_{TipId.Value}";
 }
