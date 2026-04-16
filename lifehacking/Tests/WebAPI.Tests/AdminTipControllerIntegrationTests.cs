@@ -14,7 +14,7 @@ namespace WebAPI.Tests;
 /// <summary>
 /// Integration tests for AdminTipController.
 /// Tests admin-only tip management endpoints including authorization, validation, and security event logging.
-/// Uses Firestore emulator for data storage and CustomWebApplicationFactory for test infrastructure.
+/// Uses PostgreSQL Testcontainer for data storage and CustomWebApplicationFactory for test infrastructure.
 /// </summary>
 public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
 {
@@ -565,7 +565,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
 
         // Verify persistence
         var persistedTip = await tipRepository.GetByIdAsync(Domain.ValueObject.TipId.Create(tipResponse.Id));
-        persistedTip.Should().NotBeNull("the tip should be persisted to Firestore");
+        persistedTip.Should().NotBeNull("the tip should be persisted to PostgreSQL");
         persistedTip!.Image.Should().NotBeNull("the persisted tip should have image metadata");
         persistedTip.Image!.ImageUrl.Should().Be(imageDto.ImageUrl);
     }
@@ -602,7 +602,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
 
         // Verify persistence
         var persistedTip = await tipRepository.GetByIdAsync(Domain.ValueObject.TipId.Create(tipResponse.Id));
-        persistedTip.Should().NotBeNull("the tip should be persisted to Firestore");
+        persistedTip.Should().NotBeNull("the tip should be persisted to PostgreSQL");
         persistedTip!.Image.Should().BeNull("the persisted tip should have null image");
     }
 
@@ -766,7 +766,7 @@ public sealed class AdminTipControllerIntegrationTests : FirestoreWebApiTestBase
 
         // Verify persistence
         var persistedTip = await tipRepository.GetByIdAsync(Domain.ValueObject.TipId.Create(tipResponse.Id));
-        persistedTip.Should().NotBeNull("the tip should be persisted to Firestore");
+        persistedTip.Should().NotBeNull("the tip should be persisted to PostgreSQL");
         persistedTip!.Image.Should().BeNull("the persisted tip should have null image");
     }
 

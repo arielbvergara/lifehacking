@@ -1,7 +1,8 @@
 using Application;
 using Application.Interfaces;
-using Infrastructure.Configuration;
+using Infrastructure.Data;
 using Infrastructure.Logging;
+using Microsoft.EntityFrameworkCore;
 using WebAPI.Authentication;
 using WebAPI.Configuration;
 using WebAPI.Filters;
@@ -62,11 +63,6 @@ public class Program
             builder.Configuration.GetSection(AdminUserOptions.SectionName)
         );
 
-        // Firebase database configuration (used by infrastructure persistence components)
-        builder.Services.Configure<FirebaseDatabaseOptions>(
-            builder.Configuration.GetSection(FirebaseDatabaseOptions.SectionName)
-        );
-
         builder.Services.AddSingleton<IFirebaseAdminClient, FirebaseAdminClient>();
         builder.Services.AddSingleton<IIdentityProviderService>(sp => sp.GetRequiredService<IFirebaseAdminClient>());
         builder.Services.AddScoped<IAdminUserBootstrapper, AdminUserBootstrapper>();
@@ -108,7 +104,14 @@ public class Program
 
         app.MapControllers();
 
-        // Admin user seeding (Firebase-based persistence only; no EF Core migrations)
+        // Apply EF Core migrations on startup (idempotent — safe to run every startup)
+        if (!app.Environment.IsEnvironment("Testing"))
+        {
+            using var scope = app.Services.CreateScope();
+            scope.ServiceProvider.GetRequiredService<LifehackingDbContext>().Database.Migrate();
+        }
+
+        // Admin user seeding
         app.UseAdminUserSeeding();
 
         // Lightweight health endpoint for integration and uptime checks.

@@ -369,9 +369,4 @@ public sealed class FavoritesControllerMergeTests : FirestoreWebApiTestBase
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
-    private IFavoritesRepository GetFavoritesRepository()
-    {
-        using var scope = Factory.Services.CreateScope();
-        return scope.ServiceProvider.GetRequiredService<Application.Interfaces.IFavoritesRepository>();
-    }
 }

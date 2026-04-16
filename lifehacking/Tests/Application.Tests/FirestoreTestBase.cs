@@ -1,108 +1,77 @@
 using Application.Interfaces;
-using Google.Cloud.Firestore;
-using Grpc.Core;
-using Infrastructure.Data.Firestore;
+using Infrastructure.Data;
 using Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using Testcontainers.PostgreSql;
+using Xunit;
 
 namespace Application.Tests;
 
 /// <summary>
-/// Base class for application layer tests that use Firestore emulator.
-/// Provides setup and cleanup for isolated test databases.
+/// Base class for application layer integration tests backed by a real PostgreSQL container.
 /// </summary>
-public abstract class FirestoreTestBase : IDisposable
+[Collection("AppPostgresCollection")]
+public abstract class FirestoreTestBase : IAsyncLifetime
 {
-    private FirestoreDb FirestoreDb { get; set; }
-    private ICollectionNameProvider CollectionNameProvider { get; set; }
-    protected IUserRepository UserRepository { get; private set; }
-    protected ITipRepository TipRepository { get; private set; }
-    protected ICategoryRepository CategoryRepository { get; private set; }
+    private readonly AppPostgresFixture _fixture;
+    private LifehackingDbContext _db = null!;
 
-    protected FirestoreTestBase()
+    protected IUserRepository UserRepository { get; private set; } = null!;
+    protected ITipRepository TipRepository { get; private set; } = null!;
+    protected ICategoryRepository CategoryRepository { get; private set; } = null!;
+
+    protected FirestoreTestBase(AppPostgresFixture fixture)
     {
-        var testProjectId =
-            // Use consistent fake project ID for emulator testing
-            "demo-test";
-
-        // Ensure emulator host is set BEFORE creating FirestoreDb
-        Environment.SetEnvironmentVariable("FIRESTORE_EMULATOR_HOST", "127.0.0.1:8080");
-
-        // Clear any existing credentials - emulator doesn't need them
-        Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", null);
-
-        // Create Firestore instance for emulator testing with proper configuration
-        var builder = new FirestoreDbBuilder
-        {
-            ProjectId = testProjectId,
-            Endpoint = "127.0.0.1:8080",
-            ChannelCredentials = ChannelCredentials.Insecure
-        };
-        FirestoreDb = builder.Build();
-
-        // Create collection name provider for test isolation
-        CollectionNameProvider = new TestCollectionNameProvider();
-
-        // Create data stores with collection name provider
-        // Note: UserDataStore will be updated in Task 8
-        var userDataStore = new FirestoreUserDataStore(FirestoreDb, CollectionNameProvider);
-        var tipDataStore = new FirestoreTipDataStore(FirestoreDb, CollectionNameProvider);
-        var categoryDataStore = new FirestoreCategoryDataStore(FirestoreDb, CollectionNameProvider);
-
-        // Create repositories
-        UserRepository = new UserRepository(userDataStore);
-        TipRepository = new TipRepository(tipDataStore);
-        CategoryRepository = new CategoryRepository(categoryDataStore);
+        _fixture = fixture;
     }
 
-    /// <summary>
-    /// Cleans up test data by clearing all collections in the test database.
-    /// </summary>
-    protected async Task CleanupTestDataAsync()
+    public async Task InitializeAsync()
     {
-        try
-        {
-            // Get all collections and delete their documents
-            var collections = new[] { "users", "tips", "categories" };
+        var options = new DbContextOptionsBuilder<LifehackingDbContext>()
+            .UseNpgsql(_fixture.ConnectionString)
+            .Options;
 
-            foreach (var collectionName in collections)
-            {
-                var collection = FirestoreDb.Collection(collectionName);
-                var snapshot = await collection.GetSnapshotAsync();
+        _db = new LifehackingDbContext(options);
+        await _db.Database.EnsureCreatedAsync();
+        await TruncateTablesAsync();
 
-                foreach (var document in snapshot.Documents)
-                {
-                    await document.Reference.DeleteAsync();
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            // Log but don't fail tests due to cleanup issues
-            Console.WriteLine($"Warning: Failed to cleanup test data: {ex.Message}");
-        }
+        UserRepository = new UserRepository(_db);
+        TipRepository = new TipRepository(_db);
+        CategoryRepository = new CategoryRepository(_db);
     }
 
-    /// <summary>
-    /// Verifies that the emulator is running and accessible.
-    /// </summary>
-    protected static async Task<bool> IsEmulatorRunningAsync()
+    public async Task DisposeAsync()
     {
-        try
-        {
-            using var httpClient = new HttpClient();
-            httpClient.Timeout = TimeSpan.FromSeconds(2);
-            var response = await httpClient.GetAsync("http://127.0.0.1:8080");
-            return response.IsSuccessStatusCode;
-        }
-        catch
-        {
-            return false;
-        }
+        await _db.DisposeAsync();
     }
 
-    public virtual void Dispose()
+    private async Task TruncateTablesAsync()
     {
-        // No cleanup needed - each test has its own collections due to collection namespacing
-        GC.SuppressFinalize(this);
+        await using var conn = new NpgsqlConnection(_fixture.ConnectionString);
+        await conn.OpenAsync();
+        await using var cmd = conn.CreateCommand();
+        cmd.CommandText = """
+            TRUNCATE TABLE user_favorites, tips, categories, users RESTART IDENTITY CASCADE;
+            """;
+        await cmd.ExecuteNonQueryAsync();
     }
 }
+
+public sealed class AppPostgresFixture : IAsyncLifetime
+{
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:17-alpine")
+        .WithDatabase("lifehacking_app_test")
+        .WithUsername("testuser")
+        .WithPassword("testpassword")
+        .Build();
+
+    public string ConnectionString => _container.GetConnectionString();
+
+    public async Task InitializeAsync() => await _container.StartAsync();
+
+    public async Task DisposeAsync() => await _container.DisposeAsync();
+}
+
+[CollectionDefinition("AppPostgresCollection")]
+public sealed class AppPostgresCollection : ICollectionFixture<AppPostgresFixture> { }

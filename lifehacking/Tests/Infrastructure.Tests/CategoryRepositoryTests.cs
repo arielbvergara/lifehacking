@@ -6,13 +6,8 @@ using Xunit;
 namespace Infrastructure.Tests;
 
 [Trait("Category", "Integration")]
-public sealed class CategoryRepositoryTests : FirestoreTestBase
+public sealed class CategoryRepositoryTests(PostgresFixture fixture) : PostgresTestBase(fixture)
 {
-    public CategoryRepositoryTests()
-    {
-        // Clean up any existing test data before each test
-        CleanupTestDataAsync().Wait();
-    }
     [Fact]
     public async Task AddAsync_ShouldPersistCategory_WhenValidCategoryProvided()
     {

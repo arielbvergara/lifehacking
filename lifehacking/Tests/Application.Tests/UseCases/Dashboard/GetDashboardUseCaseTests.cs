@@ -97,23 +97,23 @@ public sealed class GetDashboardUseCaseTests
 
         // Users assertions - verify totals and that new properties exist
         result.Value!.Users.Total.Should().Be(8);
-        result.Value.Users.ThisDay.Should().BeGreaterOrEqualTo(1);
-        result.Value.Users.LastDay.Should().BeGreaterOrEqualTo(0);
-        result.Value.Users.ThisWeek.Should().BeGreaterOrEqualTo(1);
-        result.Value.Users.LastWeek.Should().BeGreaterOrEqualTo(0);
-        result.Value.Users.ThisMonth.Should().BeGreaterOrEqualTo(1);
-        result.Value.Users.LastMonth.Should().BeGreaterOrEqualTo(0);
-        result.Value.Users.ThisYear.Should().BeGreaterOrEqualTo(1);
+        result.Value.Users.ThisDay.Should().BeGreaterThanOrEqualTo(1);
+        result.Value.Users.LastDay.Should().BeGreaterThanOrEqualTo(0);
+        result.Value.Users.ThisWeek.Should().BeGreaterThanOrEqualTo(1);
+        result.Value.Users.LastWeek.Should().BeGreaterThanOrEqualTo(0);
+        result.Value.Users.ThisMonth.Should().BeGreaterThanOrEqualTo(1);
+        result.Value.Users.LastMonth.Should().BeGreaterThanOrEqualTo(0);
+        result.Value.Users.ThisYear.Should().BeGreaterThanOrEqualTo(1);
         result.Value.Users.LastYear.Should().Be(1);
 
         // Categories assertions
         result.Value.Categories.Total.Should().Be(3);
-        result.Value.Categories.ThisMonth.Should().BeGreaterOrEqualTo(1);
+        result.Value.Categories.ThisMonth.Should().BeGreaterThanOrEqualTo(1);
 
         // Tips assertions
         result.Value.Tips.Total.Should().Be(5);
-        result.Value.Tips.ThisDay.Should().BeGreaterOrEqualTo(1);
-        result.Value.Tips.ThisMonth.Should().BeGreaterOrEqualTo(1);
+        result.Value.Tips.ThisDay.Should().BeGreaterThanOrEqualTo(1);
+        result.Value.Tips.ThisMonth.Should().BeGreaterThanOrEqualTo(1);
     }
 
     [Fact]
@@ -299,21 +299,21 @@ public sealed class GetDashboardUseCaseTests
         result.Value!.Users.Total.Should().Be(3);
 
         // Verify all time period properties are present and have valid values (>= 0)
-        result.Value.Users.ThisDay.Should().BeGreaterOrEqualTo(0);
-        result.Value.Users.LastDay.Should().BeGreaterOrEqualTo(0);
-        result.Value.Users.ThisWeek.Should().BeGreaterOrEqualTo(0);
-        result.Value.Users.LastWeek.Should().BeGreaterOrEqualTo(0);
-        result.Value.Users.ThisMonth.Should().BeGreaterOrEqualTo(0);
-        result.Value.Users.LastMonth.Should().BeGreaterOrEqualTo(0);
-        result.Value.Users.ThisYear.Should().BeGreaterOrEqualTo(0);
-        result.Value.Users.LastYear.Should().BeGreaterOrEqualTo(0);
+        result.Value.Users.ThisDay.Should().BeGreaterThanOrEqualTo(0);
+        result.Value.Users.LastDay.Should().BeGreaterThanOrEqualTo(0);
+        result.Value.Users.ThisWeek.Should().BeGreaterThanOrEqualTo(0);
+        result.Value.Users.LastWeek.Should().BeGreaterThanOrEqualTo(0);
+        result.Value.Users.ThisMonth.Should().BeGreaterThanOrEqualTo(0);
+        result.Value.Users.LastMonth.Should().BeGreaterThanOrEqualTo(0);
+        result.Value.Users.ThisYear.Should().BeGreaterThanOrEqualTo(0);
+        result.Value.Users.LastYear.Should().BeGreaterThanOrEqualTo(0);
 
         // Verify the sum of all periods doesn't exceed total
         var allPeriods = result.Value.Users.ThisDay + result.Value.Users.LastDay +
                         result.Value.Users.ThisWeek + result.Value.Users.LastWeek +
                         result.Value.Users.ThisMonth + result.Value.Users.LastMonth +
                         result.Value.Users.ThisYear + result.Value.Users.LastYear;
-        allPeriods.Should().BeGreaterOrEqualTo(0, "all period counts should be non-negative");
+        allPeriods.Should().BeGreaterThanOrEqualTo(0, "all period counts should be non-negative");
     }
 
     [Fact]

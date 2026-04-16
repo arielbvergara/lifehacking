@@ -8,19 +8,14 @@ using Xunit;
 namespace Infrastructure.Tests;
 
 [Trait("Category", "Integration")]
-public sealed class UserRepositoryTests : FirestoreTestBase
+public sealed class UserRepositoryTests(PostgresFixture fixture) : PostgresTestBase(fixture)
 {
-    public UserRepositoryTests()
-    {
-        // Clean up any existing test data before each test
-        CleanupTestDataAsync().Wait();
-    }
 
     [Fact]
-    public async Task AddAsync_ShouldPersistAndRetrieveUser_WhenUsingFirestoreEmulator()
+    public async Task AddAsync_ShouldPersistAndRetrieveUser_WhenUsingPostgres()
     {
         var email = Email.Create($"user-{Guid.NewGuid():N}@example.com");
-        var name = UserName.Create("Firestore Test User");
+        var name = UserName.Create("Postgres Test User");
         var externalAuthId = ExternalAuthIdentifier.Create($"external-{Guid.NewGuid():N}");
 
         var user = User.Create(email, name, externalAuthId);
@@ -41,7 +36,7 @@ public sealed class UserRepositoryTests : FirestoreTestBase
     {
         // Use a unique prefix so this test remains stable even if the emulator
         // contains documents from previous runs.
-        var emailPrefix = $"firestore-paging-{Guid.NewGuid():N}";
+        var emailPrefix = $"pg-paging-{Guid.NewGuid():N}";
 
         for (var index = 0; index < 15; index++)
         {
@@ -69,7 +64,7 @@ public sealed class UserRepositoryTests : FirestoreTestBase
     }
 
     [Fact]
-    public async Task DeleteAsync_ShouldSoftDeleteUser_WhenUsingFirestoreEmulator()
+    public async Task DeleteAsync_ShouldSoftDeleteUser_WhenUsingPostgres()
     {
         var email = Email.Create($"softdelete-{Guid.NewGuid():N}@example.com");
         var name = UserName.Create("Soft Delete User");

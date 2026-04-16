@@ -18,23 +18,24 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: lifehacking
+          POSTGRES_USER: appuser
+          POSTGRES_PASSWORD: devpassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U appuser -d lifehacking"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 20
-
-      - name: Setup Java (required by Firebase emulators)
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: 21
-
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
@@ -49,15 +50,10 @@ jobs:
       - name: Build solution
         run: dotnet build $SOLUTION_FILE --configuration $BUILD_CONFIGURATION --no-restore
 
-      - name: Run tests with Firebase emulator
+      - name: Run tests
         env:
-          FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
-        run: |
-          firebase emulators:exec \
-            "dotnet test $SOLUTION_FILE --configuration $BUILD_CONFIGURATION --no-build --logger trx --results-directory $TEST_RESULTS_DIR" \
-            --only firestore \
-            --config firebase.test.json \
-            --project demo-test
+          ConnectionStrings__DbContext: "Host=localhost;Port=5432;Database=lifehacking;Username=appuser;Password=devpassword;"
+        run: dotnet test $SOLUTION_FILE --configuration $BUILD_CONFIGURATION --no-build --logger trx --results-directory $TEST_RESULTS_DIR
 
       - name: Upload test results
         if: always()
