@@ -44,16 +44,11 @@ public class GetDashboardUseCase(
             var (thisYearStart, thisYearEnd) = GetCurrentYearRange(now);
             var (lastYearStart, lastYearEnd) = GetPreviousYearRange(now);
 
-            // Fetch all entities in parallel
-            var usersTask = _userRepository.GetAllActiveAsync(cancellationToken);
-            var categoriesTask = _categoryRepository.GetAllAsync(cancellationToken);
-            var tipsTask = _tipRepository.GetAllAsync(cancellationToken);
-
-            await Task.WhenAll(usersTask, categoriesTask, tipsTask);
-
-            var users = await usersTask;
-            var categories = await categoriesTask;
-            var tips = await tipsTask;
+            // Fetch all entities sequentially — EF Core's DbContext is not thread-safe,
+            // so concurrent queries on the same scoped instance would throw.
+            var users = await _userRepository.GetAllActiveAsync(cancellationToken);
+            var categories = await _categoryRepository.GetAllAsync(cancellationToken);
+            var tips = await _tipRepository.GetAllAsync(cancellationToken);
 
             // Calculate statistics
             var userStats = CalculateStatistics(

@@ -6,9 +6,12 @@ namespace WebAPI.Tests;
 
 /// <summary>
 /// Base class for WebAPI tests that need to interact with repositories via the test application factory.
+/// A single DI scope is created for the lifetime of each test instance, ensuring the
+/// EF Core DbContext is not disposed prematurely between helper calls.
 /// </summary>
-public abstract class FirestoreWebApiTestBase : IClassFixture<CustomWebApplicationFactory>
+public abstract class FirestoreWebApiTestBase : IClassFixture<CustomWebApplicationFactory>, IDisposable
 {
+    private readonly IServiceScope _scope;
     protected readonly CustomWebApplicationFactory Factory;
     protected readonly HttpClient Client;
 
@@ -16,23 +19,20 @@ public abstract class FirestoreWebApiTestBase : IClassFixture<CustomWebApplicati
     {
         Factory = factory;
         Client = factory.CreateClient();
+        _scope = factory.Services.CreateScope();
     }
 
     protected IUserRepository GetUserRepository()
-    {
-        using var scope = Factory.Services.CreateScope();
-        return scope.ServiceProvider.GetRequiredService<IUserRepository>();
-    }
+        => _scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
     protected ITipRepository GetTipRepository()
-    {
-        using var scope = Factory.Services.CreateScope();
-        return scope.ServiceProvider.GetRequiredService<ITipRepository>();
-    }
+        => _scope.ServiceProvider.GetRequiredService<ITipRepository>();
 
     protected ICategoryRepository GetCategoryRepository()
-    {
-        using var scope = Factory.Services.CreateScope();
-        return scope.ServiceProvider.GetRequiredService<ICategoryRepository>();
-    }
+        => _scope.ServiceProvider.GetRequiredService<ICategoryRepository>();
+
+    protected IFavoritesRepository GetFavoritesRepository()
+        => _scope.ServiceProvider.GetRequiredService<IFavoritesRepository>();
+
+    public void Dispose() => _scope.Dispose();
 }

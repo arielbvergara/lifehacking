@@ -39,14 +39,15 @@ public class GetCategoriesUseCase(
         {
             var categories = await _categoryRepository.GetAllAsync(cancellationToken);
 
-            // Execute tip count queries concurrently for better performance
-            var categoryResponseTasks = categories.Select(async category =>
+            // Execute tip count queries sequentially — EF Core's DbContext is not thread-safe,
+            // so concurrent queries on the same scoped instance would throw. The result is cached
+            // for 1 hour so the N-query cost is amortized.
+            var categoryResponses = new List<CategoryResponse>(categories.Count);
+            foreach (var category in categories)
             {
                 var tipCount = await _tipRepository.CountByCategoryAsync(category.Id, cancellationToken);
-                return category.ToCategoryResponse(tipCount);
-            });
-
-            var categoryResponses = await Task.WhenAll(categoryResponseTasks);
+                categoryResponses.Add(category.ToCategoryResponse(tipCount));
+            }
 
             var response = new CategoryListResponse(categoryResponses.ToList());
 

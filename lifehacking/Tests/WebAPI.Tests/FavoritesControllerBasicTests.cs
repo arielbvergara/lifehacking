@@ -233,9 +233,4 @@ public sealed class FavoritesControllerBasicTests : FirestoreWebApiTestBase
             "request with non-existent user should return 404 Not Found");
     }
 
-    private IFavoritesRepository GetFavoritesRepository()
-    {
-        using var scope = Factory.Services.CreateScope();
-        return scope.ServiceProvider.GetRequiredService<IFavoritesRepository>();
-    }
 }
