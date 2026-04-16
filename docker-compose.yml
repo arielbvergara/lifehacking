@@ -1,11 +1,34 @@
 services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: lifehacking
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: devpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser -d lifehacking"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   webapi:
     build: .
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DbContext: "Host=postgres;Port=5432;Database=lifehacking;Username=appuser;Password=devpassword;"
       ClientApp__Origin: "http://localhost:3000"
       GOOGLE_APPLICATION_CREDENTIALS: /app/lifehacking-firebase-adminsdk.json
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
       - ~/secrets/lifehacking-firebase-adminsdk.json:/app/lifehacking-firebase-adminsdk.json
     ports:
       - "8080:8080"
+
+volumes:
+  postgres_data:
