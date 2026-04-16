@@ -8,19 +8,15 @@ using Xunit;
 namespace Infrastructure.Tests;
 
 [Trait("Category", "Integration")]
-public sealed class TipRepositoryTests : FirestoreTestBase
+public sealed class TipRepositoryTests(PostgresFixture fixture) : PostgresTestBase(fixture)
 {
-    private readonly Category _testCategory;
+    private Category _testCategory = null!;
 
-    public TipRepositoryTests()
+    public override async Task InitializeAsync()
     {
-        // Clean up any existing test data before each test
-        CleanupTestDataAsync().Wait();
-
-        // Create a test category first
+        await base.InitializeAsync();
         _testCategory = Category.Create("Test Category");
-        // Add the category to the repository so it exists for tip creation
-        CategoryRepository.AddAsync(_testCategory).Wait();
+        await CategoryRepository.AddAsync(_testCategory);
     }
 
     [Fact]
@@ -444,7 +440,7 @@ public sealed class TipRepositoryTests : FirestoreTestBase
     [Fact]
     public async Task GetByIdsAsync_ShouldHandleLargeBatches_WhenMoreThan10IdsProvided()
     {
-        // Arrange - Create 15 tips to test batching (Firestore WhereIn max is 10)
+        // Arrange - Create 15 tips; PostgreSQL ANY() handles any count in one query
         var tips = new List<Tip>();
         for (int i = 0; i < 15; i++)
         {

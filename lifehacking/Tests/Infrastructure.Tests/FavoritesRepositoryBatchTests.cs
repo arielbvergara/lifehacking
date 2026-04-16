@@ -6,28 +6,27 @@ using Xunit;
 namespace Infrastructure.Tests;
 
 [Trait("Category", "Integration")]
-public sealed class FavoritesRepositoryBatchTests : FirestoreTestBase
+public sealed class FavoritesRepositoryBatchTests(PostgresFixture fixture) : PostgresTestBase(fixture)
 {
-    private readonly User _testUser;
-    private readonly Category _testCategory;
-    private readonly List<Tip> _testTips;
+    private User _testUser = null!;
+    private Category _testCategory = null!;
+    private List<Tip> _testTips = null!;
 
-    public FavoritesRepositoryBatchTests()
+    public override async Task InitializeAsync()
     {
-        // Create test user with unique data
+        await base.InitializeAsync();
+
         _testUser = TestDataFactory.CreateUser();
-        UserRepository.AddAsync(_testUser).Wait();
+        await UserRepository.AddAsync(_testUser);
 
-        // Create test category with unique data
         _testCategory = TestDataFactory.CreateCategory();
-        CategoryRepository.AddAsync(_testCategory).Wait();
+        await CategoryRepository.AddAsync(_testCategory);
 
-        // Create test tips with unique data
         _testTips = new List<Tip>();
         for (int i = 0; i < 15; i++)
         {
             var tip = CreateTestTip($"Batch Test Tip {Guid.NewGuid():N}");
-            TipRepository.AddAsync(tip).Wait();
+            await TipRepository.AddAsync(tip);
             _testTips.Add(tip);
         }
     }
@@ -86,7 +85,7 @@ public sealed class FavoritesRepositoryBatchTests : FirestoreTestBase
     [Fact]
     public async Task GetExistingFavoritesAsync_ShouldHandleLargeBatches_WhenMoreThan10IdsProvided()
     {
-        // Arrange - Add 12 favorites to test batching (Firestore WhereIn max is 10)
+        // Arrange - add 12 favorites; PostgreSQL ANY() handles any count in one query
         var favoritedTips = _testTips.Take(12).ToList();
         foreach (var tip in favoritedTips)
         {
@@ -142,7 +141,7 @@ public sealed class FavoritesRepositoryBatchTests : FirestoreTestBase
     [Fact]
     public async Task AddBatchAsync_ShouldHandleLargeBatches_WhenMoreThan500IdsProvided()
     {
-        // Arrange - Create 550 tips to test batch write batching (Firestore batch write max is 500)
+        // Arrange - Create 550 tips to test large batch handling
         var largeTipList = new List<Tip>();
         for (int i = 0; i < 550; i++)
         {

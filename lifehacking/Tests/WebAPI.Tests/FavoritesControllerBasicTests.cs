@@ -66,7 +66,7 @@ public sealed class FavoritesControllerBasicTests : FirestoreWebApiTestBase
         var storedFavorite = await favoritesRepository.GetByUserAndTipAsync(user.Id, tip.Id);
         storedFavorite.Should().NotBeNull("favorite should be stored in the repository");
 
-        // Small delay to ensure Firestore emulator has persisted the data
+        // Small delay to allow any async persistence to settle
         await Task.Delay(100);
 
         var client = Factory.CreateClient();

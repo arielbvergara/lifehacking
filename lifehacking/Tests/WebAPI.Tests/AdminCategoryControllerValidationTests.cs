@@ -11,7 +11,7 @@ namespace WebAPI.Tests;
 /// <summary>
 /// Focused validation tests for AdminCategoryController.
 /// Tests all validation boundary conditions, whitespace handling, and error response structure.
-/// Uses Firestore emulator for data storage and CustomWebApplicationFactory for test infrastructure.
+/// Uses PostgreSQL Testcontainer for data storage and CustomWebApplicationFactory for test infrastructure.
 /// </summary>
 public sealed class AdminCategoryControllerValidationTests : FirestoreWebApiTestBase
 {

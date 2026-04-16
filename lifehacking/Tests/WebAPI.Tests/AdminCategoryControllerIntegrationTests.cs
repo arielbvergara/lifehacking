@@ -14,7 +14,7 @@ namespace WebAPI.Tests;
 /// <summary>
 /// Integration tests for AdminCategoryController.
 /// Tests admin-only category management endpoints including authorization, validation, and cascade behavior.
-/// Uses Firestore emulator for data storage and CustomWebApplicationFactory for test infrastructure.
+/// Uses PostgreSQL Testcontainer for data storage and CustomWebApplicationFactory for test infrastructure.
 /// </summary>
 public sealed class AdminCategoryControllerIntegrationTests : FirestoreWebApiTestBase
 {

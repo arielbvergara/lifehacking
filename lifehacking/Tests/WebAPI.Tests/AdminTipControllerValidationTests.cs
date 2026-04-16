@@ -11,7 +11,7 @@ namespace WebAPI.Tests;
 /// <summary>
 /// Focused validation tests for AdminTipController.
 /// Tests all validation boundary conditions for title, description, steps, tags, and video URL.
-/// Uses Firestore emulator for data storage and CustomWebApplicationFactory for test infrastructure.
+/// Uses PostgreSQL Testcontainer for data storage and CustomWebApplicationFactory for test infrastructure.
 /// </summary>
 public sealed class AdminTipControllerValidationTests : FirestoreWebApiTestBase
 {
