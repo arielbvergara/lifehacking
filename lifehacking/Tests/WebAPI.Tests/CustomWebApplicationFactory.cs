@@ -2,8 +2,6 @@ using System.Threading.RateLimiting;
 using Application.Interfaces;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.EntityFrameworkCore;
-using Xunit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Testcontainers.PostgreSql;
 using WebAPI.Authentication;
+using Xunit;
 
 namespace WebAPI.Tests;
 
