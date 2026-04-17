@@ -63,7 +63,7 @@ public sealed class UserRepositoryTests : FirestoreTestBase
 
         var (items, totalCount) = await UserRepository.GetPagedAsync(criteria, CancellationToken.None);
 
-        totalCount.Should().BeGreaterOrEqualTo(10);
+        totalCount.Should().BeGreaterThanOrEqualTo(10);
         items.Should().HaveCount(5);
         items.Should().OnlyContain(user => user.Email.Value.Contains(emailPrefix, StringComparison.OrdinalIgnoreCase));
     }
