@@ -79,7 +79,7 @@ public class UserControllerGetUsersTests : IClassFixture<CustomWebApplicationFac
         var body = await response.Content.ReadFromJsonAsync<PagedUsersResponse>();
         body.Should().NotBeNull();
         body!.Items.Should().HaveCount(10);
-        body.Pagination.TotalItems.Should().BeGreaterOrEqualTo(15);
+        body.Pagination.TotalItems.Should().BeGreaterThanOrEqualTo(15);
         body.Pagination.PageNumber.Should().Be(1);
         body.Pagination.PageSize.Should().Be(10);
     }
